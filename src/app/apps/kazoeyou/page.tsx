@@ -16,7 +16,7 @@
 
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"
@@ -55,6 +55,13 @@ export default function KazoeyouPage() {
 
   // コインシステム
   const { coins, addCoins } = useCoins()
+
+  // 初期メッセージを表示する
+  useEffect(() => {
+    if (el_text.current) {
+      el_text.current.innerHTML = "かずをえらんで　もんだいをおそう"
+    }
+  }, [])
 
   // ── イベントハンドラー ────────────────────────────
 
@@ -134,10 +141,10 @@ export default function KazoeyouPage() {
           ))}
         </select>
         <span
-          className="font-bold text-gray-700 dark:text-gray-200"
+          className="font-bold text-brand-600 dark:text-brand-400"
           style={{ fontSize: "max(2vw, 20px)" }}
         >
-          までのかず
+          ← かずをえらぼう
         </span>
       </div>
 
