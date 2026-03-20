@@ -21,7 +21,7 @@
 
 "use client"
 
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect } from "react"
 import * as se from "@/components/apps/suuzu-block/se"
 import { BlockArea } from "@/components/parts/block/BlockArea"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
@@ -53,6 +53,13 @@ export default function IkutuPage() {
 
   // コインシステム（全アプリ共通フック）
   const { addCoins } = useCoins()
+
+  // 初期メッセージを表示する
+  useEffect(() => {
+    if (el_text.current) {
+      el_text.current.innerHTML = "かずをえらんで　もんだいをおそう"
+    }
+  }, [])
 
   // ── イベントハンドラー ────────────────────────────
 
@@ -147,10 +154,10 @@ export default function IkutuPage() {
             <option key={item} value={item}>{item}</option>
           ))}
         </select>
-        {/* セレクトの右に「のかず」と表示 */}
-        <span className="font-bold text-gray-700 dark:text-gray-200"
+        {/* セレクトの右に説明ラベルを表示 */}
+        <span className="font-bold text-brand-600 dark:text-brand-400"
               style={{ fontSize: "max(2vw, 20px)" }}>
-          のかず
+          ← かずをえらぼう
         </span>
       </div>
 
