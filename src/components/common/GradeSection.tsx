@@ -41,7 +41,13 @@ export default function GradeSection({ title, apps }: Props) {
         lg:grid-cols-4：PCは4列
         gap-3：カード同士の隙間
       */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+      {/*
+        grid-cols-2：スマホは2列
+        sm:grid-cols-3：タブレットは3列
+        lg:grid-cols-4：PCは4列（カードが小さくなったのでもう1列増やせる）
+        gap-2：カード同士の隙間を少し詰める
+      */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {/* apps 配列をループしてカードを1枚ずつ表示する */}
         {apps.map((app) => (
           // key は React がリストの変化を検知するために必要な一意の値
