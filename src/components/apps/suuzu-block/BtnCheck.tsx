@@ -19,8 +19,8 @@ export function BtnCheck({ handleEvent, btnText = "こたえあわせ" }: BtnChe
         onClick={handleEvent}
         className="flex justify-center items-center gap-1 font-bold m-2 p-2
                    w-32 md:w-36 text-sm md:text-base
-                   border-red-300 bg-white border-2 text-red-400
-                   hover:bg-red-500 hover:text-white active:translate-y-1
+                   border-accent-200 bg-white border-2 text-accent-600
+                   hover:bg-accent-600 hover:text-white active:translate-y-1
                    rounded-lg shadow-lg"
       >
         {/* Font Awesome CDN: チェックマークアイコン */}

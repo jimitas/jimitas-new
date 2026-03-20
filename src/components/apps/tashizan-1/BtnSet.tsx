@@ -19,8 +19,8 @@ export function BtnSet({ handleEvent }: BtnSetProps) {
         onClick={handleEvent}
         className="flex justify-center items-center gap-1 font-bold m-2 p-2
                    w-20 md:w-24 text-sm md:text-base
-                   border-red-300 bg-white border-2 text-red-400
-                   hover:bg-red-500 hover:text-white active:translate-y-1
+                   border-brand-300 bg-white border-2 text-brand-600
+                   hover:bg-brand-500 hover:text-white active:translate-y-1
                    rounded-lg shadow-lg"
       >
         {/* fa-pen-to-square: FA6 での fa-user-edit 相当 */}

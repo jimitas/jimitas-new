@@ -18,8 +18,8 @@ export function BtnUndo({ handleEvent }: BtnUndoProps) {
         onClick={handleEvent}
         className="flex justify-center items-center font-bold m-2 p-2
                    w-10 h-12 md:w-12 text-sm md:text-base
-                   border-green-400 bg-white border-2 text-green-500
-                   hover:bg-green-500 hover:text-white active:translate-y-1
+                   border-brand-300 bg-white border-2 text-brand-500
+                   hover:bg-brand-500 hover:text-white active:translate-y-1
                    rounded-lg shadow-lg"
       >
         {/* Font Awesome CDN: 巻き戻しアイコン */}

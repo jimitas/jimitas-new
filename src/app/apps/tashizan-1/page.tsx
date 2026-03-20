@@ -235,7 +235,7 @@ export default function Tashizan1Page() {
         <select
           onChange={changeSelect}
           className="text-center font-bold m-2 p-2 min-w-24 text-base md:text-xl
-                     border-green-400 text-black dark:text-gray-100 dark:bg-gray-700
+                     border-brand-500 text-black dark:text-gray-100 dark:bg-gray-700
                      border-2 rounded-lg shadow-lg"
         >
           {ITEMS.map((item) => (

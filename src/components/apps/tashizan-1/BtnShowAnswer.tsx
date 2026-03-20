@@ -19,8 +19,8 @@ export function BtnShowAnswer({ handleEvent }: BtnShowAnswerProps) {
         onClick={handleEvent}
         className="flex justify-center items-center gap-1 font-bold m-2 p-2
                    w-32 md:w-36 text-sm md:text-base
-                   border-red-300 bg-white border-2 text-red-400
-                   hover:bg-red-500 hover:text-white active:translate-y-1
+                   border-warm-200 bg-white border-2 text-warm-600
+                   hover:bg-warm-500 hover:text-white active:translate-y-1
                    rounded-lg shadow-lg"
       >
         {/* fa-eye: 答えを見せる */}
