@@ -33,6 +33,7 @@ import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
 import { PutShiki } from "@/components/parts/displays/PutShiki"
 import { HidePanel } from "@/components/parts/block/HidePanel"
 import { useCoins } from "@/hooks/useCoins"
+import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -273,6 +274,9 @@ export default function Hikizan1Page() {
       <BtnNum ITEM={NUM_1} handleEvent={checkAnswer} />
       {/* 数字ボタン 11〜20 */}
       <BtnNum ITEM={NUM_2} handleEvent={checkAnswer} />
+
+      {/* コイン表示 */}
+      <CoinDisplay />
 
     </div>
   )

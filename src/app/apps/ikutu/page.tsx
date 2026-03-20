@@ -28,6 +28,7 @@ import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"
 import { PutText } from "@/components/parts/displays/PutText"
 import { useCoins } from "@/hooks/useCoins"
+import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -178,6 +179,9 @@ export default function IkutuPage() {
       <div className="flex justify-center mt-2">
         <BtnQuestion handleEvent={giveQuestion} />
       </div>
+
+      {/* コイン表示 */}
+      <CoinDisplay />
 
     </div>
   )
