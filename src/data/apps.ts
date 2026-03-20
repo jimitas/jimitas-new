@@ -14,6 +14,16 @@ export const apps: AppItem[] = [
   // 算数（数・計算）
   // ============================================================
   {
+    id: "tashizan-1",
+    title: "たしざん１",
+    description: "数図ブロックをならべながら、たしざんの練習をしよう。難易度4段階",
+    grades: [1, 2],
+    subjects: ["算数"],
+    tags: ["計算", "たし算", "数図ブロック", "ドラッグ操作", "コイン獲得"],
+    type: "app",
+    path: "/apps/tashizan-1",
+  },
+  {
     id: "suuzu-block",
     title: "すうずぶろっく",
     description: "ぶろっくをならべながら　かずの　かんがえかたをまなぼう",

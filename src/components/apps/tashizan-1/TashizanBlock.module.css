@@ -1,0 +1,61 @@
+/* ======================================================
+   TashizanBlock のスタイル
+
+   4つのテーブル（左上・右上・左下・右下）を flex で
+   横に並べる。Tailwind の preflight が td の height を
+   潰してしまうため、CSS Modules で !important を使って上書き。
+   ====================================================== */
+
+/* ── テーブル全体コンテナ ──────────────────── */
+.tableWrap {
+  display: flex;
+  justify-content: center;
+  width: max(44vw, 440px);
+  flex-wrap: wrap;
+}
+
+.tableWrap table {
+  margin: 2px;
+  margin-bottom: 5px;
+}
+
+/* 左上テーブル（leftCount > 10 のときに使用 / オレンジ枠） */
+.tableWrap table:nth-of-type(1) {
+  border: 3px solid rgb(255, 140, 0);
+  background-color: rgba(255, 140, 0, 0.4);
+}
+
+/* 右上テーブル（rightCount > 10 のときに使用 / ティール枠） */
+.tableWrap table:nth-of-type(2) {
+  border: 3px solid rgb(0, 180, 180);
+  background-color: rgba(0, 180, 180, 0.4);
+}
+
+/* ── セル（Tailwind preflight 対策で !important） ── */
+.tableWrap td {
+  width: max(4vw, 40px) !important;
+  max-width: max(4vw, 40px) !important;
+  min-width: max(4vw, 40px) !important;
+  height: max(4vw, 40px) !important;
+  min-height: max(4vw, 40px) !important;
+  max-height: max(4vw, 40px) !important;
+  border: 1px solid;
+  border-collapse: collapse;
+}
+
+/* ── ブロック本体（丸い div） ──────────────── */
+.tableWrap div {
+  width: max(3.2vw, 32px);
+  min-width: max(3.2vw, 32px);
+  max-width: max(3.2vw, 32px);
+  height: max(3.2vw, 32px);
+  min-height: max(3.2vw, 32px);
+  max-height: max(3.2vw, 32px);
+  margin: auto;
+  box-shadow: 2px 2px 2px 0 rgba(128, 128, 128, 0.8);
+  border: 1px solid;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.3s;
+  transform-style: preserve-3d;
+}
