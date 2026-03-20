@@ -34,6 +34,16 @@ export const apps: AppItem[] = [
     path: "/apps/hikizan-1",
   },
   {
+    id: "ikutu",
+    title: "いくつといくつ",
+    description: "数をふたつに分けて考えよう",
+    grades: [1],
+    subjects: ["算数"],
+    tags: ["数の概念", "分解"],
+    type: "app",
+    path: "/apps/ikutu",
+  },
+  {
     id: "suuzu-block",
     title: "すうずぶろっく",
     description: "ぶろっくをならべながら　かずの　かんがえかたをまなぼう",
