@@ -264,7 +264,8 @@ export default function Hikizan1Page() {
       <HikizanBlock leftCount={leftValue} />
 
       {/* かくすパネル：ブロックの上にかぶせてひき算を疑似体験 */}
-      <div className="flex justify-center my-2">
+      {/* height:0 + overflow:visible でDOMの高さを消す → 数字ボタンとの隙間をなくす */}
+      <div className="flex justify-center" style={{ height: 0, overflow: "visible" }}>
         <HidePanel />
       </div>
 
