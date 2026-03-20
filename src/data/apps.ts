@@ -24,6 +24,16 @@ export const apps: AppItem[] = [
     path: "/apps/tashizan-1",
   },
   {
+    id: "hikizan-1",
+    title: "ひきざん１",
+    description: "数図ブロックを使いながら、ひきざんの練習をしよう。難易度4段階",
+    grades: [1, 2],
+    subjects: ["算数"],
+    tags: ["計算", "ひき算", "数図ブロック", "ドラッグ操作", "コイン獲得"],
+    type: "app",
+    path: "/apps/hikizan-1",
+  },
+  {
     id: "suuzu-block",
     title: "すうずぶろっく",
     description: "ぶろっくをならべながら　かずの　かんがえかたをまなぼう",

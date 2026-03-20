@@ -1,0 +1,70 @@
+/* ======================================================
+   HikizanBlock のスタイル
+
+   ひきざん用の数図ブロック。
+   4テーブル構造（flex-wrap で 2×2 グリッド）:
+     table 1 (nth-of-type(1)) = 左上 [left_up]  ← leftCount > 10 のときに 10 個
+     table 2 (nth-of-type(2)) = 右上 [right_up] ← ひきざんでは常に空
+     table 3 (nth-of-type(3)) = 左下 [left_down]← ブロックのメインエリア
+     table 4 (nth-of-type(4)) = 右下 [right_down]← ひきざんでは常に空
+
+   ブロック配置：lower-first（10以下は左下テーブルに配置）
+   ← Hideパネルを上からかぶせやすくするため。
+
+   Tailwind の preflight が td の height を潰すため
+   CSS Modules で !important を使って上書き。
+   ====================================================== */
+
+/* ── テーブル全体コンテナ ──────────────────── */
+.tableWrap {
+  display: flex;
+  justify-content: center;
+  width: max(44vw, 440px);
+  flex-wrap: wrap;
+}
+
+.tableWrap table {
+  margin: 2px;
+  margin-bottom: 5px;
+}
+
+/* 左上テーブル（メインエリア / オレンジ枠） */
+.tableWrap table:nth-of-type(1) {
+  border: 3px solid rgb(255, 128, 0);
+  background-color: rgba(255, 128, 0, 0.4);
+}
+
+/* 右上テーブル（ひきざんでは常に空 / ティール枠） */
+.tableWrap table:nth-of-type(2) {
+  border: 3px solid rgb(0, 180, 180);
+  background-color: rgba(0, 180, 180, 0.1);
+}
+
+/* ── セル（Tailwind preflight 対策で !important） ── */
+.tableWrap td {
+  width: max(4vw, 35px) !important;
+  max-width: max(4vw, 35px) !important;
+  min-width: max(4vw, 35px) !important;
+  height: max(4vw, 35px) !important;
+  min-height: max(4vw, 35px) !important;
+  max-height: max(4vw, 35px) !important;
+  border: 1px solid;
+  border-collapse: collapse;
+}
+
+/* ── ブロック本体（丸い div） ──────────────── */
+.tableWrap div {
+  width: max(3.2vw, 31px);
+  min-width: max(3.2vw, 31px);
+  max-width: max(3.2vw, 31px);
+  height: max(3.2vw, 31px);
+  min-height: max(3.2vw, 31px);
+  max-height: max(3.2vw, 31px);
+  margin: auto;
+  box-shadow: 2px 2px 2px 0 rgba(128, 128, 128, 0.8);
+  border: 1px solid;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.3s;
+  transform-style: preserve-3d;
+}
