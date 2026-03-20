@@ -22,6 +22,7 @@ import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"
 import { PutText } from "@/components/parts/displays/PutText"
 import { useCoins } from "@/hooks/useCoins"
+import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -396,31 +397,7 @@ export default function KazuBlockPage() {
 
         {/* ===== コインエリア（しゅうちゅうモード中は非表示） ===== */}
         {mode !== 4 && (
-          <div
-            className="flex items-center gap-3 mx-auto my-4 px-4 py-3
-                       rounded-xl bg-amber-50 border-2 border-amber-300"
-            style={{ width: "max(44vw, 440px)" }}
-          >
-            {/* コインのアイコン表示エリア */}
-            <div className="flex flex-wrap gap-1 flex-1 min-h-[44px] items-center">
-              {/* coins 枚分のコインアイコンを表示 */}
-              {Array.from({ length: coins }).map((_, i) => (
-                <span key={i} className="text-2xl">🪙</span>
-              ))}
-            </div>
-
-            {/* 枚数 + リセットボタン */}
-            <div className="text-right shrink-0">
-              <div className="text-xs text-amber-700 font-bold">{coins}まい</div>
-              <button
-                onClick={handleResetCoins}
-                className="mt-1 text-xs px-2 py-1 bg-red-400 hover:bg-red-500
-                           text-white rounded-lg font-bold transition-colors"
-              >
-                リセット
-              </button>
-            </div>
-          </div>
+          <CoinDisplay coins={coins} onReset={handleResetCoins} />
         )}
 
       </main>

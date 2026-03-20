@@ -17,9 +17,11 @@
 interface CoinDisplayProps {
   /** 現在のコイン枚数（親コンポーネントから useCoins().coins を渡す） */
   coins: number
+  /** リセットボタンを表示する場合に渡す（省略可） */
+  onReset?: () => void
 }
 
-export function CoinDisplay({ coins }: CoinDisplayProps) {
+export function CoinDisplay({ coins, onReset }: CoinDisplayProps) {
 
   return (
     <div
@@ -40,9 +42,18 @@ export function CoinDisplay({ coins }: CoinDisplayProps) {
         )}
       </div>
 
-      {/* 枚数テキスト */}
+      {/* 枚数テキスト + オプションのリセットボタン */}
       <div className="text-right shrink-0 text-amber-700 dark:text-amber-300 font-bold text-sm">
         {coins}まい
+        {onReset && (
+          <button
+            onClick={onReset}
+            className="block mt-1 text-xs px-2 py-1 bg-red-400 hover:bg-red-500
+                       text-white rounded-lg font-bold transition-colors"
+          >
+            リセット
+          </button>
+        )}
       </div>
     </div>
   )
