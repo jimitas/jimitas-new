@@ -15,10 +15,12 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSound, UI_SOUNDS } from "@/hooks/useSound"
 
 export default function DarkModeToggle() {
   // ダークモードかどうかを状態として持つ
   const [isDark, setIsDark] = useState(false)
+  const { play } = useSound()
 
   // ページ読み込み時に localStorage から設定を復元
   // （テーマスクリプトが html に適用済みなので、状態と同期させる）
@@ -29,6 +31,7 @@ export default function DarkModeToggle() {
 
   // ダークモードを切り替える
   const toggle = () => {
+    play(UI_SOUNDS.darkMode)
     const next = !isDark
     setIsDark(next)
 

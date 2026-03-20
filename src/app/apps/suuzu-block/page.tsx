@@ -22,7 +22,6 @@ import { BtnCheck } from "@/components/apps/suuzu-block/BtnCheck"
 import { BtnNum } from "@/components/apps/suuzu-block/BtnNum"
 import { PutText } from "@/components/apps/suuzu-block/PutText"
 import { useCoins } from "@/hooks/useCoins"
-import Link from "next/link"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -241,13 +240,6 @@ export default function KazuBlockPage() {
         <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100">
           ぶろっく
         </h1>
-        {/* アプリ一覧に戻るリンク */}
-        <Link
-          href="/"
-          className="text-xs text-gray-400 hover:text-brand-500 transition-colors"
-        >
-          ← アプリ一覧へ
-        </Link>
       </header>
 
       <main className="flex-grow mt-4">

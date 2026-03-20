@@ -13,6 +13,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { useSound, UI_SOUNDS } from "@/hooks/useSound"
 
 // next/font が html 要素に注入する CSS 変数の参照
 // layout.tsx で variable: "--font-noto-sans-jp" などと指定したものと対応する
@@ -23,6 +24,7 @@ const FONT_VALUES = {
 
 export default function FontToggle() {
   const [font, setFont] = useState<"maru" | "gothic">("maru")
+  const { play } = useSound()
 
   // マウント時：localStorage から設定を読んで body に直接反映
   useEffect(() => {
@@ -34,6 +36,7 @@ export default function FontToggle() {
   }, [])
 
   const toggle = () => {
+    play(UI_SOUNDS.fontToggle)
     const next: "maru" | "gothic" = font === "maru" ? "gothic" : "maru"
     setFont(next)
     // body のインラインスタイルを直接書き換える

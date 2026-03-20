@@ -3,10 +3,14 @@
 //
 // トップページに並ぶ「アプリカード」1枚分。
 // ダークモード対応のクラスを追加済み。
+// クリック時に効果音を再生する（ミュート中は無音）。
 // ======================================================
+
+"use client"
 
 import Link from "next/link"
 import { AppItem } from "@/types"
+import { useSound, UI_SOUNDS } from "@/hooks/useSound"
 
 type Props = {
   app: AppItem
@@ -33,9 +37,10 @@ const TYPE_CONFIG: Record<AppItem["type"], { line: string; bg: string; hover: st
 
 export default function AppCard({ app }: Props) {
   const config = TYPE_CONFIG[app.type]
+  const { play } = useSound()
 
   return (
-    <Link href={app.path}>
+    <Link href={app.path} onClick={() => play(UI_SOUNDS.card)}>
       <div
         className={`
           ${config.bg} ${config.hover}

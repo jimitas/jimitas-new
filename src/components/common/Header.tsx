@@ -3,13 +3,18 @@
 //
 // 2段構成：
 //   上段：ロゴ（猫アイコン＋サイト名）/ ツール類（フォント・ダーク・コイン）
-//   下段：学年ジャンプナビ ＋ jimitasについて
+//   下段：
+//     トップページ（/）→ 学年ジャンプナビ ＋ jimitasについて
+//     その他のページ  → ← アプリへもどる
 // ======================================================
 
 "use client"
 
 import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { useCoins } from "@/hooks/useCoins"
+import { useSound, UI_SOUNDS } from "@/hooks/useSound"
+import { useMute } from "@/hooks/useMute"
 import FontToggle from "@/components/common/FontToggle"
 import DarkModeToggle from "@/components/common/DarkModeToggle"
 
@@ -27,6 +32,24 @@ const NAV_ITEMS = [
 
 export default function Header() {
   const { coins } = useCoins()
+  const { play } = useSound()
+  const { isMuted, toggleMute } = useMute()
+  // 現在のパスを取得（下段ナビの出し分けに使う）
+  const pathname = usePathname()
+  const isTop = pathname === "/"
+
+  // ミュートボタンのクリック処理
+  // ミュートON → 先に音を鳴らしてからミュート（最後の音）
+  // ミュートOFF → 先に解除してから音を鳴らす（復活した音）
+  const handleMuteToggle = () => {
+    if (isMuted) {
+      toggleMute()
+      play(UI_SOUNDS.mute)
+    } else {
+      play(UI_SOUNDS.mute)
+      toggleMute()
+    }
+  }
 
   return (
     <header className="sticky top-0 z-10 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-sm">
@@ -52,6 +75,14 @@ export default function Header() {
         <div className="flex items-center gap-1">
           <FontToggle />
           <DarkModeToggle />
+          {/* ミュートボタン：🔊=音あり / 🔇=ミュート中 */}
+          <button
+            onClick={handleMuteToggle}
+            title={isMuted ? "音をオンにする" : "音をミュートする"}
+            className="flex items-center px-2 py-1 rounded text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+          >
+            {isMuted ? "🔇" : "🔊"}
+          </button>
           {/* コイン残数 */}
           <div className="flex items-center gap-1 bg-warm-50 dark:bg-gray-700 border border-warm-200 dark:border-gray-600 rounded-full px-3 py-1 ml-1">
             <span className="text-sm">🪙</span>
@@ -60,33 +91,51 @@ export default function Header() {
         </div>
       </div>
 
-      {/* ===== 下段：学年ジャンプナビ ===== */}
+      {/* ===== 下段：ナビゲーション ===== */}
       <nav className="border-t border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 overflow-x-auto">
         <ul className="max-w-5xl mx-auto px-4 flex items-center gap-1 py-1 whitespace-nowrap">
-          {/* 学年・セクションのジャンプリンク */}
-          {NAV_ITEMS.map((item) => (
-            <li key={item.href}>
-              <a
-                href={item.href}
-                className="block px-3 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+
+          {isTop ? (
+            // ── トップページ：学年ジャンプナビ ──
+            <>
+              {NAV_ITEMS.map((item) => (
+                <li key={item.href}>
+                  <a
+                    href={item.href}
+                    onClick={() => play(UI_SOUNDS.nav)}
+                    className="block px-3 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+                  >
+                    {item.label}
+                  </a>
+                </li>
+              ))}
+
+              {/* 区切り線 */}
+              <li className="text-gray-300 dark:text-gray-600 px-1 select-none">|</li>
+
+              {/* jimitasについて */}
+              <li>
+                <Link
+                  href="/about"
+                  className="block px-3 py-1 text-xs font-medium rounded text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
+                >
+                  jimitasについて
+                </Link>
+              </li>
+            </>
+          ) : (
+            // ── その他のページ：アプリ一覧へ戻るリンク ──
+            <li>
+              <Link
+                href="/"
+                onClick={() => play(UI_SOUNDS.nav)}
+                className="block px-3 py-1 text-xs font-medium rounded text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900 transition-colors"
               >
-                {item.label}
-              </a>
+                ← メニューへもどる
+              </Link>
             </li>
-          ))}
+          )}
 
-          {/* 区切り線 */}
-          <li className="text-gray-300 dark:text-gray-600 px-1 select-none">|</li>
-
-          {/* jimitasについて（ページ遷移リンク） */}
-          <li>
-            <Link
-              href="/about"
-              className="block px-3 py-1 text-xs font-medium rounded text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
-            >
-              jimitasについて
-            </Link>
-          </li>
         </ul>
       </nav>
 
