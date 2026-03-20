@@ -21,32 +21,28 @@ type Props = {
   title: string
   /** このセクションに表示するアプリの配列 */
   apps: AppItem[]
+  /**
+   * ページ内ジャンプ用のID（省略可）
+   * Header の学年ナビの href="#grade-1" などと対応させる
+   */
+  id?: string
 }
 
-export default function GradeSection({ title, apps }: Props) {
+export default function GradeSection({ title, apps, id }: Props) {
   // アプリが1件もない学年はセクション自体を表示しない
   if (apps.length === 0) return null
 
   return (
-    <section className="mb-10">
+    // id をつけることでヘッダーのジャンプナビ（#grade-1 など）のリンク先になる
+    <section id={id} className="mb-10 scroll-mt-24">
       {/* ===== セクションタイトル ===== */}
-      <h2 className="text-base font-bold text-gray-700 mb-3 pb-2 border-b-2 border-orange-300">
+      {/* scroll-mt-24：ヘッダーが sticky のため、ジャンプ時に隠れないようオフセットを設ける */}
+      <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b-2 border-brand-400">
         {title}
       </h2>
 
       {/* ===== アプリカードのグリッド ===== */}
-      {/*
-        grid-cols-2：スマホは2列
-        sm:grid-cols-3：タブレットは3列
-        lg:grid-cols-4：PCは4列
-        gap-3：カード同士の隙間
-      */}
-      {/*
-        grid-cols-2：スマホは2列
-        sm:grid-cols-3：タブレットは3列
-        lg:grid-cols-4：PCは4列（カードが小さくなったのでもう1列増やせる）
-        gap-2：カード同士の隙間を少し詰める
-      */}
+      {/* SP:2列 / タブレット:3列 / PC:4列 */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
         {/* apps 配列をループしてカードを1枚ずつ表示する */}
         {apps.map((app) => (

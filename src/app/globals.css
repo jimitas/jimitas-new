@@ -1,26 +1,96 @@
+/* ======================================================
+   グローバルスタイル & デザインシステム
+
+   Tailwind CSS v4 では tailwind.config.ts ではなく
+   このファイルで色・フォント・ダークモードを設定する。
+   @theme ブロックに書いた変数が Tailwind のクラスとして使える。
+   例: --color-brand-500 → bg-brand-500 / text-brand-500
+   ====================================================== */
+
 @import "tailwindcss";
 
+/* -------------------------------------------------------
+   ダークモード設定（class 方式）
+   <html class="dark"> がついたとき dark: プレフィックスが適用される
+   DarkModeToggle.tsx が html 要素の class を操作する
+   ------------------------------------------------------- */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* -------------------------------------------------------
+   カラーパレット定義
+   ------------------------------------------------------- */
+@theme {
+  /* ===== ブランドカラー（緑系・UD配慮） =====
+     赤緑色覚異常の方でも識別しやすいよう、
+     青みがかったエメラルドグリーンを採用 */
+  --color-brand-50:  #ecfdf5;
+  --color-brand-100: #d1fae5;
+  --color-brand-200: #a7f3d0;
+  --color-brand-300: #6ee7b7;
+  --color-brand-400: #34d399;
+  --color-brand-500: #059669;  /* メインカラー */
+  --color-brand-600: #047857;
+  --color-brand-700: #065f46;
+  --color-brand-800: #064e3b;
+  --color-brand-900: #022c22;
+
+  /* ===== 補助色（青系・UD配慮） =====
+     赤・緑との混同を避けるため、青を補助色として使う */
+  --color-accent-50:  #eff6ff;
+  --color-accent-100: #dbeafe;
+  --color-accent-200: #bfdbfe;
+  --color-accent-500: #3b82f6;
+  --color-accent-600: #2563eb;
+  --color-accent-700: #1d4ed8;
+
+  /* ===== 補助色（オレンジ系） =====
+     コインやアクセントに使う。緑・青と視覚的に区別しやすい */
+  --color-warm-50:  #fff7ed;
+  --color-warm-100: #ffedd5;
+  --color-warm-200: #fed7aa;
+  --color-warm-400: #fb923c;
+  --color-warm-500: #f97316;
+  --color-warm-600: #ea580c;
+}
+
+/* -------------------------------------------------------
+   フォント切り替え
+   layout.tsx の next/font が --font-noto-sans-jp と
+   --font-m-plus-1p という CSS 変数を html 要素に注入する。
+   それをここで参照して body に適用する。
+
+   html の data-font 属性で切り替える:
+     data-font なし    → 丸ゴシック（Noto Sans JP）デフォルト
+     data-font="gothic" → ゴシック（M PLUS 1p）
+   ------------------------------------------------------- */
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --font-current: var(--font-noto-sans-jp), sans-serif;
+}
+:root[data-font="gothic"] {
+  --font-current: var(--font-m-plus-1p), sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
+/* -------------------------------------------------------
+   ベーススタイル
+   ------------------------------------------------------- */
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-current);
+}
+
+/* -------------------------------------------------------
+   ダークモード フォールバック
+   Tailwind の dark: プレフィックスが効かない場合の保険として
+   プレーンな CSS セレクタでも背景・文字色を切り替える
+   ------------------------------------------------------- */
+.dark body {
+  background-color: #111827; /* gray-900 */
+  color: #f3f4f6;            /* gray-100 */
+}
+.dark header {
+  background-color: #1f2937; /* gray-800 */
+  border-color: #374151;     /* gray-700 */
+}
+.dark footer {
+  background-color: #1f2937;
+  border-color: #374151;
 }

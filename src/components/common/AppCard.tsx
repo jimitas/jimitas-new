@@ -2,15 +2,7 @@
 // AppCard コンポーネント
 //
 // トップページに並ぶ「アプリカード」1枚分。
-// クリックするとそのアプリのページへ遷移する。
-//
-// 表示内容：
-//   - 左端のカラーライン（種別を色で区別）
-//   - タイトル
-//   - 説明文（1行）
-//
-// アイコンは省略してコンパクトにし、
-// 1画面により多くのアプリを表示できるようにしている。
+// ダークモード対応のクラスを追加済み。
 // ======================================================
 
 import Link from "next/link"
@@ -20,12 +12,23 @@ type Props = {
   app: AppItem
 }
 
-// 種別ごとの左端ラインの色と背景色を定義する
-// アイコンの代わりに細いカラーラインで種別を表現する
+// 種別ごとのカラーライン・背景・ホバー色（ライト＆ダーク両対応）
 const TYPE_CONFIG: Record<AppItem["type"], { line: string; bg: string; hover: string }> = {
-  app:   { line: "bg-blue-400",   bg: "bg-white",      hover: "hover:bg-blue-50" },
-  print: { line: "bg-green-400",  bg: "bg-white",      hover: "hover:bg-green-50" },
-  tool:  { line: "bg-purple-400", bg: "bg-white",      hover: "hover:bg-purple-50" },
+  app:   {
+    line:  "bg-blue-400",
+    bg:    "bg-white dark:bg-gray-800",
+    hover: "hover:bg-blue-50 dark:hover:bg-gray-700",
+  },
+  print: {
+    line:  "bg-green-400",
+    bg:    "bg-white dark:bg-gray-800",
+    hover: "hover:bg-green-50 dark:hover:bg-gray-700",
+  },
+  tool:  {
+    line:  "bg-purple-400",
+    bg:    "bg-white dark:bg-gray-800",
+    hover: "hover:bg-purple-50 dark:hover:bg-gray-700",
+  },
 }
 
 export default function AppCard({ app }: Props) {
@@ -36,26 +39,22 @@ export default function AppCard({ app }: Props) {
       <div
         className={`
           ${config.bg} ${config.hover}
-          border border-gray-200 rounded-lg
-          flex items-stretch
+          border border-gray-200 dark:border-gray-700
+          rounded-lg flex items-stretch
           hover:shadow-sm hover:-translate-y-0.5
           transition-all duration-150 cursor-pointer
           h-full overflow-hidden
         `}
       >
-        {/* ===== 左端のカラーライン（種別の色分け） ===== */}
-        {/* w-1 で細く、h-full でカードの高さいっぱいに伸びる */}
+        {/* 左端のカラーライン */}
         <div className={`${config.line} w-1 flex-shrink-0`} />
 
-        {/* ===== テキストエリア ===== */}
+        {/* テキストエリア */}
         <div className="px-3 py-2 flex flex-col justify-center gap-0.5">
-          {/* タイトル */}
-          <h3 className="text-sm font-bold text-gray-800 leading-snug">
+          <h3 className="text-sm font-bold text-gray-800 dark:text-gray-100 leading-snug">
             {app.title}
           </h3>
-
-          {/* 説明文（1行で収める）*/}
-          <p className="text-xs text-gray-400 leading-relaxed line-clamp-1">
+          <p className="text-xs text-gray-400 dark:text-gray-500 leading-relaxed line-clamp-1">
             {app.description}
           </p>
         </div>
