@@ -43,7 +43,3 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# 音声・画像素材（大容量バイナリのためGitHub除外）
-# ローカルに保持し、将来はCDN/Supabase Storageに移行予定
-/public/images/
-/public/sounds/
