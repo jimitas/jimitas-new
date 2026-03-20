@@ -56,13 +56,15 @@ export function useCoins() {
 
   // コインを指定した数だけ加算して保存する
   const addCoins = (amount: number) => {
+    // dispatchEvent を updater 関数の外に出す。
+    // updater 内で呼ぶと「レンダリング中に別コンポーネントの state を更新」になりエラーになる。
     setCoins((prev) => {
       const next = prev + amount
       localStorage.setItem(STORAGE_KEY, String(next))
-      // 同タブの他コンポーネント（ヘッダーなど）に変更を通知する
-      window.dispatchEvent(new Event(COINS_EVENT))
       return next
     })
+    // state 更新の後に通知する（Header の setCoins をトリガー）
+    window.dispatchEvent(new Event(COINS_EVENT))
   }
 
   // コインを 0 にリセットする（将来のデバッグ用）
