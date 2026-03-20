@@ -17,10 +17,10 @@
 import { useState, useRef, useEffect } from "react"
 import * as se from "@/components/apps/suuzu-block/se"
 import { Block } from "@/components/apps/suuzu-block/Block"
-import { BtnQuestion } from "@/components/apps/suuzu-block/BtnQuestion"
-import { BtnCheck } from "@/components/apps/suuzu-block/BtnCheck"
-import { BtnNum } from "@/components/apps/suuzu-block/BtnNum"
-import { PutText } from "@/components/apps/suuzu-block/PutText"
+import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
+import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
+import { BtnNum } from "@/components/parts/buttons/BtnNum"
+import { PutText } from "@/components/parts/displays/PutText"
 import { useCoins } from "@/hooks/useCoins"
 
 // ── 定数 ─────────────────────────────────────────────

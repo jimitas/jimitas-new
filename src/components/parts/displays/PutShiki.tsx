@@ -9,7 +9,7 @@
 "use client"
 
 import { RefObject } from "react"
-import styles from "@/components/apps/tashizan-1/PutShiki.module.css"
+import styles from "@/components/parts/displays/PutShiki.module.css"
 
 interface PutShikiProps {
   /** たされる数の入力欄（自動入力・手動入力兼用） */

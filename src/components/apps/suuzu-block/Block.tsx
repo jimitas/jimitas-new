@@ -21,8 +21,8 @@ import React, { useEffect, useState, useRef, useCallback } from "react"
 import * as se from "@/components/apps/suuzu-block/se"
 import styles from "@/components/apps/suuzu-block/Block.module.css"
 import { useDragDrop } from "@/hooks/useDragDrop"
-import { BtnSpace } from "@/components/apps/suuzu-block/BtnSpace"
-import { BtnUndo } from "@/components/apps/suuzu-block/BtnUndo"
+import { BtnSpace } from "@/components/parts/buttons/BtnSpace"
+import { BtnUndo } from "@/components/parts/buttons/BtnUndo"
 
 // ブロックの色：インデックス 0=ピンク 1=青（クリックで交互に変わる）
 const divColor = ["#ff8082", "#005aff", "#ff8082", "#005aff"]

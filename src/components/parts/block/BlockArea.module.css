@@ -1,17 +1,14 @@
 /* ======================================================
-   HikizanBlock のスタイル
+   BlockArea のスタイル
 
-   ひきざん用の数図ブロック。
-   4テーブル構造（flex-wrap で 2×2 グリッド）:
-     table 1 (nth-of-type(1)) = 左上 [left_up]  ← leftCount > 10 のときに 10 個
-     table 2 (nth-of-type(2)) = 右上 [right_up] ← ひきざんでは常に空
-     table 3 (nth-of-type(3)) = 左下 [left_down]← ブロックのメインエリア
-     table 4 (nth-of-type(4)) = 右下 [right_down]← ひきざんでは常に空
+   数図ブロック表示エリア（たしざん・ひきざん共通）。
+   flex-wrap で 2×2 グリッドに配置：
+     table:nth-of-type(1) = 左上  ← 繰り上がり・10超のときに使用
+     table:nth-of-type(2) = 右上  ← 繰り上がり・10超のときに使用
+     table:nth-of-type(3) = 左下  ← メインエリア
+     table:nth-of-type(4) = 右下  ← メインエリア
 
-   ブロック配置：lower-first（10以下は左下テーブルに配置）
-   ← Hideパネルを上からかぶせやすくするため。
-
-   Tailwind の preflight が td の height を潰すため
+   Tailwind の preflight が td の height を潰すため、
    CSS Modules で !important を使って上書き。
    ====================================================== */
 
@@ -28,13 +25,13 @@
   margin-bottom: 5px;
 }
 
-/* 左上テーブル（メインエリア / オレンジ枠） */
+/* 左上テーブル（オレンジ枠） */
 .tableWrap table:nth-of-type(1) {
-  border: 3px solid rgb(255, 128, 0);
-  background-color: rgba(255, 128, 0, 0.4);
+  border: 3px solid rgb(255, 140, 0);
+  background-color: rgba(255, 140, 0, 0.4);
 }
 
-/* 右上テーブル（ひきざんでは常に空 / ティール枠） */
+/* 右上テーブル（ティール枠） */
 .tableWrap table:nth-of-type(2) {
   border: 3px solid rgb(0, 180, 180);
   background-color: rgba(0, 180, 180, 0.1);
