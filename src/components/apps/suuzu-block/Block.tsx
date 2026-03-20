@@ -18,7 +18,7 @@
 "use client"
 
 import React, { useEffect, useState, useRef, useCallback } from "react"
-import * as se from "@/components/apps/suuzu-block/se"
+import * as se from "@/lib/se"
 import styles from "@/components/apps/suuzu-block/Block.module.css"
 import { useDragDrop } from "@/hooks/useDragDrop"
 import { BtnSpace } from "@/components/parts/buttons/BtnSpace"

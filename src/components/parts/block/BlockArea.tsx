@@ -22,7 +22,7 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import * as se from "@/components/apps/suuzu-block/se"
+import * as se from "@/lib/se"
 import styles from "@/components/parts/block/BlockArea.module.css"
 import { useDragDrop } from "@/hooks/useDragDrop"
 import { BtnSpace } from "@/components/parts/buttons/BtnSpace"

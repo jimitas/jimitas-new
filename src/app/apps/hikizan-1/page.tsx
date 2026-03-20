@@ -22,7 +22,7 @@
 "use client"
 
 import { useState, useRef, useEffect } from "react"
-import * as se from "@/components/apps/suuzu-block/se"
+import * as se from "@/lib/se"
 import { HikizanBlock } from "@/components/apps/hikizan-1/HikizanBlock"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
