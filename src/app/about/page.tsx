@@ -15,7 +15,7 @@ export default function AboutPage() {
       {/* ===== ロゴマーク（大きく表示） ===== */}
       <div className="flex justify-center mb-10">
         <Image
-          src="/logo.png"
+          src="/jimitas_logo.png"
           alt="Jimitas - 地味に助かる学習コンテンツ"
           width={480}
           height={150}
