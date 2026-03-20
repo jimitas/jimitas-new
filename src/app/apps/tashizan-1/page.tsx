@@ -64,7 +64,7 @@ export default function Tashizan1Page() {
   const el_answer      = useRef<HTMLInputElement | null>(null)
 
   // コインシステム（全アプリ共通フック）
-  const { addCoins } = useCoins()
+  const { coins, addCoins } = useCoins()
 
   // ── 難易度変更時の初期化 ──────────────────────────
   useEffect(() => {
@@ -272,7 +272,7 @@ export default function Tashizan1Page() {
       <BtnNum ITEM={NUM_2} handleEvent={checkAnswer} />
 
       {/* コイン表示 */}
-      <CoinDisplay />
+      <CoinDisplay coins={coins} />
 
     </div>
   )

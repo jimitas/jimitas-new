@@ -2,19 +2,24 @@
 // CoinDisplay コンポーネント（共通）
 //
 // 獲得コイン数を 🪙 アイコンで表示する共通部品。
-// useCoins フックと連携し、正解ごとに自動更新される。
 //
 // 使い方:
-//   問題を含むアプリの描画エリア末尾に配置するだけ。
-//   コインの加算は各アプリで addCoins(1) を呼ぶ。
+//   各ページで useCoins() を呼び、coins を prop で渡す。
+//   これにより addCoins() の直後に確実に表示が更新される。
+//
+//   例）
+//     const { coins, addCoins } = useCoins()
+//     <CoinDisplay coins={coins} />
 // ======================================================
 
 "use client"
 
-import { useCoins } from "@/hooks/useCoins"
+interface CoinDisplayProps {
+  /** 現在のコイン枚数（親コンポーネントから useCoins().coins を渡す） */
+  coins: number
+}
 
-export function CoinDisplay() {
-  const { coins } = useCoins()
+export function CoinDisplay({ coins }: CoinDisplayProps) {
 
   return (
     <div

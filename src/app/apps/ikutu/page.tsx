@@ -53,7 +53,7 @@ export default function IkutuPage() {
   const el_text = useRef<HTMLDivElement | null>(null)
 
   // コインシステム（全アプリ共通フック）
-  const { addCoins } = useCoins()
+  const { coins, addCoins } = useCoins()
 
   // 初期メッセージを表示する
   useEffect(() => {
@@ -181,7 +181,7 @@ export default function IkutuPage() {
       </div>
 
       {/* コイン表示 */}
-      <CoinDisplay />
+      <CoinDisplay coins={coins} />
 
     </div>
   )
