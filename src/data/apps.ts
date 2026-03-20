@@ -16,10 +16,10 @@ export const apps: AppItem[] = [
   {
     id: "suuzu-block",
     title: "すうずぶろっく",
-    description: "ブロックをドラッグして動かしながら、数の大きさを感じよう",
-    grades: [1, 2],
+    description: "ぶろっくをならべながら　かずの　かんがえかたをまなぼう",
+    grades: [1],
     subjects: ["算数"],
-    tags: ["数と計算", "ドラッグ操作"],
+    tags: ["数と計算", "ドラッグ操作", "かず"],
     type: "app",
     path: "/apps/suuzu-block",
   },

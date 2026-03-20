@@ -1,0 +1,130 @@
+/* ======================================================
+   Block コンポーネント用スタイル
+
+   Tailwind の preflight（リセットCSS）と競合しないよう、
+   ブロックUI 固有のスタイルはすべて CSS Modules で管理する。
+
+   特に table/td の min-height は Tailwind preflight が
+   打ち消してしまうため、ここで明示的に指定する。
+   ====================================================== */
+
+/* ==============================
+   上エリア：ならべるところ
+   ============================== */
+.upperArea {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  width: calc(max(44vw, 440px) + 32px);
+  margin-bottom: 6px;
+}
+
+.upperArea table {
+  margin: 2px;
+  margin-bottom: 5px;
+}
+
+/* 上左テーブル：ピンク系 */
+.upperArea table:nth-of-type(1) {
+  border: 2px solid rgba(255, 128, 130, 0.6);
+  background-color: rgba(255, 128, 130, 0.15);
+}
+
+/* 上右テーブル：青系 */
+.upperArea table:nth-of-type(2) {
+  border: 2px solid rgba(0, 90, 255, 0.4);
+  background-color: rgba(0, 90, 255, 0.1);
+}
+
+/* ==============================
+   仕切りラベル
+   ============================== */
+.separator {
+  width: calc(max(44vw, 440px) + 32px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 4px 0;
+  font-size: 0.85rem;
+  font-weight: bold;
+  color: #7a4a1e;
+}
+
+.separator::before,
+.separator::after {
+  content: "";
+  flex: 1;
+  height: 2px;
+  background: #7a4a1e;
+}
+
+/* ==============================
+   下エリア：木箱
+   ============================== */
+.woodBox {
+  box-sizing: content-box;
+  width: max(44vw, 440px);
+  background: linear-gradient(160deg, #d4956a 0%, #b07040 55%, #c88050 100%);
+  border: 4px solid #7a4a1e;
+  border-radius: 8px;
+  padding: 10px 12px 12px;
+  box-shadow:
+    4px 4px 10px rgba(0, 0, 0, 0.45),
+    inset 0 2px 5px rgba(255, 255, 255, 0.25),
+    inset 0 -3px 6px rgba(0, 0, 0, 0.2);
+}
+
+.lowerGrid {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.lowerGrid table {
+  margin: 2px;
+  margin-bottom: 5px;
+  border: 2px solid rgba(0, 0, 0, 0.3);
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
+/* ==============================
+   共通：td のサイズ
+
+   Tailwind preflight が height をリセットしてしまうため
+   min-height / height / max-height をすべて CSS Modules で指定する。
+   ============================== */
+.upperArea td,
+.lowerGrid td {
+  width: max(4vw, 40px);
+  min-width: max(4vw, 40px);
+  max-width: max(4vw, 40px);
+  height: max(4vw, 40px) !important;
+  min-height: max(4vw, 40px) !important;
+  max-height: max(4vw, 40px) !important;
+  border: 1px solid rgba(0, 0, 0, 0.3);
+  border-collapse: collapse;
+}
+
+/* ==============================
+   共通：ブロック（丸い色付き div）
+   ============================== */
+.upperArea div,
+.lowerGrid div {
+  width: max(3.2vw, 32px);
+  min-width: max(3.2vw, 32px);
+  max-width: max(3.2vw, 32px);
+  height: max(3.2vw, 32px);
+  min-height: max(3.2vw, 32px);
+  max-height: max(3.2vw, 32px);
+  margin: auto;
+  box-shadow: 2px 2px 2px 0 rgba(128, 128, 128, 0.8);
+  border: 1px solid;
+  border-radius: 50%;   /* 丸い形 */
+  cursor: pointer;
+  transition: transform 0.3s;
+  transform-style: preserve-3d;
+}
+
+.container {
+  padding: 0 2vw;
+}

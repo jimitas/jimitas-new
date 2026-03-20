@@ -1,0 +1,42 @@
+// ======================================================
+// 効果音モジュール（howler.js）
+//
+// かずぶろっくで使う効果音をまとめて管理する。
+// public/sounds/ 配下の音声ファイルを参照する。
+//
+// 注意: howler.js はブラウザ専用のため、
+//       このファイルを使うコンポーネントは "use client" が必要。
+// ======================================================
+
+import { Howl } from "howler"
+
+// ブロックを置いたとき・移動したとき
+export const pi = new Howl({ src: ["/sounds/pi.mp3"] })
+
+// モード切り替え・設定変更のとき
+export const set = new Howl({ src: ["/sounds/set.mp3"] })
+
+// 正解音①（シンプル）
+export const seikai1 = new Howl({ src: ["/sounds/seikai.mp3"] })
+
+// 正解音②（少し華やか）
+export const seikai2 = new Howl({ src: ["/sounds/seikai2.mp3"] })
+
+// リセットのとき
+export const reset = new Howl({ src: ["/sounds/reset.mp3"] })
+
+// 正解のとき（右）
+export const right = new Howl({ src: ["/sounds/right.mp3"] })
+
+// 移動音①
+export const move1 = new Howl({ src: ["/sounds/move1.mp3"] })
+
+// 移動音②
+export const move2 = new Howl({ src: ["/sounds/move2.mp3"] })
+
+// 警告・不正解のとき
+export const alertSound = new Howl({ src: ["/sounds/alert.mp3"] })
+
+// その他の効果音
+export const kako = new Howl({ src: ["/sounds/kako.mp3"] })
+export const piron = new Howl({ src: ["/sounds/piron.mp3"] })
