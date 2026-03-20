@@ -99,13 +99,13 @@ export default function KazuBlockPage() {
 
   // トースト（起動時の説明）を閉じる
   const closeToast = () => {
-    se.set.play()
+    se.playSe(se.set)
     setShowToast(false)
   }
 
   // モード切り替え
   const changeMode = (m: Mode) => {
-    se.set.play()
+    se.playSe(se.set)
     setMode(m)
     setQuestionNum(null)
     setAutoCount(0)
@@ -115,7 +115,7 @@ export default function KazuBlockPage() {
 
   // 問題を出す（mode 2・3 共通）
   const giveQuestion = () => {
-    se.pi.play()
+    se.playSe(se.pi)
     const { min, max } = getRange()
     const n = Math.floor(Math.random() * (max - min + 1) + min)
     setQuestionNum(n)
@@ -139,7 +139,7 @@ export default function KazuBlockPage() {
   const checkCount = () => {
     if (mode === 1) {
       // mode 1: 現在の個数を表示するだけ
-      se.seikai1.play()
+      se.playSe(se.seikai1)
       if (el_text.current)
         el_text.current.innerHTML =
           `いま<span style="color:red;">${countInArea}</span>こ　ならんでいるよ`
@@ -148,7 +148,7 @@ export default function KazuBlockPage() {
 
     // mode 3: 正誤判定
     if (questionNum === null) {
-      se.alertSound.play()
+      se.playSe(se.alertSound)
       if (el_text.current)
         el_text.current.innerHTML = "「もんだい」をおしてください"
       return
@@ -160,13 +160,13 @@ export default function KazuBlockPage() {
         addCoins(1)                  // コインを1枚追加
         hasAnsweredRef.current = true
       }
-      se.right.play()
+      se.playSe(se.right)
       if (el_text.current)
         el_text.current.innerHTML = `<span style="color:red;">せいかい</span>`
       setQuestionNum(null)
     } else {
       // 不正解
-      se.alertSound.play()
+      se.playSe(se.alertSound)
       if (el_text.current) {
         const prevText = el_text.current.innerHTML
         el_text.current.innerHTML = `<span style="color:gray;">ちがうよ</span>`
@@ -180,7 +180,7 @@ export default function KazuBlockPage() {
   // 数字ボタン（mode 2: 正誤判定）
   const checkAnswerNum = (myAnswer: number) => {
     if (questionNum === null) {
-      se.alertSound.play()
+      se.playSe(se.alertSound)
       if (el_text.current)
         el_text.current.innerHTML = "「もんだい」をおしてください"
       return
@@ -192,13 +192,13 @@ export default function KazuBlockPage() {
         addCoins(1)
         hasAnsweredRef.current = true
       }
-      se.right.play()
+      se.playSe(se.right)
       if (el_text.current)
         el_text.current.innerHTML = `<span style="color:red;">せいかい</span>`
       setQuestionNum(null)
     } else {
       // 不正解
-      se.alertSound.play()
+      se.playSe(se.alertSound)
       if (el_text.current) {
         const prevText = el_text.current.innerHTML
         el_text.current.innerHTML = `<span style="color:gray;">ちがうよ</span>`
@@ -211,7 +211,7 @@ export default function KazuBlockPage() {
 
   // コインリセット（掛け算問題に正解した場合のみリセット）
   const handleResetCoins = () => {
-    se.set.play()
+    se.playSe(se.set)
     const num1 = Math.floor(Math.random() * 90) + 10
     const num2 = Math.floor(Math.random() * 9) + 1
     const correct = num1 * num2
@@ -222,10 +222,10 @@ export default function KazuBlockPage() {
 
     if (parseInt(ans, 10) === correct) {
       resetCoins()
-      se.seikai1.play()
+      se.playSe(se.seikai1)
       alert("せいかい！　コインをリセットしました。")
     } else {
-      se.alertSound.play()
+      se.playSe(se.alertSound)
       alert(`ちがいます。こたえは　${correct}　でした。`)
     }
   }
@@ -351,7 +351,7 @@ export default function KazuBlockPage() {
                   name="difficulty"
                   value={value}
                   checked={difficulty === value}
-                  onChange={() => { se.set.play(); setDifficulty(value) }}
+                  onChange={() => { se.playSe(se.set); setDifficulty(value) }}
                   className="w-4 h-4"
                 />
                 {label}

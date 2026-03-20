@@ -15,6 +15,7 @@ import { Noto_Sans_JP, M_PLUS_1p } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
+import SoundPreloader from "@/components/common/SoundPreloader"
 
 // -------------------------------------------------------
 // Google Fonts の読み込み（next/font）
@@ -98,6 +99,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200">
+        <SoundPreloader />
         <Header />
         <main className="flex-1">
           {children}

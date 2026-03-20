@@ -10,6 +10,15 @@
 
 import { Howl } from "howler"
 
+// ── ミュートチェック付き再生関数 ──────────────────────
+// se.xxx.play() の代わりにこれを使う。
+// ミュート中（jimitas_mute === "true"）は何もしない。
+export function playSe(howl: Howl) {
+  if (typeof window === "undefined") return
+  if (localStorage.getItem("jimitas_mute") === "true") return
+  howl.play()
+}
+
 // ブロックを置いたとき・移動したとき
 export const pi = new Howl({ src: ["/sounds/pi.mp3"] })
 

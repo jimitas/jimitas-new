@@ -51,6 +51,16 @@ function getHowl(src: string, volume: number): Howl {
   return soundCache[src]
 }
 
+// ── プリロード ───────────────────────────────────────
+// アプリ起動時に呼ぶと、UI_SOUNDS の全ファイルを事前にロードする。
+// これにより初回再生時のラグをなくす。
+export function preloadUISounds() {
+  if (typeof window === "undefined") return
+  for (const src of Object.values(UI_SOUNDS)) {
+    getHowl(src, 0.4)  // Howl 生成時点でファイルのロードが始まる
+  }
+}
+
 // ── フック本体 ───────────────────────────────────────
 
 export function useSound() {

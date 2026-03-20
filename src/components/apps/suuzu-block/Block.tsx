@@ -61,7 +61,7 @@ export function Block(props: BlockProps) {
   // リセットボタン：テーブルを再生成して初期配置に戻す
   const resetTable = () => {
     setResetKey((k) => k + 1)
-    se.seikai1.play()
+    se.playSe(se.seikai1)
   }
 
   // ── テーブル配置の計算 ──────────────────────────────
@@ -119,7 +119,7 @@ export function Block(props: BlockProps) {
 
               // クリック（またはタップ短押し）で色を反転させる
               const colorChange = (e: MouseEvent | TouchEvent) => {
-                se.pi.play()
+                se.playSe(se.pi)
                 colorIndex++
                 const target = e.target as HTMLElement
                 target.style.transform =
