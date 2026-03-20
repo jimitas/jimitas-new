@@ -46,12 +46,13 @@ export default function TasuRenshuPage() {
 
   // ゲーム中フラグ・タイマーID・問題値 を ref で管理
   // （useCallback の deps に含めず、最新値を常に参照するため）
-  const inGameRef   = useRef<boolean>(false)
-  const timerRef    = useRef<ReturnType<typeof setInterval> | null>(null)
-  const leftRef     = useRef<number>(0)
-  const rightRef    = useRef<number>(0)
-  const answerRef   = useRef<number>(0)
-  const scoreRef    = useRef<number>(0)  // コイン計算用（score state の鏡）
+  const inGameRef    = useRef<boolean>(false)
+  const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null)
+  const startWaitRef = useRef<ReturnType<typeof setTimeout> | null>(null)  // 「よーい」1秒待機
+  const leftRef      = useRef<number>(0)
+  const rightRef     = useRef<number>(0)
+  const answerRef    = useRef<number>(0)
+  const scoreRef     = useRef<number>(0)  // コイン計算用（score state の鏡）
 
   // メッセージ表示エリアへの参照
   const el_text = useRef<HTMLDivElement | null>(null)
@@ -59,8 +60,12 @@ export default function TasuRenshuPage() {
   // コインシステム
   const { coins, addCoins } = useCoins()
 
-  // ── タイマー停止ヘルパー ───────────────────────────
+  // ── タイマー・待機タイマー停止ヘルパー ────────────────
   const clearTimer = () => {
+    if (startWaitRef.current) {
+      clearTimeout(startWaitRef.current)  // 「よーい」1秒待機をキャンセル
+      startWaitRef.current = null
+    }
     if (timerRef.current) {
       clearInterval(timerRef.current)
       timerRef.current = null
@@ -149,8 +154,9 @@ export default function TasuRenshuPage() {
       el_text.current.innerHTML = "よーい"
     }
 
-    // 1秒後にスタート・タイマー開始
-    setTimeout(() => {
+    // 1秒後にスタート・タイマー開始（ID を保持してストップ時にキャンセル可能にする）
+    startWaitRef.current = setTimeout(() => {
+      if (!inGameRef.current) return  // 待機中にストップされた場合は何もしない
       if (el_text.current) el_text.current.innerHTML = "スタート"
       se.playSe(se.set)
       giveQuestion()
