@@ -51,8 +51,11 @@ export const move2 = new Howl({ src: ["/sounds/move2.mp3"] })
 export const alertSound = new Howl({ src: ["/sounds/alert.mp3"] })
 
 // その他の効果音
-export const kako = new Howl({ src: ["/sounds/kako.mp3"] })
-export const piron = new Howl({ src: ["/sounds/piron.mp3"] })
+export const kako   = new Howl({ src: ["/sounds/kako.mp3"] })
+export const piron  = new Howl({ src: ["/sounds/piron.mp3"] })
+
+// ゴミ箱に捨てる・財布にしまう動作のとき
+export const cancel = new Howl({ src: ["/sounds/cancel.mp3"] })
 
 // ── 一括プリロード ─────────────────────────────────────
 // SoundPreloader から呼ぶ。
@@ -61,6 +64,6 @@ export const piron = new Howl({ src: ["/sounds/piron.mp3"] })
 // 作られないため、明示的に .load() を呼ぶことで確実にキャッシュする。
 export function preloadAll() {
   if (typeof window === "undefined") return
-  ;[pi, set, seikai1, seikai2, reset, right, move1, move2, alertSound, kako, piron]
+  ;[pi, set, seikai1, seikai2, reset, right, move1, move2, alertSound, kako, piron, cancel]
     .forEach(h => h.load())
 }

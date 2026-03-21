@@ -445,7 +445,7 @@ export default function KazoeBouPage() {
         } else if (below.closest("#kazoe-trash")) {
           if (dragged.parentElement === document.body) dragged.remove()
           placed = true
-          se.playSe(se.reset)
+          se.playSe(se.cancel)
           if (originalParent === el_stock.current) refillStockRef.current()
         } else if (below.closest("#kazoe-stock")) {
           if (dragged.parentElement === document.body) dragged.remove()

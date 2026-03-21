@@ -282,11 +282,11 @@ export default function OkanePage() {
           placed = true
           se.playSe(se.pi)
         }
-        // 財布エリアへのドロップ
+        // 財布エリアへのドロップ（しまう音）
         else if (below.closest("#okane-wallet")) {
           droppedToWallet = true
           placed = true
-          se.playSe(se.pi)
+          se.playSe(se.cancel)
         }
       }
 
