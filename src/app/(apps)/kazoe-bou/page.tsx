@@ -73,9 +73,10 @@ export default function KazoeBouPage() {
 
   // ── 状態管理 ─────────────────────────────────────
   const [mode, setMode]                 = useState<Mode | null>(null)
-  const [showModePanel, setShowModePanel] = useState(false)   // モード切り替えパネル
+  const [showModePanel, setShowModePanel] = useState(true)    // モード切り替えパネル（初回は開く）
   const [question, setQuestion]         = useState<number | null>(null)
   const [ikutsuAnswer, setIkutsuAnswer] = useState("")        // いくつかな: テキスト入力
+  const [freeInput, setFreeInput]       = useState("")        // じゆうにならべる: 数字入力
   const [confirmReset, setConfirmReset] = useState(false)
   const [cellMinH, setCellMinH]         = useState(CELL_MIN_H_DEFAULT) // 各段のmin-height
   const [useHyaku, setUseHyaku] = useState(false)
@@ -330,6 +331,27 @@ export default function KazoeBouPage() {
     showMsg(`<span style="color:blue;">いくつかな？　こたえをいれてね</span>`, 0)
   }
 
+  // ── じゆうにならべる: 数字入力 → 棒を自動配置 ────────────────────
+
+  const handleFreeSet = useCallback(() => {
+    const n = parseInt(freeInput, 10)
+    if (isNaN(n) || n < 1 || n > 999) {
+      se.playSe(se.alertSound)
+      return
+    }
+    clearTable()
+    const hyakuCount = useHyaku ? Math.floor(n / 100)        : 0
+    const juCount    = useJu    ? Math.floor((n % 100) / 10) : 0
+    const ichiCount  = useIchi  ? n % 10                     : 0
+    const cellH = el_hyaku.current?.querySelector(".kazoe-droppable")
+    const cellJ = el_ju.current?.querySelector(".kazoe-droppable")
+    const cellI = el_ichi.current?.querySelector(".kazoe-droppable")
+    for (let i = 0; i < hyakuCount; i++) cellH?.appendChild(createBouImg(BOU[0]))
+    for (let i = 0; i < juCount;    i++) cellJ?.appendChild(createBouImg(BOU[1]))
+    for (let i = 0; i < ichiCount;  i++) cellI?.appendChild(createBouImg(BOU[2]))
+    se.playSe(se.pi)
+  }, [freeInput, useHyaku, useJu, useIchi, clearTable])
+
   // ── リセット ──────────────────────────────────────
 
   const handleReset = () => {
@@ -496,67 +518,49 @@ export default function KazoeBouPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
 
-      {/* タイトル */}
-      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-3">
-        🪵 かぞえぼう
-      </h1>
+      {/* タイトル + モードトグル */}
+      <div className="flex items-center justify-between mb-2">
+        <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
+          🪵 かぞえぼう
+        </h1>
+        <button
+          onClick={() => setShowModePanel(p => !p)}
+          className="text-sm font-bold text-brand-600 dark:text-brand-400
+                     hover:text-brand-800 dark:hover:text-brand-300 transition-colors"
+        >
+          {showModePanel ? "▲ とじる" : "▼ モードをかえる"}
+        </button>
+      </div>
 
-      {/* ── モード選択画面（初回） ── */}
-      {mode === null && (
-        <div className="flex flex-col items-center gap-6 py-10">
-          <p className="text-gray-600 dark:text-gray-300 font-bold">モードをえらんでね</p>
-          <div className="flex gap-3 flex-wrap justify-center">
-            {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
-              <button
-                key={m}
-                onClick={() => selectMode(m)}
-                className="px-5 py-4 bg-brand-500 text-white rounded-xl font-bold text-base
-                           hover:bg-brand-600 transition-colors shadow-md"
-              >
-                {MODE_LABEL[m]}
-              </button>
-            ))}
-          </div>
+      {/* モード選択パネル */}
+      {showModePanel && (
+        <div className="flex gap-2 flex-wrap mb-3 p-2
+                        bg-gray-100 dark:bg-gray-800 rounded-lg">
+          {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
+            <button
+              key={m}
+              onClick={() => selectMode(m)}
+              className={`px-3 py-1.5 rounded-lg font-bold text-sm transition-colors
+                ${mode === m
+                  ? "bg-brand-500 text-white"
+                  : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border"}`}
+            >
+              {MODE_LABEL[m]}
+            </button>
+          ))}
         </div>
+      )}
+
+      {/* モード未選択時のヒント */}
+      {mode === null && !showModePanel && (
+        <p className="text-center text-gray-400 dark:text-gray-500 py-8 text-sm">
+          ▼ モードをかえる をタップしてね
+        </p>
       )}
 
       {/* ── メインコンテンツ ── */}
       {mode !== null && (
         <>
-          {/* モード表示 + 切り替えパネル */}
-          <div className="mb-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-gray-500 dark:text-gray-400">
-                モード：<span className="font-bold text-brand-600 dark:text-brand-400">
-                  {MODE_LABEL[mode]}
-                </span>
-              </span>
-              <button
-                onClick={() => setShowModePanel(p => !p)}
-                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                {showModePanel ? "▲ とじる" : "▼ モードをかえる"}
-              </button>
-            </div>
-            {showModePanel && (
-              <div className="flex gap-2 flex-wrap mt-1 p-2
-                              bg-gray-100 dark:bg-gray-800 rounded-lg">
-                {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
-                  <button
-                    key={m}
-                    onClick={() => selectMode(m)}
-                    className={`px-3 py-1.5 rounded-lg font-bold text-sm transition-colors
-                      ${mode === m
-                        ? "bg-brand-500 text-white"
-                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border"}`}
-                  >
-                    {MODE_LABEL[m]}
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-
           {/* メッセージエリア */}
           <div
             ref={el_msg}
@@ -688,24 +692,46 @@ export default function KazoeBouPage() {
             <div id="kazoe-stock" ref={el_stock}
               className="flex items-end min-h-[60px] flex-1" />
 
-            {/* ならべよう / いくつかな: 使う位チェックボックス */}
-            {(mode === "narabe" || mode === "ikutsu") && (
-              <div className="flex gap-1.5 items-center">
-                <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
-                  つかう<br />くらい
-                </span>
-                {[
-                  { label: "百", checked: useHyaku, set: setUseHyaku },
-                  { label: "十", checked: useJu,    set: setUseJu    },
-                  { label: "一", checked: useIchi,  set: setUseIchi  },
-                ].map(({ label, checked, set }) => (
-                  <label key={label} className="flex items-center gap-0.5 cursor-pointer">
-                    <input type="checkbox" checked={checked}
-                      onChange={e => { set(e.target.checked); se.playSe(se.set) }} />
-                    <span className="text-xs">{label}</span>
-                  </label>
-                ))}
-              </div>
+            {/* 使う位チェックボックス（全モード共通） */}
+            <div className="flex gap-1.5 items-center">
+              <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                つかう<br />くらい
+              </span>
+              {[
+                { label: "百", checked: useHyaku, set: setUseHyaku },
+                { label: "十", checked: useJu,    set: setUseJu    },
+                { label: "一", checked: useIchi,  set: setUseIchi  },
+              ].map(({ label, checked, set }) => (
+                <label key={label} className="flex items-center gap-0.5 cursor-pointer">
+                  <input type="checkbox" checked={checked}
+                    onChange={e => { set(e.target.checked); se.playSe(se.set) }} />
+                  <span className="text-xs">{label}</span>
+                </label>
+              ))}
+            </div>
+
+            {/* じゆうにならべる: 数字入力 → 棒を自動配置 */}
+            {mode === "free" && (
+              <>
+                <input
+                  type="number"
+                  min="1" max="999"
+                  value={freeInput}
+                  onChange={e => setFreeInput(e.target.value)}
+                  onKeyDown={e => { if (e.key === "Enter") handleFreeSet() }}
+                  placeholder="すう字"
+                  className="w-20 border-2 border-brand-300 rounded-lg px-2 py-1.5
+                             text-lg font-bold text-center
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-white"
+                />
+                <button
+                  onClick={handleFreeSet}
+                  className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold
+                             hover:bg-accent-600 transition-colors text-sm"
+                >
+                  ならべる
+                </button>
+              </>
             )}
 
             {/* もんだいボタン */}
