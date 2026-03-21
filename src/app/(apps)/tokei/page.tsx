@@ -8,6 +8,7 @@
 // 問題タイプ:
 //   nanji   : 「なんじなんふん？」表示された時刻を読んで答える
 //   ugokasu : 「はりをうごかそう」指定時刻に針を合わせる
+//   yomu    : 「なんじかな？」スライダーを動かして時刻を確認する（自由探索）
 //
 // 難易度:
 //   easy      : 15分刻み（0, 15, 30, 45）
@@ -28,7 +29,7 @@ import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useAnswerCheck } from "@/hooks/useAnswerCheck"
 
 // ── 型定義 ──────────────────────────────────────────────
-type ProblemType = "nanji" | "ugokasu"
+type ProblemType = "nanji" | "ugokasu" | "yomu"
 type Difficulty  = "easy" | "normal" | "difficult"
 type HintLevel   = "" | "hint1" | "hint2"
 
@@ -182,6 +183,14 @@ export default function TokeiPage() {
   useEffect(() => {
     draw()
   }, [draw])
+
+  // ── yomu モード: スライダーを動かすたびに現在の時刻を表示 ──
+  // nanji / ugokasu モードでは el_text は useAnswerCheck が管理するため干渉しない
+  useEffect(() => {
+    if (type !== "yomu" || !el_text.current) return
+    const h = hours === 0 ? 12 : hours
+    el_text.current.innerHTML = `${h}じ　${minutes}ふん`
+  }, [type, hours, minutes])
 
   // ── useAnswerCheck（なんじなんふん？タイプ用） ───────────
   // 時刻を hours * 100 + minutes に変換して1つの数値として比較する
@@ -413,55 +422,60 @@ export default function TokeiPage() {
             >
               <option value="nanji">なんじなんふん？</option>
               <option value="ugokasu">はりをうごかそう</option>
+              <option value="yomu">なんじかな？</option>
             </select>
+            {/* yomu モードでも難易度（スライダーの刻み）は選べる */}
             <select
               value={mode}
               onChange={e => handleModeChange(e.target.value as Difficulty)}
               className="px-3 py-2 border-2 border-gray-300 rounded-lg text-sm bg-white"
             >
-              <option value="easy">やさしい</option>
-              <option value="normal">ふつう</option>
-              <option value="difficult">むずかしい</option>
+              <option value="easy">15分ごと</option>
+              <option value="normal">5分ごと</option>
+              <option value="difficult">1分ごと</option>
             </select>
           </div>
 
-          {/* メインボタン（もんだい / こたえあわせ / こたえをみる） */}
-          <div className="flex flex-wrap gap-2">
-            <button
-              onClick={handleQuestion}
-              className="flex items-center gap-1 px-4 py-2 font-bold
-                         border-2 border-accent-300 bg-white text-accent-600
-                         hover:bg-accent-500 hover:text-white
-                         active:translate-y-0.5 rounded-lg shadow transition-all"
-            >
-              <i className="fa-solid fa-question" />
-              もんだい
-            </button>
-            <button
-              onClick={handleCheck}
-              disabled={!hasProblem}
-              className="flex items-center gap-1 px-4 py-2 font-bold
-                         border-2 border-brand-300 bg-white text-brand-600
-                         hover:bg-brand-500 hover:text-white
-                         active:translate-y-0.5 rounded-lg shadow transition-all
-                         disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <i className="fa-solid fa-circle-check" />
-              こたえあわせ
-            </button>
-            <button
-              onClick={handleShowAnswer}
-              disabled={!hasProblem}
-              className="flex items-center gap-1 px-4 py-2 font-bold
-                         border-2 border-warm-200 bg-white text-warm-600
-                         hover:bg-warm-500 hover:text-white
-                         active:translate-y-0.5 rounded-lg shadow transition-all
-                         disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <i className="fa-solid fa-eye" />
-              こたえをみる
-            </button>
-          </div>
+          {/* メインボタン（もんだい / こたえあわせ / こたえをみる）
+              yomu モードでは問題を出題しないため非表示 */}
+          {type !== "yomu" && (
+            <div className="flex flex-wrap gap-2">
+              <button
+                onClick={handleQuestion}
+                className="flex items-center gap-1 px-4 py-2 font-bold
+                           border-2 border-accent-300 bg-white text-accent-600
+                           hover:bg-accent-500 hover:text-white
+                           active:translate-y-0.5 rounded-lg shadow transition-all"
+              >
+                <i className="fa-solid fa-question" />
+                もんだい
+              </button>
+              <button
+                onClick={handleCheck}
+                disabled={!hasProblem}
+                className="flex items-center gap-1 px-4 py-2 font-bold
+                           border-2 border-brand-300 bg-white text-brand-600
+                           hover:bg-brand-500 hover:text-white
+                           active:translate-y-0.5 rounded-lg shadow transition-all
+                           disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-circle-check" />
+                こたえあわせ
+              </button>
+              <button
+                onClick={handleShowAnswer}
+                disabled={!hasProblem}
+                className="flex items-center gap-1 px-4 py-2 font-bold
+                           border-2 border-warm-200 bg-white text-warm-600
+                           hover:bg-warm-500 hover:text-white
+                           active:translate-y-0.5 rounded-lg shadow transition-all
+                           disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <i className="fa-solid fa-eye" />
+                こたえをみる
+              </button>
+            </div>
+          )}
 
           {/* ヒントボタン（押すたびにトグル） */}
           <div className="flex gap-2">
