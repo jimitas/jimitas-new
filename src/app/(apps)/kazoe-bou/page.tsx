@@ -1,19 +1,21 @@
 // ======================================================
 // かぞえぼう ページ
 //
-// URL: /kazoe-bou
-// 対象: 小学1〜2年生
-// 内容: 計算棒（百・十・一の位）をドラッグして大きな数の位の概念を学ぶ
+// テーブル構造:
+//   [百くりあがり待機] | [十くりあがり待機] | [ゴミ箱]
+//   [↑百くりあがり][↓百ばらす] | [↑十くりあがり][↓十ばらす] | (空)
+//   [百の位ラベル]  | [十の位ラベル]  | [一の位ラベル]
+//   ┌──────────────────────────────────────────────────┐
+//   │ [百段1] │ [十段1] │ [一段1]  ←── 各段は min-h が可変（ドラッグで調整）
+//   │ [百段2] │ [十段2] │ [一段2]
+//   │ [百段3] │ [十段3] │ [一段3]
+//   └──────────────────────────────────────────────────┘
+//   [▼ リサイズハンドル]
 //
-// 操作:
-//   ストックから棒をドラッグ → 位の列（百・十・一）に並べる
-//   ゴミ箱にドロップ         → 棒を削除
-//   「けいさん」ボタン       → 並べた棒の合計値を計算・表示
-//   「リセット」ボタン       → インライン確認後にテーブルをクリア
-//
-// DnD:
-//   okane/page.tsx と同方式（position:fixed + elementFromPoint）
-//   refillStockRef パターンで useEffect クロージャの stale 値を回避
+// モード:
+//   じゆうにならべる … 棒を置いて「けいさん」で合計表示
+//   ならべよう       … 数字が出題 → 棒を並べて「こたえあわせ」→ コイン
+//   いくつかな       … 棒が自動配置 → 数字を入力して「こたえあわせ」→ コイン
 // ======================================================
 
 "use client"
@@ -26,24 +28,43 @@ import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── 定数 ─────────────────────────────────────────────
 
-// 棒の種類（百・十・一）
+// 棒の画像サイズ（h=56 が全種共通 → セルの min-height の基準）
 const BOU = [
   { id: "k-hyaku", label: "百", value: 100, w: 56, h: 56 },
   { id: "k-ju",    label: "十", value: 10,  w: 24, h: 56 },
   { id: "k-ichi",  label: "一", value: 1,   w: 12, h: 56 },
 ] as const
 
+const BOU_H = 56          // 棒の高さ（px）
+const CELL_MIN_H_DEFAULT = BOU_H + 16  // 初期セル高さ = 棒 + 余白
+const CELL_MIN_H_MIN     = BOU_H + 8   // リサイズの下限
+
+type Mode = "free" | "narabe" | "ikutsu"
+
+const MODE_LABEL: Record<Mode, string> = {
+  free:   "じゆうにならべる",
+  narabe: "ならべよう",
+  ikutsu: "いくつかな",
+}
+
 // ── ヘルパー ──────────────────────────────────────────
 
-// 棒の img 要素を生成する（DnD で動的に作る）
 function createBouImg(bou: (typeof BOU)[number]): HTMLImageElement {
   const img = document.createElement("img")
   img.src = `/images/${bou.id}.png`
   img.alt = bou.label
   img.className = `kazoe-draggable ${bou.id}`
   img.setAttribute("data-bou-id", bou.id)
-  img.style.cssText = `width:${bou.w}px;height:${bou.h}px;object-fit:contain;cursor:grab;margin:2px;display:inline-block;flex-shrink:0;`
+  // margin は 1px（間隔を詰める）
+  img.style.cssText = `width:${bou.w}px;height:${bou.h}px;object-fit:contain;cursor:grab;margin:1px;display:inline-block;flex-shrink:0;`
   return img
+}
+
+function generateQuestion(useHyaku: boolean, useJu: boolean, useIchi: boolean): number {
+  const hyaku = useHyaku ? Math.floor(Math.random() * 9 + 1) : 0
+  const ju    = useJu    ? Math.floor(Math.random() * 9 + 1) : 0
+  const ichi  = useIchi  ? Math.floor(Math.random() * 9 + 1) : 0
+  return hyaku * 100 + ju * 10 + ichi
 }
 
 // ── コンポーネント ───────────────────────────────────
@@ -51,49 +72,183 @@ function createBouImg(bou: (typeof BOU)[number]): HTMLImageElement {
 export default function KazoeBouPage() {
 
   // ── 状態管理 ─────────────────────────────────────
-  const [confirmReset, setConfirmReset] = useState(false) // インライン確認UI
-  const hasAnswered = useRef(false) // 1問につき初回のみコイン付与
+  const [mode, setMode]                 = useState<Mode | null>(null)
+  const [showModePanel, setShowModePanel] = useState(false)   // モード切り替えパネル
+  const [question, setQuestion]         = useState<number | null>(null)
+  const [ikutsuAnswer, setIkutsuAnswer] = useState("")        // いくつかな: テキスト入力
+  const [confirmReset, setConfirmReset] = useState(false)
+  const [cellMinH, setCellMinH]         = useState(CELL_MIN_H_DEFAULT) // 各段のmin-height
+  const [useHyaku, setUseHyaku] = useState(false)
+  const [useJu,    setUseJu]    = useState(true)
+  const [useIchi,  setUseIchi]  = useState(true)
+  const hasAnswered = useRef(false)
 
-  // コインシステム
   const { coins, addCoins } = useCoins()
 
-  // テーブル列の ref（百・十・一）
-  const el_hyaku = useRef<HTMLDivElement>(null)
-  const el_ju    = useRef<HTMLDivElement>(null)
-  const el_ichi  = useRef<HTMLDivElement>(null)
+  // ── DOM 参照 ──────────────────────────────────────
+  const el_hyaku = useRef<HTMLDivElement>(null) // 百列ラッパー（3セル内包）
+  const el_ju    = useRef<HTMLDivElement>(null) // 十列ラッパー
+  const el_ichi  = useRef<HTMLDivElement>(null) // 一列ラッパー
 
-  // ストック・結果表示エリアの ref
-  const el_stock  = useRef<HTMLDivElement>(null)
-  const el_result = useRef<HTMLDivElement>(null)
+  const el_kuri_hyaku = useRef<HTMLDivElement>(null) // 百くりあがり待機セル
+  const el_kuri_ju    = useRef<HTMLDivElement>(null) // 十くりあがり待機セル
+
+  const el_stock = useRef<HTMLDivElement>(null)
+  const el_msg   = useRef<HTMLDivElement>(null)
+
+  // ── リサイズ ──────────────────────────────────────
+  const resizingRef     = useRef(false)
+  const resizeStartYRef = useRef(0)
+  const resizeStartHRef = useRef(CELL_MIN_H_DEFAULT)
+  const cellMinHRef     = useRef(cellMinH)
+  cellMinHRef.current   = cellMinH
+
+  const startResize = (clientY: number) => {
+    resizingRef.current     = true
+    resizeStartYRef.current = clientY
+    resizeStartHRef.current = cellMinHRef.current
+  }
+
+  useEffect(() => {
+    const onMove = (e: MouseEvent | TouchEvent) => {
+      if (!resizingRef.current) return
+      const te = e as TouchEvent
+      const clientY = te.touches ? te.touches[0].clientY : (e as MouseEvent).clientY
+      const delta = clientY - resizeStartYRef.current
+      setCellMinH(Math.max(CELL_MIN_H_MIN, resizeStartHRef.current + delta))
+    }
+    const onUp = () => { resizingRef.current = false }
+    document.addEventListener("mousemove", onMove)
+    document.addEventListener("mouseup",   onUp)
+    document.addEventListener("touchmove", onMove, { passive: false })
+    document.addEventListener("touchend",  onUp)
+    return () => {
+      document.removeEventListener("mousemove", onMove)
+      document.removeEventListener("mouseup",   onUp)
+      document.removeEventListener("touchmove", onMove)
+      document.removeEventListener("touchend",  onUp)
+    }
+  }, [])
 
   // ── ストック補充 ──────────────────────────────────
-  // 常に百・十・一が1本ずつある状態を保つ
   const refillStock = useCallback(() => {
     if (!el_stock.current) return
     el_stock.current.innerHTML = ""
-    BOU.forEach((bou) => {
-      el_stock.current!.appendChild(createBouImg(bou))
-    })
+    BOU.forEach(bou => el_stock.current!.appendChild(createBouImg(bou)))
   }, [])
 
-  // DnD の useEffect（deps なし）から最新の refillStock を呼ぶためのパターン
-  // （クロージャが古い refillStock を掴まないようにする）
   const refillStockRef = useRef(refillStock)
   refillStockRef.current = refillStock
 
-  // ── テーブル操作 ──────────────────────────────────
-
-  // テーブルの全列をクリアする
+  // ── テーブルクリア ────────────────────────────────
+  // kazoe-droppable の構造は保持し、内部の棒だけ削除
   const clearTable = useCallback(() => {
-    ;[el_hyaku, el_ju, el_ichi].forEach((ref) => {
-      if (ref.current) ref.current.innerHTML = ""
+    ;[el_hyaku, el_ju, el_ichi].forEach(ref => {
+      ref.current?.querySelectorAll(".kazoe-droppable").forEach(cell => {
+        cell.innerHTML = ""
+      })
     })
+    if (el_kuri_hyaku.current) el_kuri_hyaku.current.innerHTML = ""
+    if (el_kuri_ju.current)    el_kuri_ju.current.innerHTML    = ""
   }, [])
 
-  // ── けいさんボタン ────────────────────────────────
+  // ── メッセージ表示 ────────────────────────────────
+  const showMsg = (html: string, duration = 2000) => {
+    if (!el_msg.current) return
+    el_msg.current.innerHTML = html
+    if (duration > 0) {
+      setTimeout(() => { if (el_msg.current) el_msg.current.innerHTML = "" }, duration)
+    }
+  }
+
+  // ── 繰り上がり ────────────────────────────────────
+
+  const handleKuriagariHyaku = () => {
+    const items = el_ju.current?.querySelectorAll(".k-ju")
+    if (!items || items.length < 10) {
+      se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">十の位が　10ぼん　ないよ</span>`, 1500)
+      return
+    }
+    for (let i = 0; i < 10; i++) items[i].remove()
+    el_kuri_hyaku.current?.appendChild(createBouImg(BOU[0]))
+    se.playSe(se.piron)
+  }
+
+  const handleKuriagariJu = () => {
+    const items = el_ichi.current?.querySelectorAll(".k-ichi")
+    if (!items || items.length < 10) {
+      se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">一の位が　10ぼん　ないよ</span>`, 1500)
+      return
+    }
+    for (let i = 0; i < 10; i++) items[i].remove()
+    el_kuri_ju.current?.appendChild(createBouImg(BOU[1]))
+    se.playSe(se.piron)
+  }
+
+  // ── ばらす ────────────────────────────────────────
+
+  const handleBarasuHyaku = () => {
+    const rod = el_hyaku.current?.querySelector(".k-hyaku")
+    if (!rod) {
+      se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">百の位に　ぼんがないよ</span>`, 1500)
+      return
+    }
+    rod.remove()
+    const firstCell = el_ju.current?.querySelector(".kazoe-droppable")
+    for (let i = 0; i < 10; i++) firstCell?.appendChild(createBouImg(BOU[1]))
+    se.playSe(se.piron)
+  }
+
+  const handleBarasuJu = () => {
+    const rod = el_ju.current?.querySelector(".k-ju")
+    if (!rod) {
+      se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">十の位に　ぼんがないよ</span>`, 1500)
+      return
+    }
+    rod.remove()
+    const firstCell = el_ichi.current?.querySelector(".kazoe-droppable")
+    for (let i = 0; i < 10; i++) firstCell?.appendChild(createBouImg(BOU[2]))
+    se.playSe(se.piron)
+  }
+
+  // ── けいさん / こたえあわせ ────────────────────────
 
   const handleCalc = () => {
-    // 各列の棒の枚数をカウント
+    // いくつかなモード: テキスト入力と問題を照合
+    if (mode === "ikutsu") {
+      if (question === null) {
+        se.playSe(se.alertSound)
+        showMsg(`<span style="color:gray;">もんだいを　おしてね</span>`, 1500)
+        return
+      }
+      const ans = parseInt(ikutsuAnswer, 10)
+      if (isNaN(ans) || ikutsuAnswer.trim() === "") {
+        se.playSe(se.alertSound)
+        showMsg(`<span style="color:red;">こたえを　いれてね</span>`, 1500)
+        return
+      }
+      if (ans === question) {
+        se.playSe(se.seikai1)
+        showMsg(
+          `<span style="color:green;font-size:1.4em;font-weight:bold;">⭕ せいかい！ ${question}</span>`,
+          0
+        )
+        if (!hasAnswered.current) { addCoins(1); hasAnswered.current = true }
+      } else {
+        se.playSe(se.alertSound)
+        showMsg(
+          `<span style="color:red;font-size:1.2em;font-weight:bold;">❌ ${ans}　ちがうよ</span>`,
+          2000
+        )
+      }
+      return
+    }
+
+    // free / narabe モード: テーブルの棒をカウント
     const hyakuCount = el_hyaku.current?.querySelectorAll(".k-hyaku").length ?? 0
     const juCount    = el_ju.current?.querySelectorAll(".k-ju").length ?? 0
     const ichiCount  = el_ichi.current?.querySelectorAll(".k-ichi").length ?? 0
@@ -101,24 +256,78 @@ export default function KazoeBouPage() {
 
     if (total === 0) {
       se.playSe(se.alertSound)
-      if (el_result.current) {
-        el_result.current.innerHTML = `<span style="color:gray;">ぼうを　ならべてね</span>`
-        setTimeout(() => { if (el_result.current) el_result.current.innerHTML = "" }, 1500)
-      }
+      showMsg(`<span style="color:gray;">ぼうを　ならべてね</span>`, 1500)
       return
     }
 
-    se.playSe(se.seikai1)
-    // 初回のみコイン付与（合計1以上が確認できたとき）
-    if (!hasAnswered.current) {
-      addCoins(1)
-      hasAnswered.current = true
+    if (mode === "narabe" && question !== null) {
+      if (total === question) {
+        se.playSe(se.seikai1)
+        showMsg(
+          `<span style="color:green;font-size:1.4em;font-weight:bold;">⭕ せいかい！ ${total}</span>`,
+          0
+        )
+        if (!hasAnswered.current) { addCoins(1); hasAnswered.current = true }
+      } else {
+        se.playSe(se.alertSound)
+        showMsg(
+          `<span style="color:red;font-size:1.2em;font-weight:bold;">❌ ${total}　ちがうよ</span>`,
+          2000
+        )
+      }
+    } else {
+      se.playSe(se.seikai1)
+      showMsg(`<span style="color:blue;font-size:1.6em;font-weight:bold;">${total}</span>`, 2000)
     }
-    if (el_result.current) {
-      el_result.current.innerHTML =
-        `<span style="color:blue;font-size:1.6em;font-weight:bold;">${total}</span>`
-      setTimeout(() => { if (el_result.current) el_result.current.innerHTML = "" }, 2000)
+  }
+
+  // ── もんだい（ならべよう） ────────────────────────
+
+  const handleNarabeQuestion = () => {
+    if (!useHyaku && !useJu && !useIchi) {
+      se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">くらいを　えらんでね</span>`, 1500)
+      return
     }
+    const q = generateQuestion(useHyaku, useJu, useIchi)
+    setQuestion(q)
+    hasAnswered.current = false
+    clearTable()
+    se.playSe(se.pi)
+    showMsg(
+      `<span style="color:blue;font-size:1.4em;font-weight:bold;">${q}</span>` +
+      `<span style="color:blue;">　を　ならべよう</span>`,
+      0
+    )
+  }
+
+  // ── もんだい（いくつかな） ────────────────────────
+
+  const handleIkutsuQuestion = () => {
+    if (!useHyaku && !useJu && !useIchi) {
+      se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">くらいを　えらんでね</span>`, 1500)
+      return
+    }
+    const q = generateQuestion(useHyaku, useJu, useIchi)
+    setQuestion(q)
+    setIkutsuAnswer("")
+    hasAnswered.current = false
+    clearTable()
+
+    // 棒を自動配置（先頭セルに）
+    const hyakuCount = Math.floor(q / 100)
+    const juCount    = Math.floor((q % 100) / 10)
+    const ichiCount  = q % 10
+    const cellH = el_hyaku.current?.querySelector(".kazoe-droppable")
+    const cellJ = el_ju.current?.querySelector(".kazoe-droppable")
+    const cellI = el_ichi.current?.querySelector(".kazoe-droppable")
+    for (let i = 0; i < hyakuCount; i++) cellH?.appendChild(createBouImg(BOU[0]))
+    for (let i = 0; i < juCount;    i++) cellJ?.appendChild(createBouImg(BOU[1]))
+    for (let i = 0; i < ichiCount;  i++) cellI?.appendChild(createBouImg(BOU[2]))
+
+    se.playSe(se.pi)
+    showMsg(`<span style="color:blue;">いくつかな？　こたえをいれてね</span>`, 0)
   }
 
   // ── リセット ──────────────────────────────────────
@@ -129,17 +338,36 @@ export default function KazoeBouPage() {
     refillStock()
     hasAnswered.current = false
     setConfirmReset(false)
-    if (el_result.current) el_result.current.innerHTML = ""
+    setQuestion(null)
+    setIkutsuAnswer("")
+    if (el_msg.current) el_msg.current.innerHTML = ""
   }
 
-  // ── DnD（okane と同方式） ─────────────────────────
-  // position:fixed + elementFromPoint でマウス・タッチを共通処理
+  // ── モード選択 ────────────────────────────────────
+
+  const selectMode = (m: Mode) => {
+    clearTable()
+    setMode(m)
+    setShowModePanel(false)
+    setQuestion(null)
+    setIkutsuAnswer("")
+    hasAnswered.current = false
+    setConfirmReset(false)
+    se.playSe(se.set)
+    if (el_msg.current) el_msg.current.innerHTML = ""
+  }
+
+  useEffect(() => {
+    if (mode !== null) refillStock()
+  }, [mode, refillStock])
+
+  // ── DnD ──────────────────────────────────────────
+  // document レベルでリスナーを設定（mode=null 時でも有効）
 
   useEffect(() => {
     let dragged: HTMLImageElement | null = null
     let originalParent: HTMLElement | null = null
-    let offsetX = 0
-    let offsetY = 0
+    let offsetX = 0, offsetY = 0
 
     const getPoint = (e: MouseEvent | TouchEvent) => {
       const te = e as TouchEvent
@@ -158,17 +386,15 @@ export default function KazoeBouPage() {
       dragged = target as HTMLImageElement
       originalParent = dragged.parentElement as HTMLElement | null
       const touch = getPoint(e)
-      const rect = dragged.getBoundingClientRect()
+      const rect  = dragged.getBoundingClientRect()
 
-      // body に移動して position:fixed で追従させる
       document.body.appendChild(dragged)
-      dragged.style.position    = "fixed"
-      dragged.style.zIndex      = "1000"
-      dragged.style.left        = rect.left + "px"
-      dragged.style.top         = rect.top  + "px"
-      dragged.style.width       = rect.width + "px"
+      dragged.style.position      = "fixed"
+      dragged.style.zIndex        = "1000"
+      dragged.style.left          = rect.left + "px"
+      dragged.style.top           = rect.top  + "px"
+      dragged.style.width         = rect.width + "px"
       dragged.style.pointerEvents = "none"
-
       offsetX = touch.clientX - rect.left
       offsetY = touch.clientY - rect.top
 
@@ -191,21 +417,15 @@ export default function KazoeBouPage() {
       e.preventDefault()
       const touch = getChangedPoint(e)
 
-      // スタイルを元に戻す（棒の種類ごとにサイズを復元）
-      dragged.style.position    = ""
-      dragged.style.zIndex      = ""
-      dragged.style.left        = ""
-      dragged.style.top         = ""
+      dragged.style.position      = ""
+      dragged.style.zIndex        = ""
+      dragged.style.left          = ""
+      dragged.style.top           = ""
       dragged.style.pointerEvents = ""
-      const bouId = dragged.getAttribute("data-bou-id")
-      const bou   = BOU.find(b => b.id === bouId)
-      if (bou) {
-        dragged.style.width  = bou.w + "px"
-        dragged.style.height = bou.h + "px"
-      }
+      const bou = BOU.find(b => b.id === dragged!.getAttribute("data-bou-id"))
+      if (bou) { dragged.style.width = bou.w + "px"; dragged.style.height = bou.h + "px" }
       dragged.style.objectFit = "contain"
 
-      // 一時的に非表示にしてドロップ先を特定
       dragged.style.display = "none"
       const below = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null
       dragged.style.display = ""
@@ -213,34 +433,21 @@ export default function KazoeBouPage() {
       let placed = false
 
       if (below) {
-        // ── テーブル列へのドロップ ──
         const cell = (
-          below.classList.contains("kazoe-droppable")
-            ? below
-            : below.closest(".kazoe-droppable")
+          below.classList.contains("kazoe-droppable") ? below : below.closest(".kazoe-droppable")
         ) as HTMLElement | null
 
         if (cell) {
           cell.appendChild(dragged)
           placed = true
           se.playSe(se.pi)
-          // ストックから来た場合はストックを補充する
-          if (originalParent === el_stock.current) {
-            refillStockRef.current()
-          }
-        }
-        // ── ゴミ箱へのドロップ → 棒を削除 ──
-        else if (below.closest("#kazoe-trash")) {
+          if (originalParent === el_stock.current) refillStockRef.current()
+        } else if (below.closest("#kazoe-trash")) {
           if (dragged.parentElement === document.body) dragged.remove()
           placed = true
           se.playSe(se.reset)
-          // ストックから来た場合はストックを補充する
-          if (originalParent === el_stock.current) {
-            refillStockRef.current()
-          }
-        }
-        // ── ストックエリアへのドロップ → テーブルから戻す ──
-        else if (below.closest("#kazoe-stock")) {
+          if (originalParent === el_stock.current) refillStockRef.current()
+        } else if (below.closest("#kazoe-stock")) {
           if (dragged.parentElement === document.body) dragged.remove()
           placed = true
           se.playSe(se.pi)
@@ -248,55 +455,41 @@ export default function KazoeBouPage() {
         }
       }
 
-      // ── ドロップ失敗 ──
       if (!placed) {
         if (originalParent === el_stock.current) {
-          // ストックから来た棒 → body から削除してストック補充
           if (dragged.parentElement === document.body) dragged.remove()
           refillStockRef.current()
-        } else {
-          // テーブルから来た棒 → 元のセルに戻す
-          if (dragged.parentElement === document.body && originalParent) {
-            originalParent.appendChild(dragged)
-          }
+        } else if (dragged.parentElement === document.body && originalParent) {
+          originalParent.appendChild(dragged)
         }
       }
 
       dragged = null
       originalParent = null
-
       if (!(e as TouchEvent).changedTouches) {
         document.removeEventListener("mousemove", handleMove)
         document.removeEventListener("mouseup",   handleEnd)
       }
     }
 
-    const stock = document.getElementById("kazoe-stock")
-    const table = document.getElementById("kazoe-table-wrapper")
-
-    stock?.addEventListener("mousedown",  handleStart, { passive: false })
-    stock?.addEventListener("touchstart", handleStart, { passive: false })
-    table?.addEventListener("mousedown",  handleStart, { passive: false })
-    table?.addEventListener("touchstart", handleStart, { passive: false })
-    document.addEventListener("touchmove", handleMove, { passive: false })
-    document.addEventListener("touchend",  handleEnd,  { passive: false })
+    document.addEventListener("mousedown",  handleStart, { passive: false })
+    document.addEventListener("touchstart", handleStart, { passive: false })
+    document.addEventListener("touchmove",  handleMove,  { passive: false })
+    document.addEventListener("touchend",   handleEnd,   { passive: false })
 
     return () => {
-      stock?.removeEventListener("mousedown",  handleStart)
-      stock?.removeEventListener("touchstart", handleStart)
-      table?.removeEventListener("mousedown",  handleStart)
-      table?.removeEventListener("touchstart", handleStart)
-      document.removeEventListener("touchmove", handleMove)
-      document.removeEventListener("touchend",  handleEnd)
-      document.removeEventListener("mousemove", handleMove)
-      document.removeEventListener("mouseup",   handleEnd)
+      document.removeEventListener("mousedown",  handleStart)
+      document.removeEventListener("touchstart", handleStart)
+      document.removeEventListener("touchmove",  handleMove)
+      document.removeEventListener("touchend",   handleEnd)
+      document.removeEventListener("mousemove",  handleMove)
+      document.removeEventListener("mouseup",    handleEnd)
     }
-  }, []) // DnD はマウント時に1回だけ設定（イベント委譲のため）
+  }, [])
 
-  // 初期化：マウント時にストックを補充
-  useEffect(() => {
-    refillStock()
-  }, [refillStock])
+  // ── セルクラス（共通） ────────────────────────────
+  const cellCls = (color: string, border: string) =>
+    `kazoe-droppable ${color} ${border} rounded p-1 flex flex-wrap content-start`
 
   // ── 描画 ─────────────────────────────────────────
 
@@ -308,135 +501,276 @@ export default function KazoeBouPage() {
         🪵 かぞえぼう
       </h1>
 
-      {/* 合計値表示エリア */}
-      <div
-        ref={el_result}
-        className="w-full flex justify-center items-center mb-3
-                   min-h-10 py-1 px-3 text-black bg-yellow-100 font-bold"
-      />
-
-      {/* テーブルエリア（百・十・一）＋ ゴミ箱 */}
-      <div className="flex gap-2 mb-3 items-stretch">
-
-        {/* 位のテーブル（3列） */}
-        <div id="kazoe-table-wrapper" className="flex flex-1 gap-1">
-
-          {/* 百の位 */}
-          <div className="flex-1 flex flex-col">
-            <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 mb-1 pointer-events-none">
-              百の位
-            </div>
-            <div
-              ref={el_hyaku}
-              className="kazoe-droppable flex-1 border-2 border-pink-300 bg-pink-100
-                         dark:bg-pink-900/20 rounded-lg p-2 min-h-[160px]
-                         flex flex-wrap content-start gap-1"
-            />
+      {/* ── モード選択画面（初回） ── */}
+      {mode === null && (
+        <div className="flex flex-col items-center gap-6 py-10">
+          <p className="text-gray-600 dark:text-gray-300 font-bold">モードをえらんでね</p>
+          <div className="flex gap-3 flex-wrap justify-center">
+            {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
+              <button
+                key={m}
+                onClick={() => selectMode(m)}
+                className="px-5 py-4 bg-brand-500 text-white rounded-xl font-bold text-base
+                           hover:bg-brand-600 transition-colors shadow-md"
+              >
+                {MODE_LABEL[m]}
+              </button>
+            ))}
           </div>
-
-          {/* 十の位 */}
-          <div className="flex-1 flex flex-col">
-            <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 mb-1 pointer-events-none">
-              十の位
-            </div>
-            <div
-              ref={el_ju}
-              className="kazoe-droppable flex-1 border-2 border-yellow-300 bg-yellow-100
-                         dark:bg-yellow-900/20 rounded-lg p-2 min-h-[160px]
-                         flex flex-wrap content-start gap-1"
-            />
-          </div>
-
-          {/* 一の位 */}
-          <div className="flex-1 flex flex-col">
-            <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 mb-1 pointer-events-none">
-              一の位
-            </div>
-            <div
-              ref={el_ichi}
-              className="kazoe-droppable flex-1 border-2 border-blue-300 bg-blue-100
-                         dark:bg-blue-900/20 rounded-lg p-2 min-h-[160px]
-                         flex flex-wrap content-start gap-1"
-            />
-          </div>
-
         </div>
+      )}
 
-        {/* ゴミ箱：テーブル右に配置 */}
-        <div
-          id="kazoe-trash"
-          className="flex flex-col items-center justify-end gap-1 p-2
-                     border-2 border-gray-300 rounded-lg bg-gray-50
-                     dark:bg-gray-800 dark:border-gray-600 w-16 shrink-0"
-        >
-          <Image
-            src="/images/gomibako.png"
-            alt="ゴミ箱"
-            width={48}
-            height={48}
-            className="pointer-events-none opacity-70"
+      {/* ── メインコンテンツ ── */}
+      {mode !== null && (
+        <>
+          {/* モード表示 + 切り替えパネル */}
+          <div className="mb-2">
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-gray-500 dark:text-gray-400">
+                モード：<span className="font-bold text-brand-600 dark:text-brand-400">
+                  {MODE_LABEL[mode]}
+                </span>
+              </span>
+              <button
+                onClick={() => setShowModePanel(p => !p)}
+                className="text-xs text-gray-400 hover:text-gray-600 transition-colors"
+              >
+                {showModePanel ? "▲ とじる" : "▼ モードをかえる"}
+              </button>
+            </div>
+            {showModePanel && (
+              <div className="flex gap-2 flex-wrap mt-1 p-2
+                              bg-gray-100 dark:bg-gray-800 rounded-lg">
+                {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
+                  <button
+                    key={m}
+                    onClick={() => selectMode(m)}
+                    className={`px-3 py-1.5 rounded-lg font-bold text-sm transition-colors
+                      ${mode === m
+                        ? "bg-brand-500 text-white"
+                        : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border"}`}
+                  >
+                    {MODE_LABEL[m]}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* メッセージエリア */}
+          <div
+            ref={el_msg}
+            className="w-full flex justify-center items-center mb-3
+                       min-h-10 py-1 px-3 text-black bg-yellow-100 font-bold rounded"
           />
-          <span className="text-xs text-gray-500 dark:text-gray-400">すてる</span>
-        </div>
 
-      </div>
+          {/* ─── テーブルエリア（3列 + ゴミ箱はくりあがり右上に収める） ─── */}
+          <div className="flex gap-1 mb-1">
 
-      {/* ストックエリア＋ボタン群（下段） */}
-      <div className="flex items-center gap-3 flex-wrap mb-4
-                      border-2 border-amber-400 rounded-xl p-3
-                      bg-amber-50 dark:bg-amber-900/20">
+            {/* ── 百の列 ── */}
+            <div className="flex-1 flex flex-col gap-1 min-w-0">
+              {/* くりあがり待機 */}
+              <div className="text-center text-[10px] text-pink-400 pointer-events-none leading-none">
+                くりあがり
+              </div>
+              <div
+                ref={el_kuri_hyaku}
+                className="kazoe-droppable border border-dashed border-pink-300
+                           bg-pink-50 dark:bg-pink-900/10 rounded p-1
+                           flex flex-wrap content-start"
+                style={{ minHeight: BOU_H + 8 + "px" }}
+              />
+              {/* ボタン */}
+              <div className="flex gap-0.5 justify-center flex-wrap">
+                <button onClick={handleKuriagariHyaku}
+                  className="px-1 py-0.5 text-[9px] bg-pink-200 text-pink-800 rounded hover:bg-pink-300 leading-tight">
+                  ↑百くりあがり
+                </button>
+                <button onClick={handleBarasuHyaku}
+                  className="px-1 py-0.5 text-[9px] bg-pink-100 text-pink-700 rounded hover:bg-pink-200 leading-tight">
+                  ↓百ばらす
+                </button>
+              </div>
+              {/* ラベル */}
+              <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
+                百の位
+              </div>
+              {/* メイン3段（ラッパーref） */}
+              <div ref={el_hyaku} className="flex-1 flex flex-col gap-1 border-2 border-pink-300 rounded-lg p-1">
+                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinH + "px" }} />
+              </div>
+            </div>
 
-        {/* 棒のストック（常に百・十・一が1本ずつ） */}
-        <div
-          id="kazoe-stock"
-          ref={el_stock}
-          className="flex items-end gap-3 min-h-[60px] flex-1"
-        />
+            {/* ── 十の列 ── */}
+            <div className="flex-1 flex flex-col gap-1 min-w-0">
+              <div className="text-center text-[10px] text-yellow-500 pointer-events-none leading-none">
+                くりあがり
+              </div>
+              <div
+                ref={el_kuri_ju}
+                className="kazoe-droppable border border-dashed border-yellow-300
+                           bg-yellow-50 dark:bg-yellow-900/10 rounded p-1
+                           flex flex-wrap content-start"
+                style={{ minHeight: BOU_H + 8 + "px" }}
+              />
+              <div className="flex gap-0.5 justify-center flex-wrap">
+                <button onClick={handleKuriagariJu}
+                  className="px-1 py-0.5 text-[9px] bg-yellow-200 text-yellow-800 rounded hover:bg-yellow-300 leading-tight">
+                  ↑十くりあがり
+                </button>
+                <button onClick={handleBarasuJu}
+                  className="px-1 py-0.5 text-[9px] bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 leading-tight">
+                  ↓十ばらす
+                </button>
+              </div>
+              <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
+                十の位
+              </div>
+              <div ref={el_ju} className="flex-1 flex flex-col gap-1 border-2 border-yellow-300 rounded-lg p-1">
+                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinH + "px" }} />
+              </div>
+            </div>
 
-        {/* けいさんボタン */}
-        <button
-          onClick={handleCalc}
-          className="px-4 py-2 bg-brand-500 text-white rounded-lg font-bold
-                     hover:bg-brand-600 transition-colors"
-        >
-          けいさん
-        </button>
+            {/* ── 一の列（くりあがり上段にゴミ箱） ── */}
+            <div className="flex-1 flex flex-col gap-1 min-w-0">
+              {/* 透明ラベル（高さ合わせ） */}
+              <div className="text-[10px] text-transparent pointer-events-none leading-none">
+                くりあがり
+              </div>
+              {/* ゴミ箱（くりあがり待機行の位置に収める） */}
+              <div
+                id="kazoe-trash"
+                className="flex flex-col items-center justify-center gap-0.5 p-1
+                           border-2 border-dashed border-gray-300 rounded
+                           bg-gray-50 dark:bg-gray-800 dark:border-gray-600"
+                style={{ minHeight: BOU_H + 8 + "px" }}
+              >
+                <Image src="/images/gomibako.png" alt="ゴミ箱" width={32} height={32}
+                  className="pointer-events-none opacity-70" />
+                <span className="text-[9px] text-gray-400 leading-none">すてる</span>
+              </div>
+              {/* ボタン行スペーサー（高さ合わせ） */}
+              <div className="flex gap-0.5 justify-center opacity-0 pointer-events-none">
+                <span className="px-1 py-0.5 text-[9px] leading-tight">dummy</span>
+              </div>
+              <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
+                一の位
+              </div>
+              <div ref={el_ichi} className="flex-1 flex flex-col gap-1 border-2 border-blue-300 rounded-lg p-1">
+                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinH + "px" }} />
+              </div>
+            </div>
 
-        {/* リセット（インライン確認UI） */}
-        {!confirmReset ? (
-          <button
-            onClick={() => { se.playSe(se.alertSound); setConfirmReset(true) }}
-            className="px-4 py-2 bg-gray-400 text-white rounded-lg font-bold
-                       hover:bg-gray-500 transition-colors"
-          >
-            リセット
-          </button>
-        ) : (
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-bold text-gray-700 dark:text-gray-300">
-              ほんとうに？
-            </span>
-            <button
-              onClick={handleReset}
-              className="px-3 py-2 bg-red-500 text-white rounded-lg font-bold
-                         hover:bg-red-600 transition-colors text-sm"
-            >
-              はい
-            </button>
-            <button
-              onClick={() => setConfirmReset(false)}
-              className="px-3 py-2 bg-gray-300 text-gray-700 rounded-lg font-bold
-                         hover:bg-gray-400 transition-colors text-sm"
-            >
-              いいえ
-            </button>
           </div>
-        )}
 
-      </div>
+          {/* ▼ リサイズハンドル（縦方向・各段の高さを変える） */}
+          <div
+            className="w-full flex items-center justify-center py-1 mb-2 cursor-ns-resize group"
+            onMouseDown={e => startResize(e.clientY)}
+            onTouchStart={e => { e.preventDefault(); startResize(e.touches[0].clientY) }}
+          >
+            <div className="w-16 h-1.5 bg-gray-300 group-hover:bg-gray-500
+                            dark:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
+          </div>
 
-      {/* コイン表示 */}
-      <CoinDisplay coins={coins} className="w-full" />
+          {/* ストック + ボタン群 */}
+          <div className="flex items-center gap-2 flex-wrap mb-4
+                          border-2 border-amber-400 rounded-xl p-3
+                          bg-amber-50 dark:bg-amber-900/20">
+
+            {/* 棒のストック */}
+            <div id="kazoe-stock" ref={el_stock}
+              className="flex items-end min-h-[60px] flex-1" />
+
+            {/* ならべよう / いくつかな: 使う位チェックボックス */}
+            {(mode === "narabe" || mode === "ikutsu") && (
+              <div className="flex gap-1.5 items-center">
+                <span className="text-[10px] text-gray-500 dark:text-gray-400 leading-tight">
+                  つかう<br />くらい
+                </span>
+                {[
+                  { label: "百", checked: useHyaku, set: setUseHyaku },
+                  { label: "十", checked: useJu,    set: setUseJu    },
+                  { label: "一", checked: useIchi,  set: setUseIchi  },
+                ].map(({ label, checked, set }) => (
+                  <label key={label} className="flex items-center gap-0.5 cursor-pointer">
+                    <input type="checkbox" checked={checked}
+                      onChange={e => { set(e.target.checked); se.playSe(se.set) }} />
+                    <span className="text-xs">{label}</span>
+                  </label>
+                ))}
+              </div>
+            )}
+
+            {/* もんだいボタン */}
+            {mode === "narabe" && (
+              <button onClick={handleNarabeQuestion}
+                className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold
+                           hover:bg-accent-600 transition-colors text-sm">
+                もんだい
+              </button>
+            )}
+            {mode === "ikutsu" && (
+              <button onClick={handleIkutsuQuestion}
+                className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold
+                           hover:bg-accent-600 transition-colors text-sm">
+                もんだい
+              </button>
+            )}
+
+            {/* いくつかな: 答え入力欄 */}
+            {mode === "ikutsu" && (
+              <input
+                type="number"
+                min="1" max="999"
+                value={ikutsuAnswer}
+                onChange={e => setIkutsuAnswer(e.target.value)}
+                placeholder="こたえ"
+                className="w-20 border-2 border-brand-300 rounded-lg px-2 py-1.5
+                           text-lg font-bold text-center
+                           dark:bg-gray-700 dark:border-brand-600 dark:text-white"
+              />
+            )}
+
+            {/* けいさん / こたえあわせ */}
+            <button onClick={handleCalc}
+              className="px-3 py-2 bg-brand-500 text-white rounded-lg font-bold
+                         hover:bg-brand-600 transition-colors text-sm">
+              {mode === "free" ? "けいさん" : "こたえあわせ"}
+            </button>
+
+            {/* リセット */}
+            {!confirmReset ? (
+              <button
+                onClick={() => { se.playSe(se.alertSound); setConfirmReset(true) }}
+                className="px-3 py-2 bg-gray-400 text-white rounded-lg font-bold
+                           hover:bg-gray-500 transition-colors text-sm">
+                リセット
+              </button>
+            ) : (
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm font-bold text-gray-700 dark:text-gray-300">ほんとうに？</span>
+                <button onClick={handleReset}
+                  className="px-2 py-1.5 bg-red-500 text-white rounded-lg font-bold
+                             hover:bg-red-600 transition-colors text-sm">はい</button>
+                <button onClick={() => setConfirmReset(false)}
+                  className="px-2 py-1.5 bg-gray-300 text-gray-700 rounded-lg font-bold
+                             hover:bg-gray-400 transition-colors text-sm">いいえ</button>
+              </div>
+            )}
+          </div>
+
+          {/* コイン表示 */}
+          <CoinDisplay coins={coins} className="w-full" />
+
+        </>
+      )}
 
     </div>
   )
