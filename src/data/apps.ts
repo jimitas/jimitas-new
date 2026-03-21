@@ -106,10 +106,10 @@ export const apps: AppItem[] = [
   {
     id: "tokei",
     title: "とけい",
-    description: "針をスライダーで動かして、時計の読み方を練習しよう。3段階の難易度あり",
+    description: "時計の読み方を練習しよう。3段階の難易度で学べるよ",
     grades: [1, 2, 3],
     subjects: ["算数"],
-    tags: ["時計", "難易度選択"],
+    tags: ["時計", "時刻", "コイン獲得"],
     type: "app",
     path: "/tokei",
   },
