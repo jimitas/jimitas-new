@@ -57,7 +57,7 @@ export default function TokeiPage() {
 
   // ── 問題の状態 ──────────────────────────────────────────
   const [hasProblem,   setHasProblem]   = useState(false)
-  const [type,         setType]         = useState<ProblemType>("nanji")
+  const [type,         setType]         = useState<ProblemType>("yomu")
   const [mode,         setMode]         = useState<Difficulty>("easy")
   const [hariHours,    setHariHours]    = useState(0)  // 正解の時（ugokasu用）
   const [hariMinutes,  setHariMinutes]  = useState(0)  // 正解の分（ugokasu用）
@@ -426,17 +426,17 @@ export default function TokeiPage() {
           <div className="flex flex-wrap gap-2">
             <select
               value={type}
-              onChange={e => handleTypeChange(e.target.value as ProblemType)}
+              onChange={e => { se.playSe(se.set); handleTypeChange(e.target.value as ProblemType) }}
               className="px-3 py-2 border-2 border-gray-300 rounded-lg text-sm bg-white"
             >
+              <option value="yomu">しらべる</option>
               <option value="nanji">なんじなんふん？</option>
               <option value="ugokasu">はりをうごかそう</option>
-              <option value="yomu">なんじなんふんかな？</option>
             </select>
             {/* yomu モードでも難易度（スライダーの刻み）は選べる */}
             <select
               value={mode}
-              onChange={e => handleModeChange(e.target.value as Difficulty)}
+              onChange={e => { se.playSe(se.set); handleModeChange(e.target.value as Difficulty) }}
               className="px-3 py-2 border-2 border-gray-300 rounded-lg text-sm bg-white"
             >
               <option value="easy">15分ごと</option>
@@ -510,7 +510,7 @@ export default function TokeiPage() {
             </button>
           </div>
 
-          {/* じこく表示トグル（「なんじなんふんかな？」モードのみ） */}
+          {/* じこく表示トグル（「しらべる」モードのみ） */}
           {type === "yomu" && (
             <button
               onClick={() => { se.playSe(se.set); setShowTime(prev => !prev) }}
