@@ -96,10 +96,10 @@ export const apps: AppItem[] = [
   {
     id: "kazoe-bou",
     title: "かぞえぼう",
-    description: "棒を使って正の字を書きながら、ものの数を数えよう",
+    description: "棒を位ごとに分けて大きな数を理解しよう",
     grades: [1, 2],
     subjects: ["算数"],
-    tags: ["数と計算"],
+    tags: ["数の概念", "位", "ドラッグ操作", "コイン獲得"],
     type: "app",
     path: "/kazoe-bou",
   },
