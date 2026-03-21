@@ -96,40 +96,41 @@ export default function TokeiPage() {
     ctx.strokeStyle = "#333"
     ctx.stroke()
 
-    // 分目盛り（60本・細め）
+    // 分目盛り（60本・細め）旧アプリ準拠: 150→145
     for (let i = 0; i < 60; i++) {
       const rad = (Math.PI / 180) * (270 + i * 6)
       ctx.beginPath()
       ctx.moveTo(200 + 150 * Math.cos(rad), 200 + 150 * Math.sin(rad))
-      ctx.lineTo(200 + 144 * Math.cos(rad), 200 + 144 * Math.sin(rad))
+      ctx.lineTo(200 + 145 * Math.cos(rad), 200 + 145 * Math.sin(rad))
       ctx.lineWidth = 0.5
-      ctx.strokeStyle = "#555"
+      ctx.strokeStyle = "#000"
       ctx.stroke()
     }
 
-    // 時間目盛り（12本・太め）
+    // 時間目盛り（12本・太め）旧アプリ準拠: 150→140
     for (let i = 0; i < 12; i++) {
       const rad = (Math.PI / 180) * (270 + i * 30)
       ctx.beginPath()
       ctx.moveTo(200 + 150 * Math.cos(rad), 200 + 150 * Math.sin(rad))
-      ctx.lineTo(200 + 135 * Math.cos(rad), 200 + 135 * Math.sin(rad))
-      ctx.lineWidth = 3
-      ctx.strokeStyle = "#222"
+      ctx.lineTo(200 + 140 * Math.cos(rad), 200 + 140 * Math.sin(rad))
+      ctx.lineWidth = 2
+      ctx.strokeStyle = "#000"
       ctx.stroke()
     }
 
     // 1〜12 の数字
-    ctx.font = "bold 26px sans-serif"
+    // 旧アプリ準拠: "30px 'ＭＳ ゴシック'"、textBaseline はデフォルト（alphabetic）
+    // NUM_X/NUM_Y は alphabetic ベースラインで設計されているため textBaseline は設定しない
+    ctx.font = "30px 'ＭＳ ゴシック'"
     ctx.textAlign = "center"
-    ctx.textBaseline = "middle"
-    ctx.fillStyle = "#222"
+    ctx.fillStyle = "#000"
     for (let i = 0; i < 12; i++) {
       ctx.fillText(String(i + 1), NUM_X[i], NUM_Y[i])
     }
 
-    // ヒント1: 5分刻みの数字を外周に青で表示
+    // ヒント1: 5分刻みの数字を外周に青で表示 旧アプリ準拠: 15px
     if (hint === "hint1") {
-      ctx.font = "13px sans-serif"
+      ctx.font = "15px 'ＭＳ ゴシック'"
       ctx.fillStyle = "#2563eb"
       for (let i = 0; i < 12; i++) {
         ctx.fillText(String(i * 5), HINT1_X[i], HINT1_Y[i])
@@ -137,15 +138,16 @@ export default function TokeiPage() {
     }
 
     // ヒント2: 1分刻みの全数字を放射状に緑で表示
+    // 旧アプリ準拠: 15px、半径160、Y中心は205（0の位置ずれ補正）
     if (hint === "hint2") {
-      ctx.font = "11px sans-serif"
+      ctx.font = "15px 'ＭＳ ゴシック'"
       ctx.fillStyle = "#16a34a"
       for (let i = 0; i < 60; i++) {
         const rad = (Math.PI / 180) * (270 + i * 6)
         ctx.fillText(
           String(i),
-          200 + 162 * Math.cos(rad),
-          200 + 162 * Math.sin(rad),
+          200 + 160 * Math.cos(rad),
+          205 + 160 * Math.sin(rad),
         )
       }
     }
@@ -350,34 +352,33 @@ export default function TokeiPage() {
                    bg-yellow-50 border border-yellow-200 rounded text-gray-800"
       />
 
-      {/* スライダー */}
-      <div className="space-y-2">
+      {/* スライダー + ±ボタン（横一列） */}
+      <div className="space-y-1">
         <p className="text-sm text-gray-500">
           とけいのはりは　スライダーで　うごかせます
         </p>
-        <input
-          type="range"
-          min={0}
-          max={720}
-          step={step}
-          value={rangeValue}
-          onChange={e => applyRange(parseInt(e.target.value))}
-          className="w-full h-8 cursor-pointer accent-blue-500"
-        />
-        {/* ±ボタン */}
-        <div className="flex gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={() => applyRange(rangeValue - step)}
-            className="flex-1 py-2 text-xl font-bold
+            className="px-5 py-2 text-xl font-bold shrink-0
                        border-2 border-brand-300 bg-white text-brand-600
                        hover:bg-brand-500 hover:text-white
                        active:translate-y-0.5 rounded-lg shadow transition-all"
           >
             −
           </button>
+          <input
+            type="range"
+            min={0}
+            max={720}
+            step={step}
+            value={rangeValue}
+            onChange={e => applyRange(parseInt(e.target.value))}
+            className="flex-1 h-8 cursor-pointer accent-blue-500"
+          />
           <button
             onClick={() => applyRange(rangeValue + step)}
-            className="flex-1 py-2 text-xl font-bold
+            className="px-5 py-2 text-xl font-bold shrink-0
                        border-2 border-brand-300 bg-white text-brand-600
                        hover:bg-brand-500 hover:text-white
                        active:translate-y-0.5 rounded-lg shadow transition-all"
