@@ -53,3 +53,14 @@ export const alertSound = new Howl({ src: ["/sounds/alert.mp3"] })
 // その他の効果音
 export const kako = new Howl({ src: ["/sounds/kako.mp3"] })
 export const piron = new Howl({ src: ["/sounds/piron.mp3"] })
+
+// ── 一括プリロード ─────────────────────────────────────
+// SoundPreloader から呼ぶ。
+// Howl はデフォルトで preload:true だが、このファイルが
+// import されていないページでは Howl インスタンス自体が
+// 作られないため、明示的に .load() を呼ぶことで確実にキャッシュする。
+export function preloadAll() {
+  if (typeof window === "undefined") return
+  ;[pi, set, seikai1, seikai2, reset, right, move1, move2, alertSound, kako, piron]
+    .forEach(h => h.load())
+}

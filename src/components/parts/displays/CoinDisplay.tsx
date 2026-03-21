@@ -80,9 +80,11 @@ interface CoinDisplayProps {
   coins: number
   /** リセットボタンを表示する場合に渡す（省略可） */
   onReset?: () => void
+  /** 外から幅などを上書きしたい場合に渡す（省略可） */
+  className?: string
 }
 
-export function CoinDisplay({ coins, onReset }: CoinDisplayProps) {
+export function CoinDisplay({ coins, onReset, className }: CoinDisplayProps) {
   // コインを4段階に分解
   const thousands = Math.floor(coins / 1000)
   const hundreds  = Math.floor((coins % 1000) / 100)
@@ -91,10 +93,11 @@ export function CoinDisplay({ coins, onReset }: CoinDisplayProps) {
 
   return (
     <div
-      className="mx-auto my-4 px-4 py-3
+      className={`mx-auto my-4 px-4 py-3
                  rounded-xl bg-amber-50 border-2 border-amber-300
-                 dark:bg-amber-950 dark:border-amber-700"
-      style={{ width: "max(44vw, 320px)" }}
+                 dark:bg-amber-950 dark:border-amber-700
+                 ${className ?? ""}`}
+      style={className ? undefined : { width: "max(44vw, 320px)" }}
     >
       {/* コイン表示エリア */}
       <div className="flex flex-wrap gap-2 items-end min-h-[44px]">

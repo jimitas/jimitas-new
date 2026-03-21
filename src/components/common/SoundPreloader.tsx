@@ -10,10 +10,12 @@
 
 import { useEffect } from "react"
 import { preloadUISounds } from "@/hooks/useSound"
+import { preloadAll as preloadSe } from "@/lib/se"
 
 export default function SoundPreloader() {
   useEffect(() => {
-    preloadUISounds()
+    preloadUISounds()  // ヘッダー・ナビ系の効果音
+    preloadSe()        // アプリ内効果音（pi, right, alert など全種）
   }, [])
 
   return null
