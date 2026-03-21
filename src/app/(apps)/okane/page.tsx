@@ -602,13 +602,13 @@ export default function OkanePage() {
         <div
           ref={el_tableArea}
           className="flex w-full border-2 border-gray-400 bg-yellow-50 dark:bg-yellow-900/20"
-          style={{ minHeight: "50px" }}
+          style={{ minHeight: "140px" }}
         >
           {cellFlexes.map((flex, i) => (
             <React.Fragment key={i}>
               <div
                 className="okane-droppable px-2 py-1 overflow-hidden"
-                style={{ flex, minHeight: "50px", borderRight: i < 4 ? "1px solid #d1d5db" : "none" }}
+                style={{ flex, minHeight: "140px", borderRight: i < 4 ? "1px solid #d1d5db" : "none" }}
               />
               {i < 4 && (
                 <div
