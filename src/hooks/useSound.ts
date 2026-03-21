@@ -38,6 +38,10 @@ export const UI_SOUNDS = {
   card:      "/sounds/open1.mp3",
   /** ミュート切り替え */
   mute:      "/sounds/piron.mp3",
+  /** jimitasについて ページへ移動 */
+  about:     "/sounds/seikai2.mp3",
+  /** メニューへもどる */
+  back:      "/sounds/kako.mp3",
 }
 
 // ── Howl インスタンスのキャッシュ ────────────────────

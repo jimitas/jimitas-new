@@ -1,7 +1,7 @@
 // ======================================================
 // すうずぶろっく ページ
 //
-// URL: /apps/suuzu-block
+// URL: /suuzu-block
 // 対象: 小学1年生
 // 内容: ブロックを並べながら数の概念を学ぶアプリ
 //
@@ -16,7 +16,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import * as se from "@/lib/se"
-import { Block } from "@/components/apps/suuzu-block/Block"
+import { Block } from "@/components/parts/block/Block"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"

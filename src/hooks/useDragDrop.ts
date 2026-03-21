@@ -9,6 +9,7 @@
 // ======================================================
 
 import { useCallback } from "react"
+import * as se from "@/lib/se"
 
 // ドラッグ中の要素をグローバルに保持する（複数コンポーネント間で共有しない）
 let globalDragged: HTMLElement | null = null
@@ -53,6 +54,9 @@ export const useDragDrop = (onDropCallback?: () => void) => {
       }
       dropTarget.appendChild(globalDragged)
       globalDragged = null
+
+      // ドロップ成功時に効果音を鳴らす
+      se.playSe(se.pi)
 
       // ドロップ後の処理（カウント更新など）をコールバックで呼び出す
       if (onDropCallback) {
@@ -99,6 +103,10 @@ export const useDragDrop = (onDropCallback?: () => void) => {
     if (newParentElem && newParentElem.className.match(/droppable-elem/)) {
       newParentElem.appendChild(droppedElem)
       globalDragged = null
+
+      // ドロップ成功時に効果音を鳴らす
+      se.playSe(se.pi)
+
       if (onDropCallback) {
         onDropCallback()
       }

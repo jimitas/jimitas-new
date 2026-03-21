@@ -117,6 +117,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/about"
+                  onClick={() => play(UI_SOUNDS.about)}
                   className="block px-3 py-1 text-xs font-medium rounded text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
                   jimitasについて
@@ -128,7 +129,7 @@ export default function Header() {
             <li>
               <Link
                 href="/"
-                onClick={() => play(UI_SOUNDS.nav)}
+                onClick={() => play(UI_SOUNDS.back)}
                 className="block px-3 py-1 text-xs font-medium rounded text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900 transition-colors"
               >
                 ← メニューへもどる

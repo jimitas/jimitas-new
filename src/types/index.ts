@@ -45,6 +45,6 @@ export type AppItem = {
   /** 種別：app / print / tool */
   type: AppType
 
-  /** アプリページのパス（例："/apps/tashizan"）*/
+  /** アプリページのパス（例："/tashizan"）*/
   path: string
 }

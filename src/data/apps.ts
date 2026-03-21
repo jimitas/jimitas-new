@@ -21,7 +21,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "たし算", "数図ブロック", "ドラッグ操作", "コイン獲得"],
     type: "app",
-    path: "/apps/tashizan-1",
+    path: "/tashizan-1",
   },
   {
     id: "hikizan-1",
@@ -31,7 +31,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "ひき算", "数図ブロック", "ドラッグ操作", "コイン獲得"],
     type: "app",
-    path: "/apps/hikizan-1",
+    path: "/hikizan-1",
   },
   {
     id: "kazoeyou",
@@ -41,7 +41,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["数と計算", "かず", "コイン獲得"],
     type: "app",
-    path: "/apps/kazoeyou",
+    path: "/kazoeyou",
   },
   {
     id: "nanbanme",
@@ -51,7 +51,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["数と計算", "順序", "コイン獲得"],
     type: "app",
-    path: "/apps/nanbanme",
+    path: "/nanbanme",
   },
   {
     id: "tasu-renshu",
@@ -61,7 +61,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "タイムアタック", "コイン獲得"],
     type: "app",
-    path: "/apps/tasu-renshu",
+    path: "/tasu-renshu",
   },
   {
     id: "hiku-renshu",
@@ -71,7 +71,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "タイムアタック", "コイン獲得"],
     type: "app",
-    path: "/apps/hiku-renshu",
+    path: "/hiku-renshu",
   },
   {
     id: "ikutu",
@@ -81,7 +81,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["数の概念", "分解"],
     type: "app",
-    path: "/apps/ikutu",
+    path: "/ikutu",
   },
   {
     id: "suuzu-block",
@@ -91,7 +91,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["数と計算", "ドラッグ操作", "かず"],
     type: "app",
-    path: "/apps/suuzu-block",
+    path: "/suuzu-block",
   },
   {
     id: "kazoe-bou",
@@ -101,7 +101,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["数と計算"],
     type: "app",
-    path: "/apps/kazoe-bou",
+    path: "/kazoe-bou",
   },
   {
     id: "tokei",
@@ -111,7 +111,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["時計", "難易度選択"],
     type: "app",
-    path: "/apps/tokei",
+    path: "/tokei",
   },
   {
     id: "okane",
@@ -121,7 +121,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["お金", "ドラッグ操作", "コイン獲得"],
     type: "app",
-    path: "/apps/okane",
+    path: "/okane",
   },
   {
     id: "tashi-hissan",
@@ -131,7 +131,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "筆算", "コイン獲得"],
     type: "app",
-    path: "/apps/tashi-hissan",
+    path: "/tashi-hissan",
   },
   {
     id: "hiki-hissan",
@@ -141,7 +141,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "筆算"],
     type: "app",
-    path: "/apps/hiki-hissan",
+    path: "/hiki-hissan",
   },
   {
     id: "kuku",
@@ -151,7 +151,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["かけ算", "九九", "難易度選択"],
     type: "app",
-    path: "/apps/kuku",
+    path: "/kuku",
   },
   {
     id: "kuku-yomi",
@@ -161,7 +161,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["かけ算", "九九", "音声"],
     type: "app",
-    path: "/apps/kuku-yomi",
+    path: "/kuku-yomi",
   },
   {
     id: "kuku-array",
@@ -171,7 +171,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["かけ算", "アレイ図", "先生向け"],
     type: "tool",
-    path: "/apps/kuku-array",
+    path: "/kuku-array",
   },
   {
     id: "kake-hissan",
@@ -181,7 +181,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "筆算", "かけ算"],
     type: "app",
-    path: "/apps/kake-hissan",
+    path: "/kake-hissan",
   },
   {
     id: "kake-hissan2",
@@ -191,7 +191,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "筆算", "かけ算", "小数", "コイン獲得"],
     type: "app",
-    path: "/apps/kake-hissan2",
+    path: "/kake-hissan2",
   },
   {
     id: "warizan",
@@ -201,7 +201,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["わり算", "概念理解"],
     type: "app",
-    path: "/apps/warizan",
+    path: "/warizan",
   },
   {
     id: "warizan2",
@@ -211,7 +211,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["わり算", "概念理解"],
     type: "app",
-    path: "/apps/warizan2",
+    path: "/warizan2",
   },
   {
     id: "wari-hissan",
@@ -221,7 +221,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["計算", "筆算", "わり算", "難易度選択", "コイン獲得"],
     type: "app",
-    path: "/apps/wari-hissan",
+    path: "/wari-hissan",
   },
   {
     id: "circle-area",
@@ -231,7 +231,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["図形", "面積", "アニメーション"],
     type: "app",
-    path: "/apps/circle-area",
+    path: "/circle-area",
   },
 
   // ============================================================
@@ -245,7 +245,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["プリント", "教材作成"],
     type: "print",
-    path: "/apps/jimipri",
+    path: "/jimipri",
   },
   {
     id: "kuku-hyo",
@@ -255,7 +255,7 @@ export const apps: AppItem[] = [
     subjects: ["算数"],
     tags: ["かけ算", "九九", "プリント"],
     type: "print",
-    path: "/apps/kuku-hyo",
+    path: "/kuku-hyo",
   },
 
   // ============================================================
@@ -269,7 +269,7 @@ export const apps: AppItem[] = [
     subjects: ["国語"],
     tags: ["文字", "カタカナ"],
     type: "app",
-    path: "/apps/katakana",
+    path: "/katakana",
   },
   {
     id: "romaji",
@@ -279,7 +279,7 @@ export const apps: AppItem[] = [
     subjects: ["国語"],
     tags: ["ローマ字", "文字"],
     type: "app",
-    path: "/apps/romaji",
+    path: "/romaji",
   },
   {
     id: "kanpuri",
@@ -289,7 +289,7 @@ export const apps: AppItem[] = [
     subjects: ["国語"],
     tags: ["漢字", "プリント", "教材作成"],
     type: "print",
-    path: "/apps/kanpuri",
+    path: "/kanpuri",
   },
 
   // ============================================================
@@ -303,7 +303,7 @@ export const apps: AppItem[] = [
     subjects: ["英語"],
     tags: ["英語", "音声", "あいさつ"],
     type: "app",
-    path: "/apps/classroom-english",
+    path: "/classroom-english",
   },
   {
     id: "english-words",
@@ -313,7 +313,7 @@ export const apps: AppItem[] = [
     subjects: ["英語"],
     tags: ["英語", "単語", "音声"],
     type: "app",
-    path: "/apps/english-words",
+    path: "/english-words",
   },
 
   // ============================================================
@@ -327,7 +327,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["音楽記号", "クイズ"],
     type: "app",
-    path: "/apps/gakuten",
+    path: "/gakuten",
   },
   {
     id: "kenban",
@@ -337,7 +337,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["楽器", "演奏"],
     type: "app",
-    path: "/apps/kenban",
+    path: "/kenban",
   },
   {
     id: "mokkin",
@@ -347,7 +347,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["楽器", "演奏", "木琴"],
     type: "app",
-    path: "/apps/mokkin",
+    path: "/mokkin",
   },
   {
     id: "tekkin",
@@ -357,7 +357,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["楽器", "演奏", "鉄琴"],
     type: "app",
-    path: "/apps/tekkin",
+    path: "/tekkin",
   },
   {
     id: "recorder",
@@ -367,7 +367,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["楽器", "演奏", "リコーダー"],
     type: "app",
-    path: "/apps/recorder",
+    path: "/recorder",
   },
   {
     id: "oto-dashiyo",
@@ -377,7 +377,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["音", "周波数"],
     type: "app",
-    path: "/apps/oto-dashiyo",
+    path: "/oto-dashiyo",
   },
   {
     id: "waaon",
@@ -387,7 +387,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["和音", "音"],
     type: "app",
-    path: "/apps/waaon",
+    path: "/waaon",
   },
   {
     id: "fushi-dukuri",
@@ -397,7 +397,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["創作", "旋律"],
     type: "app",
-    path: "/apps/fushi-dukuri",
+    path: "/fushi-dukuri",
   },
   {
     id: "metronome",
@@ -407,7 +407,7 @@ export const apps: AppItem[] = [
     subjects: ["音楽"],
     tags: ["メトロノーム", "授業支援"],
     type: "tool",
-    path: "/apps/metronome",
+    path: "/metronome",
   },
 
   // ============================================================
@@ -421,7 +421,7 @@ export const apps: AppItem[] = [
     subjects: ["社会"],
     tags: ["都道府県", "日本地図", "クイズ"],
     type: "app",
-    path: "/apps/todo-prefecture",
+    path: "/todo-prefecture",
   },
   {
     id: "nihon-chizu",
@@ -431,7 +431,7 @@ export const apps: AppItem[] = [
     subjects: ["社会"],
     tags: ["日本地図", "地方区分"],
     type: "app",
-    path: "/apps/nihon-chizu",
+    path: "/nihon-chizu",
   },
 
   // ============================================================
@@ -445,7 +445,7 @@ export const apps: AppItem[] = [
     subjects: ["図工"],
     tags: ["お絵描き", "色塗り"],
     type: "app",
-    path: "/apps/masu-nuri",
+    path: "/masu-nuri",
   },
   {
     id: "sangenshoku",
@@ -455,7 +455,7 @@ export const apps: AppItem[] = [
     subjects: ["図工"],
     tags: ["色", "三原色", "実験"],
     type: "app",
-    path: "/apps/sangenshoku",
+    path: "/sangenshoku",
   },
 
   // ============================================================
@@ -469,7 +469,7 @@ export const apps: AppItem[] = [
     subjects: ["授業支援"],
     tags: ["タイマー", "先生向け"],
     type: "tool",
-    path: "/apps/classroom-timer",
+    path: "/classroom-timer",
   },
   {
     id: "sakusen-board",
@@ -479,6 +479,6 @@ export const apps: AppItem[] = [
     subjects: ["体育"],
     tags: ["作戦ボード", "体育", "先生向け", "ドラッグ操作"],
     type: "tool",
-    path: "/apps/sakusen-board",
+    path: "/sakusen-board",
   },
 ]

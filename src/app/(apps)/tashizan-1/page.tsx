@@ -1,15 +1,15 @@
 // ======================================================
-// ひきざん１ ページ
+// たしざん１ ページ
 //
-// URL: /apps/hikizan-1
+// URL: /tashizan-1
 // 対象: 小学1〜2年生
-// 内容: 数図ブロックを使ったひきざん練習
+// 内容: 数図ブロックを使ったたしざん練習
 //
 // 難易度4段階:
-//   ① ～10のかず    → 答えが 0〜9
-//   ② 10-□         → ひかれる数が必ず 10
-//   ③ 1□-□         → 繰り下がりなし（答えが 1〜9）
-//   ④ 1□-□（繰り下がり） → 繰り下がりあり（答えが 2〜9）
+//   ① 10までの　かず  → 答えが 1〜10
+//   ② 10+□,□+10    → 答えが 11〜20（一方が必ず 10）
+//   ③ 1□+□,□+1□   → 繰り上がりあり（答えが 12〜20）
+//   ④ 20までの　かず  → 全体的なたしざん
 //
 // 操作:
 //   「もんだい」    → ランダムに問題を自動生成
@@ -23,7 +23,7 @@
 
 import { useState, useRef, useEffect } from "react"
 import * as se from "@/lib/se"
-import { HikizanBlock } from "@/components/apps/hikizan-1/HikizanBlock"
+import { BlockArea } from "@/components/parts/block/BlockArea"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"
@@ -31,14 +31,13 @@ import { PutText } from "@/components/parts/displays/PutText"
 import { BtnSet } from "@/components/parts/buttons/BtnSet"
 import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
 import { PutShiki } from "@/components/parts/displays/PutShiki"
-import { HidePanel } from "@/components/parts/block/HidePanel"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── 定数 ─────────────────────────────────────────────
 
 // 難易度の選択肢
-const ITEMS = ["～10のかず", "10-□", "1□-□", "1□-□（くりさがり）"]
+const ITEMS = ["10までの　かず", "10+□,□+10", "1□+□,□+1□", "20までの　かず"]
 
 // 数字ボタン（1行目: 0〜10 / 2行目: 11〜20）
 const NUM_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
@@ -46,11 +45,12 @@ const NUM_2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 // ── コンポーネント ───────────────────────────────────
 
-export default function Hikizan1Page() {
+export default function Tashizan1Page() {
   // ── 状態管理 ─────────────────────────────────────
-  const [selectIndex, setSelectIndex] = useState<number>(0)   // 選択中の難易度
+  const [selectIndex, setSelectIndex] = useState<number>(0)  // 選択中の難易度
   const [hasProblem, setHasProblem]   = useState<boolean>(false) // 問題が出ているか
-  const [leftValue,  setLeftValue]    = useState<number>(0)   // ひかれる数（ブロック表示に使用）
+  const [leftValue,  setLeftValue]    = useState<number>(0)  // たされる数（ブロック表示に使用）
+  const [rightValue, setRightValue]   = useState<number>(0)  // たす数（ブロック表示に使用）
 
   // 答えは表示不要なので useRef で管理（useState にすると不要な再レンダが発生）
   const answerRef      = useRef<number>(0)
@@ -70,6 +70,7 @@ export default function Hikizan1Page() {
   useEffect(() => {
     setHasProblem(false)
     setLeftValue(0)
+    setRightValue(0)
     if (el_left_input.current)  el_left_input.current.value  = ""
     if (el_right_input.current) el_right_input.current.value = ""
     if (el_text.current)        el_text.current.innerHTML    = "もんだい　または　セット"
@@ -91,33 +92,35 @@ export default function Hikizan1Page() {
     if (el_text.current)   el_text.current.innerHTML   = ""
     if (el_answer.current) el_answer.current.value     = ""
 
-    let lv = 0, rv = 0
+    let lv = 0, rv = 0, ans = 0
+    const mode = Math.floor(Math.random() * 2 + 1) // 1 or 2（左右どちらが大きい数か）
 
     switch (selectIndex) {
-      case 0: // ～10のかず（答え 0〜9）
-        lv = Math.floor(Math.random() * 10 + 1)
-        rv = Math.floor(Math.random() * lv + 1)
+      case 0: // 10までのかず（答え 1〜10）
+        ans = Math.floor(Math.random() * 10 + 1)
+        lv  = Math.floor(Math.random() * (ans + 1))
+        rv  = ans - lv
         break
-      case 1: // 10-□（ひかれる数が必ず 10）
-        lv = 10
-        rv = Math.floor(Math.random() * 10 + 1)
+      case 1: // 10+□ または □+10（答え 11〜20）
+        ans = Math.floor(Math.random() * 10 + 11)
+        if (mode === 1) { lv = 10; rv = ans - lv }
+        else            { rv = 10; lv = ans - rv }
         break
-      case 2: // 1□-□（繰り下がりなし）
-        lv = Math.floor(Math.random() * 9 + 11)
-        rv = Math.floor(Math.random() * (lv - 11))
+      case 2: // 繰り上がりあり（答え 12〜20）
+        ans = Math.floor(Math.random() * 9 + 12)
+        if (mode === 1) { lv = Math.floor(Math.random() * (ans - 11) + 1); rv = ans - lv }
+        else            { rv = Math.floor(Math.random() * (ans - 11) + 1); lv = ans - rv }
         break
-      case 3: {
-        // 1□-□（繰り下がりあり）
-        // lv の一の位 < rv になるよう調整する
-        lv = Math.floor(Math.random() * 9 + 11)
-        const ichi = 20 - lv
-        rv = Math.floor(Math.random() * ichi + (10 - ichi))
+      case 3: // 20までのかず（全体）
+        lv  = Math.floor(Math.random() * 9 + 2)
+        rv  = Math.floor(Math.random() * lv + (10 - lv) + 1)
+        ans = lv + rv
         break
-      }
     }
 
-    answerRef.current = lv - rv
+    answerRef.current = ans
     setLeftValue(lv)
+    setRightValue(rv)
     if (el_left_input.current)  el_left_input.current.value  = lv.toString()
     if (el_right_input.current) el_right_input.current.value = rv.toString()
   }
@@ -141,10 +144,10 @@ export default function Hikizan1Page() {
       return
     }
 
-    // 範囲チェック（ひかれる数 ≥ ひく数・0〜20 のみ受け付ける）
-    if (lv > 20 || rv > lv || lv < 0 || rv < 0) {
+    // 範囲チェック（0〜20 のみ受け付ける）
+    if (lv > 20 || rv > 20 || lv < 0 || rv < 0) {
       se.playSe(se.alertSound)
-      alert("すうじは　0～20。ひかれるかず ≧ ひくかず")
+      alert("すうじは　0～20")
       if (el_left_input.current)  el_left_input.current.value  = ""
       if (el_right_input.current) el_right_input.current.value = ""
       return
@@ -153,8 +156,9 @@ export default function Hikizan1Page() {
     se.playSe(se.pi)
     setHasProblem(true)
     hasAnsweredRef.current = false
-    answerRef.current = lv - rv
+    answerRef.current = lv + rv
     setLeftValue(lv)
+    setRightValue(rv)
     if (el_text.current) el_text.current.innerHTML = ""
   }
 
@@ -201,12 +205,10 @@ export default function Hikizan1Page() {
   }
 
   // 「こたえあわせ」ボタン：答え欄に入力した値で判定する
-  // ※ ひきざんは答えが 0 になる場合があるため、isNaN チェックを使う
   const checkAnswerEvent = () => {
     if (!hasProblem) return
-    const val = el_answer.current?.value ?? ""
-    const myAnswer = parseInt(val)
-    if (val !== "" && !isNaN(myAnswer)) {
+    const myAnswer = parseInt(el_answer.current?.value ?? "")
+    if (myAnswer) {
       checkAnswer(myAnswer)
     } else {
       se.playSe(se.alertSound)
@@ -225,7 +227,7 @@ export default function Hikizan1Page() {
 
       {/* タイトル */}
       <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-4">
-        ➖ ひきざん１
+        ➕ たしざん１
       </h1>
 
       {/* コントロール行：難易度選択 ＋ 操作ボタン */}
@@ -253,7 +255,7 @@ export default function Hikizan1Page() {
       {/* 式表示エリア ＋ こたえあわせボタン */}
       <div className="flex justify-center items-center">
         <PutShiki
-          kigo="－"
+          kigo="＋"
           el_left_input={el_left_input}
           el_right_input={el_right_input}
           el_answer={el_answer}
@@ -261,14 +263,16 @@ export default function Hikizan1Page() {
         <BtnCheck handleEvent={checkAnswerEvent} />
       </div>
 
-      {/* 数図ブロック（ひかれる数のみ表示） */}
-      <HikizanBlock leftCount={leftValue} />
-
-      {/* かくすパネル：ブロックの上にかぶせてひき算を疑似体験 */}
-      {/* height:0 + overflow:visible でDOMの高さを消す → 数字ボタンとの隙間をなくす */}
-      <div className="flex justify-center" style={{ height: 0, overflow: "visible" }}>
-        <HidePanel />
-      </div>
+      {/* 数図ブロック（upper-first: 上テーブルを優先して埋める） */}
+      <BlockArea
+        containerId="tashizan-block-area"
+        counts={[
+          leftValue  <= 10 ? leftValue  : 10,   // 左上
+          rightValue <= 10 ? rightValue : 10,   // 右上
+          leftValue  >  10 ? leftValue  - 10 : 0, // 左下
+          rightValue >  10 ? rightValue - 10 : 0, // 右下
+        ]}
+      />
 
       {/* 数字ボタン 0〜10 */}
       <BtnNum ITEM={NUM_1} handleEvent={checkAnswer} />

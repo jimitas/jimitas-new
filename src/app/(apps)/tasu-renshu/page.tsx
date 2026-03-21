@@ -1,15 +1,15 @@
 // ======================================================
-// ひきざんの練習 ページ
+// たしざんの練習 ページ
 //
-// URL: /apps/hiku-renshu
+// URL: /tasu-renshu
 // 対象: 小学1〜2年生
-// 内容: 60秒タイムアタック形式のひきざん練習
+// 内容: 60秒タイムアタック形式のたしざん練習
 //
 // 難易度4段階:
-//   ① ～10        → ひかれる数が 1〜10
-//   ② 10-□        → ひかれる数が必ず 10
-//   ③ 1□-□        → 繰り下がりなし
-//   ④ 1□-□（繰り下がり） → 繰り下がりあり
+//   ① 10までの　かず  → 答えが 1〜10
+//   ② 10+□,□+10    → 答えが 11〜20（一方が必ず 10）
+//   ③ 1□+□,□+1□   → 繰り上がりあり（答えが 12〜20）
+//   ④ 20までの　かず  → 全体的なたしざん
 //
 // コイン: 5問正解ごとに1枚（ゲーム終了時に付与）
 // ======================================================
@@ -30,14 +30,14 @@ import { useCoins } from "@/hooks/useCoins"
 const NUM_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 const NUM_2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
-const SELECT_ITEMS = ["～10", "10-□", "1□-□", "1□-□（くり下がり）"]
+const SELECT_ITEMS = ["10までの　かず", "10+□,□+10", "1□+□,□+1□", "20までの　かず"]
 
 // 5問正解ごとに1コイン付与
 const COINS_PER_N = 5
 
 // ── コンポーネント ───────────────────────────────────
 
-export default function HikuRenshuPage() {
+export default function TasuRenshuPage() {
   // ── 状態管理 ─────────────────────────────────────
   const [flag, setFlag]               = useState<boolean>(false)  // 回答受付フラグ
   const [time, setTime]               = useState<number>(60)      // 残り秒数
@@ -45,6 +45,7 @@ export default function HikuRenshuPage() {
   const [selectIndex, setSelectIndex] = useState<number>(0)       // 難易度
 
   // ゲーム中フラグ・タイマーID・問題値 を ref で管理
+  // （useCallback の deps に含めず、最新値を常に参照するため）
   const inGameRef    = useRef<boolean>(false)
   const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null)
   const startWaitRef = useRef<ReturnType<typeof setTimeout> | null>(null)  // 「よーい」1秒待機
@@ -90,6 +91,7 @@ export default function HikuRenshuPage() {
           ? `おわり！　🪙 ${earnedCoins}まい　ゲット！（スタートでもういちどチャレンジ）`
           : "おわり！（スタートでもういちどチャレンジ）"
     }
+  // addCoins は安定しているが lint のため記載
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
@@ -97,41 +99,43 @@ export default function HikuRenshuPage() {
   const giveQuestion = useCallback(() => {
     if (!inGameRef.current) return
     setFlag(true)
+    const mode = Math.floor(Math.random() * 2 + 1)
 
-    let left = 0, right = 0
+    let left = 0, right = 0, ans = 0
 
     switch (selectIndex) {
       case 0:
-        // 10までのひきざん（ひかれる数 1〜10）
-        left  = Math.floor(Math.random() * 10 + 1)
-        right = Math.floor(Math.random() * left + 1)
+        // 10までのたしざん（答え 1〜10）
+        ans   = Math.floor(Math.random() * 10 + 1)
+        left  = Math.floor(Math.random() * (ans + 1))
+        right = ans - left
         break
       case 1:
-        // 10-□（ひかれる数が必ず10）
-        left  = 10
-        right = Math.floor(Math.random() * 10 + 1)
+        // 10+□ または □+10（答え 11〜20）
+        ans = Math.floor(Math.random() * 10 + 11)
+        if (mode === 1) { left = 10; right = ans - left }
+        else            { right = 10; left = ans - right }
         break
       case 2:
-        // 1□-□（繰り下がりなし、答えが 1〜9）
-        left  = Math.floor(Math.random() * 9 + 11)  // 11〜19
-        right = Math.floor(Math.random() * (left - 11))  // 0〜(left-11) → 答えが 11〜left
+        // 1□+□ または □+1□（繰り上がりあり、答え 12〜20）
+        ans = Math.floor(Math.random() * 9 + 12)
+        if (mode === 1) { left = Math.floor(Math.random() * (ans - 11) + 1); right = ans - left }
+        else            { right = Math.floor(Math.random() * (ans - 11) + 1); left = ans - right }
         break
-      case 3: {
-        // 1□-□（繰り下がりあり）
-        left = Math.floor(Math.random() * 9 + 11)  // 11〜19
-        const ichi = 20 - left  // 1〜9
-        right = Math.floor(Math.random() * ichi + (10 - ichi))  // 繰り下がりが起きる範囲
+      case 3:
+        // 20までのたしざん（答え 最大20）
+        left  = Math.floor(Math.random() * 9 + 2)
+        right = Math.floor(Math.random() * left + (10 - left) + 1)
+        ans   = left + right
         break
-      }
     }
 
-    const ans = left - right
     leftRef.current   = left
     rightRef.current  = right
     answerRef.current = ans
 
     if (el_text.current) {
-      el_text.current.innerHTML = `${left}　－　${right}　＝`
+      el_text.current.innerHTML = `${left}　＋　${right}　＝`
     }
   }, [selectIndex])
 
@@ -208,7 +212,7 @@ export default function HikuRenshuPage() {
         setTimeout(() => {
           if (el_text.current) {
             el_text.current.innerHTML =
-              `${leftRef.current}　－　${rightRef.current}　＝`
+              `${leftRef.current}　＋　${rightRef.current}　＝`
           }
           setFlag(true)
         }, 200)
@@ -222,7 +226,7 @@ export default function HikuRenshuPage() {
 
       {/* タイトル */}
       <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-4">
-        ➖ ひきざんの練習
+        ➕ たしざんの練習
       </h1>
 
       {/* 難易度セレクト・スタート/ストップボタン */}

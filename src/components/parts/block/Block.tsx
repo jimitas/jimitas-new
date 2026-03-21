@@ -19,7 +19,7 @@
 
 import React, { useEffect, useState, useRef, useCallback } from "react"
 import * as se from "@/lib/se"
-import styles from "@/components/apps/suuzu-block/Block.module.css"
+import styles from "@/components/parts/block/Block.module.css"
 import { useDragDrop } from "@/hooks/useDragDrop"
 import { BtnSpace } from "@/components/parts/buttons/BtnSpace"
 import { BtnUndo } from "@/components/parts/buttons/BtnUndo"
@@ -55,6 +55,7 @@ export function Block(props: BlockProps) {
   }, [])
 
   // DnD フックからイベントハンドラーを取得（ドロップ後にブロック数を更新）
+  // 効果音は useDragDrop 内で鳴らすため、ここはカウント更新のみ渡す
   const { dragStart, dragOver, dropEnd, touchStart, touchMove, touchEnd } =
     useDragDrop(notifyCount)
 
