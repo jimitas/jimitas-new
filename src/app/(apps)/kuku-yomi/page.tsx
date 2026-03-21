@@ -33,24 +33,24 @@ import { ArrayDots } from "@/app/(apps)/kuku-array/page"
 // ※ 伝統的な九九読みに従う（さざん・しざん・さんぱ などの音変化を含む）
 
 const KUKU_MONDAI: string[][] = [
-  // 1の段（いんいちが〜いんくが）
-  ["いんいちが", "いんにが", "いんさんが", "いんしが", "いんごが", "いんろくが", "いんしちが", "いんはちが", "いんくが"],
+  // 1の段
+  ["いんいち　が", "いんに　が", "いんさん　が", "いんし　が", "いんご　が", "いんろく　が", "いんしち　が", "いんはち　が", "いんく　が"],
   // 2の段
-  ["にいちが", "ににんが", "にさんが", "にしが", "にご", "にろく", "にしち", "にはち", "にく"],
-  // 3の段（さざん・さんぱ に注意）
-  ["さんいちが", "さんにが", "さざんが", "さんし", "さんご", "さんろく", "さんしち", "さんぱ", "さんく"],
-  // 4の段（しざん に注意）
-  ["しいちが", "しにが", "しざん", "しし", "しご", "しろく", "ししち", "しはち", "しく"],
-  // 5の段
-  ["ごいちが", "ごに", "ごさん", "ごし", "ごご", "ごろく", "ごしち", "ごはち", "ごく"],
-  // 6の段
-  ["ろくいちが", "ろくに", "ろくさん", "ろくし", "ろくご", "ろくろく", "ろくしち", "ろくはち", "ろくく"],
-  // 7の段
-  ["しちいちが", "しちに", "しちさん", "しちし", "しちご", "しちろく", "しちしち", "しちはち", "しちく"],
-  // 8の段
-  ["はちいちが", "はちに", "はちさん", "はちし", "はちご", "はちろく", "はちしち", "はちはち", "はちく"],
+  ["にいち　が", "ににん　が", "にさん　が", "にし　が", "にご", "にろく", "にしち", "にはち（には）", "にく"],
+  // 3の段（さざん・さぶろく・さんぱ に注意）
+  ["さんいち　が", "さんに　が", "さざん　が", "さんし", "さんご", "さぶろく", "さんしち", "さんぱ", "さんく"],
+  // 4の段（しさん・しは に注意）
+  ["しいち　が", "しに　が", "しさん", "しし", "しご", "しろく", "ししち", "しは（しわ）", "しく"],
+  // 5の段（ごっく に注意）
+  ["ごいち　が", "ごに", "ごさん", "ごし", "ごご", "ごろく", "ごしち", "ごはち", "ごっく"],
+  // 6の段（ろくは・ろっく に注意）
+  ["ろくいち　が", "ろくに", "ろくさん", "ろくし", "ろくご", "ろくろく", "ろくしち", "ろくは", "ろっく"],
+  // 7の段（しちは に注意）
+  ["しちいち　が", "しちに", "しちさん", "しちし", "しちご", "しちろく", "しちしち", "しちは", "しちく"],
+  // 8の段（はっさん・はっし・はっぱ・はっく に注意）
+  ["はちいち　が", "はちに", "はちさん（はっさん）", "はちし（はっし）", "はちご", "はちろく", "はちしち", "はっぱ", "はっく"],
   // 9の段
-  ["くいちが", "くに", "くさん", "くし", "くご", "くろく", "くしち", "くはち", "くく"],
+  ["くいち　が", "くに", "くさん", "くし", "くご", "くろく", "くしち", "くはち", "くく"],
 ]
 
 const KUKU_KOTAE: string[][] = [
@@ -168,8 +168,13 @@ export default function KukuYomiPage() {
     }
   }
 
-  // ── もういちど（ready に戻る） ────────────────────────
+  // ── もういちど / やめる（ready に戻る） ───────────────
   const handleReset = () => {
+    se.playSe(se.set)
+    setPhase("ready")
+  }
+
+  const handleStop = () => {
     se.playSe(se.set)
     setPhase("ready")
   }
@@ -248,69 +253,94 @@ export default function KukuYomiPage() {
 
       {/* ── practice フェーズ ───────────────────────────── */}
       {phase === "practice" && (
-        <div className="space-y-4">
+        <div className="space-y-3">
 
           {/* 進捗表示 */}
           <p className="text-sm text-gray-400 text-right">
             {progress} / 9もん
           </p>
 
-          {/* 読み方テキスト（大きく表示。声に出して読む） */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-xl
-                          px-4 py-4 text-center text-3xl font-bold text-gray-800
-                          tracking-widest min-h-[5rem] flex items-center justify-center gap-3">
-            <span>{mondai}</span>
-            {isAnswer
-              ? <span className="text-accent-600">{kotae}</span>
-              : <span className="text-gray-300">？？</span>
-            }
-          </div>
+          {/* ── 1:1グリッド（アレイ表示時は左右2等分、非表示時は1カラム全幅） ──
+              grid は block-level のため外側コンテナと同幅になる。
+              md未満（スマホ）ではアレイが下に積まれる。
+          */}
+          <div className={showArray
+            ? "grid grid-cols-1 md:grid-cols-2 gap-4"
+            : ""
+          }>
 
-          {/* 計算式 */}
-          <div className="text-center text-5xl font-bold text-gray-800 tracking-wide">
-            {dan}
-            <span className="mx-2 text-gray-400">×</span>
-            {mult}
-            <span className="mx-2 text-gray-400">=</span>
-            <span className={isAnswer ? "text-accent-600" : "text-gray-200"}>
-              {isAnswer ? product : "？"}
-            </span>
-          </div>
+            {/* 左カラム: よみ・式・ボタン群 */}
+            <div className="space-y-4">
 
-          {/* つぎボタン */}
-          <div className="flex justify-center">
-            <button
-              onClick={handleNext}
-              className="px-10 py-3 bg-brand-500 text-white font-bold text-xl
-                         rounded-xl hover:bg-brand-600 active:scale-95 transition-all shadow-md"
-            >
-              つぎ
-            </button>
-          </div>
-
-          {/* アレイ図トグルボタン */}
-          <div className="flex justify-center">
-            <button
-              onClick={() => { se.playSe(se.pi); setShowArray(prev => !prev) }}
-              className={`px-5 py-2 text-sm font-bold rounded-lg border-2 transition-all ${
-                showArray
-                  ? "bg-brand-500 border-brand-500 text-white"
-                  : "bg-white border-brand-300 text-brand-600 hover:bg-brand-100"
-              }`}
-            >
-              {showArray ? "アレイ図をかくす" : "アレイ図をみせる"}
-            </button>
-          </div>
-
-          {/* アレイ図（kuku-array/page.tsx の ArrayDots を再利用） */}
-          {showArray && (
-            <div className="overflow-x-auto">
-              <div className="w-fit mx-auto">
-                {/* dan 行 × mult 列 のドットを点灯 */}
-                <ArrayDots rows={dan} cols={mult} />
+              {/* 読み方テキスト（声に出して読む）
+                  アレイ図表示中は幅が半分になるためフォントを小さくして1行に収める */}
+              <div className={`bg-yellow-50 border border-yellow-200 rounded-xl
+                              px-4 py-4 text-center font-bold text-gray-800
+                              min-h-[4rem] flex items-center justify-center gap-2
+                              ${showArray ? "text-xl tracking-wide" : "text-3xl tracking-widest"}`}>
+                <span>{mondai}</span>
+                {isAnswer
+                  ? <span className="text-accent-600">{kotae}</span>
+                  : <span className="text-gray-300">？？</span>
+                }
               </div>
+
+              {/* 計算式（アレイ表示中は少し小さく）
+                  dan=rose（かけられる数）、mult=accent（かける数）で色分け */}
+              <div className={`text-center font-bold tracking-wide
+                              ${showArray ? "text-2xl" : "text-4xl"}`}>
+                <span className="text-rose-500">{dan}</span>
+                <span className="mx-2 text-gray-400">×</span>
+                <span className="text-accent-600">{mult}</span>
+                <span className="mx-2 text-gray-400">=</span>
+                <span className={isAnswer ? "text-brand-600" : "text-gray-200"}>
+                  {isAnswer ? product : "？"}
+                </span>
+              </div>
+
+              {/* つぎボタン */}
+              <div className="flex justify-center">
+                <button
+                  onClick={handleNext}
+                  className="px-10 py-3 bg-brand-500 text-white font-bold text-xl
+                             rounded-xl hover:bg-brand-600 active:scale-95 transition-all shadow-md"
+                >
+                  つぎ
+                </button>
+              </div>
+
+              {/* アレイ図トグル ＋ やめるボタン */}
+              <div className="flex justify-center gap-3 flex-wrap">
+                <button
+                  onClick={() => { se.playSe(se.pi); setShowArray(prev => !prev) }}
+                  className={`px-5 py-2 text-sm font-bold rounded-lg border-2 transition-all ${
+                    showArray
+                      ? "bg-brand-500 border-brand-500 text-white"
+                      : "bg-white border-brand-300 text-brand-600 hover:bg-brand-100"
+                  }`}
+                >
+                  {showArray ? "アレイ図をかくす" : "アレイ図をみせる"}
+                </button>
+                <button
+                  onClick={handleStop}
+                  className="px-5 py-2 text-sm font-bold rounded-lg border-2
+                             bg-white border-gray-300 text-gray-500 hover:bg-gray-100
+                             transition-all active:scale-95"
+                >
+                  やめる
+                </button>
+              </div>
+
             </div>
-          )}
+
+            {/* 右カラム: アレイ図（dan行 × mult列を点灯、ラベル付き・クリック不可） */}
+            {showArray && (
+              <div className="flex items-start justify-center">
+                <ArrayDots rows={dan} cols={mult} showLabels />
+              </div>
+            )}
+
+          </div>
 
         </div>
       )}

@@ -93,11 +93,10 @@ export function CoinDisplay({ coins, onReset, className }: CoinDisplayProps) {
 
   return (
     <div
-      className={`mx-auto my-4 px-4 py-3
+      className={`w-full mx-auto my-4 px-4 py-3
                  rounded-xl bg-amber-50 border-2 border-amber-300
                  dark:bg-amber-950 dark:border-amber-700
                  ${className ?? ""}`}
-      style={className ? undefined : { width: "max(44vw, 320px)" }}
     >
       {/* コイン表示エリア */}
       <div className="flex flex-wrap gap-2 items-end min-h-[44px]">

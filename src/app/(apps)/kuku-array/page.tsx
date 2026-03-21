@@ -22,32 +22,104 @@ import * as se from "@/lib/se"
 // 9×9 のドット配列を描画する純粋な表示コンポーネント。
 // rows 行 × cols 列 のドットを点灯（warm色）、残りは消灯（グレー）。
 //
+// showLabels=true のとき、行・列番号ラベル付きの10×10グリッドを表示。
+//   ラベルはクリック不可の div（kuku-yomi で使用）。
+//   アクティブなラベル（≤rows / ≤cols）は brand 色でハイライト。
+//
 // ※ kuku-yomi でも同じコンポーネントを使う想定。
 //   将来的に src/components/parts/displays/ArrayDots.tsx に切り出す。
 //
 interface ArrayDotsProps {
-  rows: number  // かけられる数（点灯する行数）
-  cols: number  // かける数（点灯する列数）
+  rows: number        // かけられる数（点灯する行数）
+  cols: number        // かける数（点灯する列数）
+  showLabels?: boolean  // 行・列番号ラベルを表示するか（kuku-yomi用）
 }
 
-export function ArrayDots({ rows, cols }: ArrayDotsProps) {
+export function ArrayDots({ rows, cols, showLabels = false }: ArrayDotsProps) {
+
+  // ── ラベルなし：シンプルな9×9ドットグリッド ──────────────
+  if (!showLabels) {
+    return (
+      <div className="grid grid-cols-9 gap-1">
+        {Array.from({ length: 81 }, (_, i) => {
+          const row = Math.floor(i / 9) + 1  // 1-indexed
+          const col = (i % 9) + 1            // 1-indexed
+          const lit = row <= rows && col <= cols
+          return (
+            <div
+              key={i}
+              className={`w-8 h-8 rounded-full border transition-colors duration-150 ${
+                lit
+                  ? "bg-warm-400 border-warm-500"
+                  : "bg-gray-100 border-gray-300"
+              }`}
+            />
+          )
+        })}
+      </div>
+    )
+  }
+
+  // ── ラベルあり：10×10グリッド（行・列番号付き）──────────────
+  // 左上コーナー + 列ラベル9 + 行ラベル9 + ドット9×9
+  // ラベルはクリック不可の div（ポインターイベントなし）
+  // かけられる数（行）= rose、かける数（列）= accent（青） で色分け
+  const activeRowLabelCls  = "bg-rose-500 text-white"    // かけられる数
+  const activeColLabelCls  = "bg-accent-500 text-white"  // かける数
+  const inactiveLabelCls   = "bg-white border border-gray-200 text-gray-300"
+
+  // w-7(28px) × 10 + gap-0.5(2px) × 9 = 298px → 50%カラム（約312px）に収まる
   return (
-    <div className="grid grid-cols-9 gap-1">
-      {Array.from({ length: 81 }, (_, i) => {
-        const row = Math.floor(i / 9) + 1  // 1-indexed
-        const col = (i % 9) + 1            // 1-indexed
-        const lit = row <= rows && col <= cols
-        return (
+    <div
+      className="grid gap-0.5"
+      style={{ gridTemplateColumns: "repeat(10, 1.75rem)" }}
+    >
+      {/* 1行目: ×ラベル + かける数（列）ラベル 1〜9 */}
+      <div className="w-7 h-7 flex items-center justify-center
+                      text-xs font-bold text-gray-400">
+        ×
+      </div>
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(col => (
+        <div
+          key={col}
+          className={`w-7 h-7 rounded text-xs font-bold
+                      flex items-center justify-center
+                      ${col <= cols ? activeColLabelCls : inactiveLabelCls}`}
+        >
+          {col}
+        </div>
+      ))}
+
+      {/* 2〜10行目: かけられる数（行）ラベル + ドット9個 */}
+      {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(row => (
+        <Fragment key={row}>
+
+          {/* 行ラベル（かけられる数）= rose */}
           <div
-            key={i}
-            className={`w-8 h-8 rounded-full border transition-colors duration-150 ${
-              lit
-                ? "bg-warm-400 border-warm-500"
-                : "bg-gray-100 border-gray-300"
-            }`}
-          />
-        )
-      })}
+            className={`w-7 h-7 rounded text-xs font-bold
+                        flex items-center justify-center
+                        ${row <= rows ? activeRowLabelCls : inactiveLabelCls}`}
+          >
+            {row}
+          </div>
+
+          {/* ドット9個 */}
+          {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(col => {
+            const lit = row <= rows && col <= cols
+            return (
+              <div
+                key={col}
+                className={`w-7 h-7 rounded-full border transition-colors duration-150 ${
+                  lit
+                    ? "bg-warm-400 border-warm-500"
+                    : "bg-gray-100 border-gray-300"
+                }`}
+              />
+            )
+          })}
+
+        </Fragment>
+      ))}
     </div>
   )
 }
@@ -75,12 +147,20 @@ export default function KukuArrayPage() {
     setMultiplier(prev => prev === n ? 0 : n)    // 再押しで選択解除
   }
 
-  // ボタンの共通クラス（選択状態でbrand塗りつぶし）
-  const btnCls = (active: boolean) =>
+  // かけられる数ボタン（左側）= rose（ピンク）
+  const multiplicandBtnCls = (active: boolean) =>
     `w-10 h-10 rounded text-sm font-bold transition-all active:scale-95 ${
       active
-        ? "bg-brand-500 text-white"
-        : "bg-white border border-brand-300 text-brand-600 hover:bg-brand-100"
+        ? "bg-rose-500 text-white"
+        : "bg-white border border-rose-200 text-rose-400 hover:bg-rose-100"
+    }`
+
+  // かける数ボタン（上段）= accent（青）
+  const multiplierBtnCls = (active: boolean) =>
+    `w-10 h-10 rounded text-sm font-bold transition-all active:scale-95 ${
+      active
+        ? "bg-accent-500 text-white"
+        : "bg-white border border-accent-200 text-accent-600 hover:bg-accent-100"
     }`
 
   return (
@@ -111,7 +191,7 @@ export default function KukuArrayPage() {
             <button
               key={n}
               onClick={() => handleMultiplier(n)}
-              className={btnCls(multiplier === n)}
+              className={multiplierBtnCls(multiplier === n)}
             >
               {n}
             </button>
@@ -121,10 +201,10 @@ export default function KukuArrayPage() {
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(row => (
             <Fragment key={row}>
 
-              {/* 左側ボタン（かけられる数） */}
+              {/* 左側ボタン（かけられる数）= rose */}
               <button
                 onClick={() => handleMultiplicand(row)}
-                className={btnCls(multiplicand === row)}
+                className={multiplicandBtnCls(multiplicand === row)}
               >
                 {row}
               </button>
@@ -157,12 +237,12 @@ export default function KukuArrayPage() {
       {/* ── 計算式 ────────────────────────────────────────── */}
       <div className="min-h-[4.5rem] flex items-center justify-center">
         {selected ? (
-          <p className="text-5xl font-bold text-gray-800 tracking-wide">
-            {multiplicand}
+          <p className="text-5xl font-bold tracking-wide">
+            <span className="text-rose-500">{multiplicand}</span>
             <span className="mx-2 text-gray-400">×</span>
-            {multiplier}
+            <span className="text-accent-600">{multiplier}</span>
             <span className="mx-2 text-gray-400">=</span>
-            <span className={showAnswer ? "text-accent-600" : "text-gray-200"}>
+            <span className={showAnswer ? "text-brand-600" : "text-gray-200"}>
               {showAnswer ? multiplicand * multiplier : "？"}
             </span>
           </p>
