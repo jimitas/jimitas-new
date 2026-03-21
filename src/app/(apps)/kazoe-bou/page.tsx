@@ -47,6 +47,13 @@ const MODE_LABEL: Record<Mode, string> = {
   ikutsu: "いくつかな",
 }
 
+// モード選択直後にメッセージエリアに表示する説明文
+const MODE_DESC: Record<Mode, string> = {
+  free:   "すう字を　セット、または　いくつを　しらべる",
+  narabe: "かぞえぼうを　ならべる　もんだい",
+  ikutsu: "かぞえぼうの　ごうけいを　かぞえる　もんだい",
+}
+
 // ── ヘルパー ──────────────────────────────────────────
 
 function createBouImg(bou: (typeof BOU)[number]): HTMLImageElement {
@@ -390,11 +397,13 @@ export default function KazoeBouPage() {
     hasAnswered.current = false
     setConfirmReset(false)
     se.playSe(se.set)
-    if (el_msg.current) el_msg.current.innerHTML = ""
+    showMsg(MODE_DESC[m], 3000)
   }
 
   useEffect(() => {
-    if (mode !== null) refillStock()
+    refillStock()
+    showMsg(MODE_DESC[mode], 3000)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, refillStock])
 
   // ── DnD ──────────────────────────────────────────
@@ -581,8 +590,8 @@ export default function KazoeBouPage() {
           {/* ─── テーブルエリア（3列 + ゴミ箱はくりあがり右上に収める） ─── */}
           <div className="flex gap-1 mb-1">
 
-            {/* ── 百の列（flex:3 で広め） ── */}
-            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 3 }}>
+            {/* ── 百の列（flex:6） ── */}
+            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 6 }}>
               {/* くりあがり待機 */}
               <div className="text-center text-[10px] text-pink-400 pointer-events-none leading-none">
                 くりあがり
@@ -631,8 +640,8 @@ export default function KazoeBouPage() {
               </div>
             </div>
 
-            {/* ── 十の列（flex:2） ── */}
-            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 2 }}>
+            {/* ── 十の列（flex:5） ── */}
+            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 5 }}>
               <div className="text-center text-[10px] text-yellow-500 pointer-events-none leading-none">
                 くりあがり
               </div>
@@ -677,8 +686,8 @@ export default function KazoeBouPage() {
               </div>
             </div>
 
-            {/* ── 一の列（flex:1 で狭め） ── */}
-            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 1 }}>
+            {/* ── 一の列（flex:4） ── */}
+            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 4 }}>
               {/* 透明ラベル（高さ合わせ） */}
               <div className="text-[10px] text-transparent pointer-events-none leading-none">
                 くりあがり
