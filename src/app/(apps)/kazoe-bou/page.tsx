@@ -78,7 +78,10 @@ export default function KazoeBouPage() {
   const [ikutsuAnswer, setIkutsuAnswer] = useState("")        // いくつかな: テキスト入力
   const [freeInput, setFreeInput]       = useState("")        // じゆうにならべる: 数字入力
   const [confirmReset, setConfirmReset] = useState(false)
-  const [cellMinH, setCellMinH]         = useState(CELL_MIN_H_DEFAULT) // 各段のmin-height
+  // 各段（0:1段目 1:2段目 2:3段目）の min-height。百/十/一が同じ値を共有
+  const [cellMinHs, setCellMinHs] = useState<[number, number, number]>(
+    [CELL_MIN_H_DEFAULT, CELL_MIN_H_DEFAULT, CELL_MIN_H_DEFAULT]
+  )
   const [useHyaku, setUseHyaku] = useState(false)
   const [useJu,    setUseJu]    = useState(true)
   const [useIchi,  setUseIchi]  = useState(true)
@@ -97,28 +100,34 @@ export default function KazoeBouPage() {
   const el_stock = useRef<HTMLDivElement>(null)
   const el_msg   = useRef<HTMLDivElement>(null)
 
-  // ── リサイズ ──────────────────────────────────────
-  const resizingRef     = useRef(false)
+  // ── 段ごとリサイズ ────────────────────────────────
+  // どの段をドラッグ中か（0/1/2 or null）
+  const resizingRowRef  = useRef<number | null>(null)
   const resizeStartYRef = useRef(0)
   const resizeStartHRef = useRef(CELL_MIN_H_DEFAULT)
-  const cellMinHRef     = useRef(cellMinH)
-  cellMinHRef.current   = cellMinH
+  const cellMinHsRef    = useRef(cellMinHs)
+  cellMinHsRef.current  = cellMinHs
 
-  const startResize = (clientY: number) => {
-    resizingRef.current     = true
+  const startRowResize = (rowIdx: number, clientY: number) => {
+    resizingRowRef.current  = rowIdx
     resizeStartYRef.current = clientY
-    resizeStartHRef.current = cellMinHRef.current
+    resizeStartHRef.current = cellMinHsRef.current[rowIdx]
   }
 
   useEffect(() => {
     const onMove = (e: MouseEvent | TouchEvent) => {
-      if (!resizingRef.current) return
+      if (resizingRowRef.current === null) return
       const te = e as TouchEvent
       const clientY = te.touches ? te.touches[0].clientY : (e as MouseEvent).clientY
-      const delta = clientY - resizeStartYRef.current
-      setCellMinH(Math.max(CELL_MIN_H_MIN, resizeStartHRef.current + delta))
+      const delta  = clientY - resizeStartYRef.current
+      const rowIdx = resizingRowRef.current
+      setCellMinHs(prev => {
+        const next = [...prev] as [number, number, number]
+        next[rowIdx] = Math.max(CELL_MIN_H_MIN, resizeStartHRef.current + delta)
+        return next
+      })
     }
-    const onUp = () => { resizingRef.current = false }
+    const onUp = () => { resizingRowRef.current = null }
     document.addEventListener("mousemove", onMove)
     document.addEventListener("mouseup",   onUp)
     document.addEventListener("touchmove", onMove, { passive: false })
@@ -340,9 +349,13 @@ export default function KazoeBouPage() {
       return
     }
     clearTable()
-    const hyakuCount = useHyaku ? Math.floor(n / 100)        : 0
-    const juCount    = useJu    ? Math.floor((n % 100) / 10) : 0
-    const ichiCount  = useIchi  ? n % 10                     : 0
+    // チェックされていない上位の位は下位に換算（お金アプリと同じ設計）
+    let remaining = n
+    const hyakuCount = useHyaku ? Math.floor(remaining / 100) : 0
+    if (useHyaku) remaining = remaining % 100
+    const juCount    = useJu    ? Math.floor(remaining / 10)  : 0
+    if (useJu)    remaining = remaining % 10
+    const ichiCount  = useIchi  ? remaining                   : 0
     const cellH = el_hyaku.current?.querySelector(".kazoe-droppable")
     const cellJ = el_ju.current?.querySelector(".kazoe-droppable")
     const cellI = el_ichi.current?.querySelector(".kazoe-droppable")
@@ -518,13 +531,13 @@ export default function KazoeBouPage() {
   return (
     <div className="max-w-4xl mx-auto px-4 py-6">
 
-      {/* タイトル + モードトグル */}
-      <div className="flex items-center justify-between mb-2">
+      {/* タイトル + モードトグル（中央揃え） */}
+      <div className="flex items-center justify-center gap-2 mb-2">
         <h1 className="text-xl font-bold text-gray-800 dark:text-gray-100">
           🪵 かぞえぼう
         </h1>
         <button
-          onClick={() => setShowModePanel(p => !p)}
+          onClick={() => { setShowModePanel(p => !p); se.playSe(se.set) }}
           className="text-sm font-bold text-brand-600 dark:text-brand-400
                      hover:text-brand-800 dark:hover:text-brand-300 transition-colors"
         >
@@ -587,12 +600,16 @@ export default function KazoeBouPage() {
               {/* ボタン */}
               <div className="flex gap-0.5 justify-center flex-wrap">
                 <button onClick={handleKuriagariHyaku}
-                  className="px-1 py-0.5 text-[9px] bg-pink-200 text-pink-800 rounded hover:bg-pink-300 leading-tight">
-                  ↑百くりあがり
+                  className="px-2 py-1 text-xs font-bold bg-pink-300 text-pink-900
+                             border border-pink-400 rounded shadow-sm
+                             hover:bg-pink-400 active:bg-pink-500 leading-tight">
+                  ↑くりあがり
                 </button>
                 <button onClick={handleBarasuHyaku}
-                  className="px-1 py-0.5 text-[9px] bg-pink-100 text-pink-700 rounded hover:bg-pink-200 leading-tight">
-                  ↓百ばらす
+                  className="px-2 py-1 text-xs font-bold bg-pink-100 text-pink-800
+                             border border-pink-300 rounded shadow-sm
+                             hover:bg-pink-200 active:bg-pink-300 leading-tight">
+                  ↓ばらす
                 </button>
               </div>
               {/* ラベル */}
@@ -601,9 +618,9 @@ export default function KazoeBouPage() {
               </div>
               {/* メイン3段（ラッパーref） */}
               <div ref={el_hyaku} className="flex-1 flex flex-col gap-1 border-2 border-pink-300 rounded-lg p-1">
-                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinH + "px" }} />
-                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinH + "px" }} />
-                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinHs[0] + "px" }} />
+                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinHs[1] + "px" }} />
+                <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinHs[2] + "px" }} />
               </div>
             </div>
 
@@ -621,21 +638,25 @@ export default function KazoeBouPage() {
               />
               <div className="flex gap-0.5 justify-center flex-wrap">
                 <button onClick={handleKuriagariJu}
-                  className="px-1 py-0.5 text-[9px] bg-yellow-200 text-yellow-800 rounded hover:bg-yellow-300 leading-tight">
-                  ↑十くりあがり
+                  className="px-2 py-1 text-xs font-bold bg-yellow-300 text-yellow-900
+                             border border-yellow-400 rounded shadow-sm
+                             hover:bg-yellow-400 active:bg-yellow-500 leading-tight">
+                  ↑くりあがり
                 </button>
                 <button onClick={handleBarasuJu}
-                  className="px-1 py-0.5 text-[9px] bg-yellow-100 text-yellow-700 rounded hover:bg-yellow-200 leading-tight">
-                  ↓十ばらす
+                  className="px-2 py-1 text-xs font-bold bg-yellow-100 text-yellow-800
+                             border border-yellow-300 rounded shadow-sm
+                             hover:bg-yellow-200 active:bg-yellow-300 leading-tight">
+                  ↓ばらす
                 </button>
               </div>
               <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
                 十の位
               </div>
               <div ref={el_ju} className="flex-1 flex flex-col gap-1 border-2 border-yellow-300 rounded-lg p-1">
-                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinH + "px" }} />
-                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinH + "px" }} />
-                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinHs[0] + "px" }} />
+                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinHs[1] + "px" }} />
+                <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinHs[2] + "px" }} />
               </div>
             </div>
 
@@ -659,28 +680,39 @@ export default function KazoeBouPage() {
               </div>
               {/* ボタン行スペーサー（高さ合わせ） */}
               <div className="flex gap-0.5 justify-center opacity-0 pointer-events-none">
-                <span className="px-1 py-0.5 text-[9px] leading-tight">dummy</span>
+                <span className="px-2 py-1 text-xs leading-tight">dummy</span>
               </div>
               <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
                 一の位
               </div>
               <div ref={el_ichi} className="flex-1 flex flex-col gap-1 border-2 border-blue-300 rounded-lg p-1">
-                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinH + "px" }} />
-                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinH + "px" }} />
-                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinH + "px" }} />
+                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinHs[0] + "px" }} />
+                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinHs[1] + "px" }} />
+                <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinHs[2] + "px" }} />
               </div>
             </div>
 
           </div>
 
-          {/* ▼ リサイズハンドル（縦方向・各段の高さを変える） */}
-          <div
-            className="w-full flex items-center justify-center py-1 mb-2 cursor-ns-resize group"
-            onMouseDown={e => startResize(e.clientY)}
-            onTouchStart={e => { e.preventDefault(); startResize(e.touches[0].clientY) }}
-          >
-            <div className="w-16 h-1.5 bg-gray-300 group-hover:bg-gray-500
-                            dark:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
+          {/* 段ごとリサイズハンドル（段①②③ それぞれ独立してドラッグ可） */}
+          <div className="flex flex-col gap-0.5 mb-2">
+            {([0, 1, 2] as const).map(rowIdx => (
+              <div
+                key={rowIdx}
+                className="w-full flex items-center gap-2 px-2 py-1 cursor-ns-resize group
+                           bg-gray-50 dark:bg-gray-800 rounded
+                           hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
+                onMouseDown={e => startRowResize(rowIdx, e.clientY)}
+                onTouchStart={e => { e.preventDefault(); startRowResize(rowIdx, e.touches[0].clientY) }}
+              >
+                <span className="text-[10px] text-gray-400 dark:text-gray-500 w-5 flex-shrink-0">
+                  段{rowIdx + 1}
+                </span>
+                <div className="flex-1 h-1.5 bg-gray-300 group-hover:bg-gray-500
+                                dark:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
+                <span className="text-[10px] text-gray-400 dark:text-gray-500">↕</span>
+              </div>
+            ))}
           </div>
 
           {/* ストック + ボタン群 */}
@@ -720,7 +752,7 @@ export default function KazoeBouPage() {
                   onChange={e => setFreeInput(e.target.value)}
                   onKeyDown={e => { if (e.key === "Enter") handleFreeSet() }}
                   placeholder="すう字"
-                  className="w-20 border-2 border-brand-300 rounded-lg px-2 py-1.5
+                  className="w-28 border-2 border-brand-300 rounded-lg px-2 py-1.5
                              text-lg font-bold text-center
                              dark:bg-gray-700 dark:border-brand-600 dark:text-white"
                 />
