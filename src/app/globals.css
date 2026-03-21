@@ -75,6 +75,15 @@
    ------------------------------------------------------- */
 body {
   font-family: var(--font-current);
+  /* ドラッグ操作中に文字や画像が選択されないようにする */
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* テキスト入力欄では選択を有効にする */
+input, textarea {
+  user-select: text;
+  -webkit-user-select: text;
 }
 
 /* -------------------------------------------------------
