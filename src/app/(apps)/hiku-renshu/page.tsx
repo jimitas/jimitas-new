@@ -24,6 +24,7 @@ import { BtnStop } from "@/components/parts/buttons/BtnStop"
 import { PutText } from "@/components/parts/displays/PutText"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useCoins } from "@/hooks/useCoins"
+import { useGameTimer } from "@/hooks/useGameTimer"
 import { NUM_1, NUM_2 } from "@/lib/constants"
 
 const SELECT_ITEMS = ["～10", "10-□", "1□-□", "1□-□（くり下がり）"]
@@ -35,19 +36,13 @@ const COINS_PER_N = 5
 
 export default function HikuRenshuPage() {
   // ── 状態管理 ─────────────────────────────────────
-  const [flag, setFlag]               = useState<boolean>(false)  // 回答受付フラグ
-  const [time, setTime]               = useState<number>(60)      // 残り秒数
-  const [score, setScore]             = useState<number>(0)       // 正解数
+  const [flag,        setFlag]        = useState<boolean>(false)  // 回答受付フラグ
   const [selectIndex, setSelectIndex] = useState<number>(0)       // 難易度
 
-  // ゲーム中フラグ・タイマーID・問題値 を ref で管理
-  const inGameRef    = useRef<boolean>(false)
-  const timerRef     = useRef<ReturnType<typeof setInterval> | null>(null)
-  const startWaitRef = useRef<ReturnType<typeof setTimeout> | null>(null)  // 「よーい」1秒待機
-  const leftRef      = useRef<number>(0)
-  const rightRef     = useRef<number>(0)
-  const answerRef    = useRef<number>(0)
-  const scoreRef     = useRef<number>(0)  // コイン計算用（score state の鏡）
+  // 問題値を ref で管理
+  const leftRef   = useRef<number>(0)
+  const rightRef  = useRef<number>(0)
+  const answerRef = useRef<number>(0)
 
   // メッセージ表示エリアへの参照
   const el_text = useRef<HTMLDivElement | null>(null)
@@ -55,43 +50,38 @@ export default function HikuRenshuPage() {
   // コインシステム
   const { coins, addCoins } = useCoins()
 
-  // ── タイマー・待機タイマー停止ヘルパー ────────────────
-  const clearTimer = () => {
-    if (startWaitRef.current) {
-      clearTimeout(startWaitRef.current)  // 「よーい」1秒待機をキャンセル
-      startWaitRef.current = null
-    }
-    if (timerRef.current) {
-      clearInterval(timerRef.current)
-      timerRef.current = null
-    }
-  }
-
-  // ── ゲーム終了処理 ────────────────────────────────
-  const gameStopEvent = useCallback(() => {
-    if (!inGameRef.current) return
-    inGameRef.current = false
-    setFlag(false)
-    clearTimer()
-    se.playSe(se.seikai1)
-
-    // 5問ごとに1コイン付与
-    const earnedCoins = Math.floor(scoreRef.current / COINS_PER_N)
-    if (earnedCoins > 0) addCoins(earnedCoins)
-
-    if (el_text.current) {
-      el_text.current.style.backgroundColor = "lightgray"
-      el_text.current.innerHTML =
-        earnedCoins > 0
-          ? `おわり！　🪙 ${earnedCoins}まい　ゲット！（スタートでもういちどチャレンジ）`
-          : "おわり！（スタートでもういちどチャレンジ）"
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  // ── タイマーフック ────────────────────────────────
+  const {
+    time, score, isRunning, isRunningRef,
+    start, stop, addScore, reset,
+  } = useGameTimer({
+    initialSeconds: 60,
+    coinsPerN: COINS_PER_N,
+    addCoins,
+    // よーい後・ゲーム開始時：問題文を「スタート」にして最初の問題を表示
+    onReady: () => {
+      if (el_text.current) el_text.current.innerHTML = "スタート"
+      se.playSe(se.set)
+      giveQuestion()
+    },
+    // タイマー終了時：終了メッセージを表示
+    onEnd: (earnedCoins) => {
+      setFlag(false)
+      se.playSe(se.seikai1)
+      if (el_text.current) {
+        el_text.current.style.backgroundColor = "lightgray"
+        el_text.current.innerHTML =
+          earnedCoins > 0
+            ? `おわり！　🪙 ${earnedCoins}まい　ゲット！（スタートでもういちどチャレンジ）`
+            : "おわり！（スタートでもういちどチャレンジ）"
+      }
+    },
+  })
 
   // ── 問題生成 ──────────────────────────────────────
   const giveQuestion = useCallback(() => {
-    if (!inGameRef.current) return
+    // isRunningRef.current で即時チェック（setTimeout 内からの呼び出し対策）
+    if (!isRunningRef.current) return
     setFlag(true)
 
     let left = 0, right = 0
@@ -129,40 +119,23 @@ export default function HikuRenshuPage() {
     if (el_text.current) {
       el_text.current.innerHTML = `${left}　－　${right}　＝`
     }
-  }, [selectIndex])
+  }, [selectIndex])  // isRunningRef は ref なので deps に含めない
 
   // ── ゲーム開始処理 ────────────────────────────────
-  const gameStartEvent = useCallback(() => {
-    if (inGameRef.current) return
-    inGameRef.current = true
-    scoreRef.current  = 0
-    setFlag(false)
-    setTime(60)
-    setScore(0)
-    se.playSe(se.pi)
-
+  const handleStart = useCallback(() => {
+    if (isRunning) return
     if (el_text.current) {
       el_text.current.style.backgroundColor = "antiquewhite"
       el_text.current.innerHTML = "よーい"
     }
-
-    // 1秒後にスタート・タイマー開始（ID を保持してストップ時にキャンセル可能にする）
-    startWaitRef.current = setTimeout(() => {
-      if (!inGameRef.current) return  // 待機中にストップされた場合は何もしない
-      if (el_text.current) el_text.current.innerHTML = "スタート"
-      se.playSe(se.set)
-      giveQuestion()
-      timerRef.current = setInterval(() => {
-        setTime((t) => (t > 0 ? t - 1 : 0))
-      }, 1000)
-    }, 1000)
-  }, [giveQuestion])
+    start()
+  }, [isRunning, start])
 
   // ── 難易度変更 ────────────────────────────────────
   const changeSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    gameStopEvent()
+    stop()
     setSelectIndex(e.target.selectedIndex)
-  }, [gameStopEvent])
+  }, [stop])
 
   // 難易度変更時に表示をリセット
   useEffect(() => {
@@ -170,17 +143,8 @@ export default function HikuRenshuPage() {
       el_text.current.style.backgroundColor = "lightgray"
       el_text.current.innerHTML = "スタートをおしてね"
     }
-    setTime(60)
-    setScore(0)
-  }, [selectIndex])
-
-  // 残り時間が 0 になったらゲーム終了
-  useEffect(() => {
-    if (time <= 0) {
-      clearTimer()
-      gameStopEvent()
-    }
-  }, [time, gameStopEvent])
+    reset()
+  }, [selectIndex, reset])
 
   // ── 回答チェック ──────────────────────────────────
   const checkAnswer = (myAnswer: number) => {
@@ -190,8 +154,7 @@ export default function HikuRenshuPage() {
     if (myAnswer === answerRef.current) {
       // 正解
       se.playSe(se.right)
-      scoreRef.current += 1
-      setScore((s) => s + 1)
+      addScore()
       if (el_text.current) {
         el_text.current.innerHTML = `<span style="color:red;">せいかい</span>`
       }
@@ -233,8 +196,8 @@ export default function HikuRenshuPage() {
             <option key={i} value={i}>{item}</option>
           ))}
         </select>
-        <BtnStart handleEvent={gameStartEvent} />
-        <BtnStop  handleEvent={gameStopEvent}  />
+        <BtnStart handleEvent={handleStart} />
+        <BtnStop  handleEvent={stop}        />
       </div>
 
       {/* 残り時間・スコア表示 */}

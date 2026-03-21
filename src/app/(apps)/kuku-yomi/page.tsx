@@ -20,7 +20,7 @@ import { useState, useRef } from "react"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
-import { ArrayDots } from "@/app/(apps)/kuku-array/page"
+import { ArrayDots } from "@/components/parts/displays/ArrayDots"
 
 // ── 九九の読み方データ ──────────────────────────────────
 //
