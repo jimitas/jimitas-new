@@ -18,7 +18,7 @@
 
 "use client"
 
-import React, { useState, useRef, useEffect, useCallback } from "react"
+import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
@@ -118,7 +118,7 @@ export default function OkanePage() {
 
   // DnD の useEffect から最新の refillWallet を呼べるよう ref に保持する
   const refillWalletRef = useRef(refillWallet)
-  refillWalletRef.current = refillWallet
+  useLayoutEffect(() => { refillWalletRef.current = refillWallet })
 
   // ── テーブル操作ユーティリティ ────────────────────────
 
@@ -269,7 +269,8 @@ export default function OkanePage() {
       // 一時的に非表示にして、ドロップ先を特定する
       dragged.style.display = "none"
       const below = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null
-      dragged.style.display = ""
+      // display を "" に戻すと Tailwind preflight の img{display:block} が効いて縦並びになるため inline-block を明示
+      dragged.style.display = "inline-block"
 
       let placed = false
       let droppedToWallet = false

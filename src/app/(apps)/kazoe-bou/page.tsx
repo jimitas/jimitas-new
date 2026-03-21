@@ -20,7 +20,7 @@
 
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
@@ -72,7 +72,7 @@ function generateQuestion(useHyaku: boolean, useJu: boolean, useIchi: boolean): 
 export default function KazoeBouPage() {
 
   // ── 状態管理 ─────────────────────────────────────
-  const [mode, setMode]                 = useState<Mode | null>(null)
+  const [mode, setMode]                 = useState<Mode>("free")
   const [showModePanel, setShowModePanel] = useState(true)    // モード切り替えパネル（初回は開く）
   const [question, setQuestion]         = useState<number | null>(null)
   const [ikutsuAnswer, setIkutsuAnswer] = useState("")        // いくつかな: テキスト入力
@@ -106,7 +106,7 @@ export default function KazoeBouPage() {
   const resizeStartYRef = useRef(0)
   const resizeStartHRef = useRef(CELL_MIN_H_DEFAULT)
   const cellMinHsRef    = useRef(cellMinHs)
-  cellMinHsRef.current  = cellMinHs
+  useLayoutEffect(() => { cellMinHsRef.current = cellMinHs })
 
   const startRowResize = (rowIdx: number, clientY: number) => {
     resizingRowRef.current  = rowIdx
@@ -148,7 +148,7 @@ export default function KazoeBouPage() {
   }, [])
 
   const refillStockRef = useRef(refillStock)
-  refillStockRef.current = refillStock
+  useLayoutEffect(() => { refillStockRef.current = refillStock })
 
   // ── テーブルクリア ────────────────────────────────
   // kazoe-droppable の構造は保持し、内部の棒だけ削除
@@ -344,8 +344,9 @@ export default function KazoeBouPage() {
 
   const handleFreeSet = useCallback(() => {
     const n = parseInt(freeInput, 10)
-    if (isNaN(n) || n < 1 || n > 999) {
+    if (isNaN(n) || !Number.isInteger(n) || n < 1 || n > 999) {
       se.playSe(se.alertSound)
+      showMsg(`<span style="color:red;">1〜999 の せいすうを　いれてね</span>`, 2000)
       return
     }
     clearTable()
@@ -463,7 +464,8 @@ export default function KazoeBouPage() {
 
       dragged.style.display = "none"
       const below = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement | null
-      dragged.style.display = ""
+      // display を "" に戻すと Tailwind preflight の img{display:block} が効いて縦並びになるため inline-block を明示
+      dragged.style.display = "inline-block"
 
       let placed = false
 
@@ -547,7 +549,7 @@ export default function KazoeBouPage() {
 
       {/* モード選択パネル */}
       {showModePanel && (
-        <div className="flex gap-2 flex-wrap mb-3 p-2
+        <div className="flex items-center gap-2 flex-wrap mb-3 p-2
                         bg-gray-100 dark:bg-gray-800 rounded-lg">
           {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
             <button
@@ -561,20 +563,15 @@ export default function KazoeBouPage() {
               {MODE_LABEL[m]}
             </button>
           ))}
+          <span className="text-sm font-bold text-green-600 dark:text-green-400">
+            ← モードをえらぼう
+          </span>
         </div>
       )}
 
-      {/* モード未選択時のヒント */}
-      {mode === null && !showModePanel && (
-        <p className="text-center text-gray-400 dark:text-gray-500 py-8 text-sm">
-          ▼ モードをかえる をタップしてね
-        </p>
-      )}
-
       {/* ── メインコンテンツ ── */}
-      {mode !== null && (
-        <>
-          {/* メッセージエリア */}
+      <>
+        {/* メッセージエリア */}
           <div
             ref={el_msg}
             className="w-full flex justify-center items-center mb-3
@@ -584,8 +581,8 @@ export default function KazoeBouPage() {
           {/* ─── テーブルエリア（3列 + ゴミ箱はくりあがり右上に収める） ─── */}
           <div className="flex gap-1 mb-1">
 
-            {/* ── 百の列 ── */}
-            <div className="flex-1 flex flex-col gap-1 min-w-0">
+            {/* ── 百の列（flex:3 で広め） ── */}
+            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 3 }}>
               {/* くりあがり待機 */}
               <div className="text-center text-[10px] text-pink-400 pointer-events-none leading-none">
                 くりあがり
@@ -616,16 +613,26 @@ export default function KazoeBouPage() {
               <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
                 百の位
               </div>
-              {/* メイン3段（ラッパーref） */}
-              <div ref={el_hyaku} className="flex-1 flex flex-col gap-1 border-2 border-pink-300 rounded-lg p-1">
+              {/* メイン3段（段間にリサイズハンドル） */}
+              <div ref={el_hyaku} className="flex-1 flex flex-col border-2 border-pink-300 rounded-lg p-1">
                 <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinHs[0] + "px" }} />
+                <div className="h-3 flex items-center cursor-ns-resize group"
+                  onMouseDown={e => { e.stopPropagation(); startRowResize(0, e.clientY) }}
+                  onTouchStart={e => { e.stopPropagation(); e.preventDefault(); startRowResize(0, e.touches[0].clientY) }}>
+                  <div className="w-full h-px bg-pink-300 group-hover:bg-pink-500 transition-colors pointer-events-none" />
+                </div>
                 <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinHs[1] + "px" }} />
+                <div className="h-3 flex items-center cursor-ns-resize group"
+                  onMouseDown={e => { e.stopPropagation(); startRowResize(1, e.clientY) }}
+                  onTouchStart={e => { e.stopPropagation(); e.preventDefault(); startRowResize(1, e.touches[0].clientY) }}>
+                  <div className="w-full h-px bg-pink-300 group-hover:bg-pink-500 transition-colors pointer-events-none" />
+                </div>
                 <div className={cellCls("bg-pink-100 dark:bg-pink-900/20", "border border-pink-200")} style={{ minHeight: cellMinHs[2] + "px" }} />
               </div>
             </div>
 
-            {/* ── 十の列 ── */}
-            <div className="flex-1 flex flex-col gap-1 min-w-0">
+            {/* ── 十の列（flex:2） ── */}
+            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 2 }}>
               <div className="text-center text-[10px] text-yellow-500 pointer-events-none leading-none">
                 くりあがり
               </div>
@@ -653,15 +660,25 @@ export default function KazoeBouPage() {
               <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
                 十の位
               </div>
-              <div ref={el_ju} className="flex-1 flex flex-col gap-1 border-2 border-yellow-300 rounded-lg p-1">
+              <div ref={el_ju} className="flex-1 flex flex-col border-2 border-yellow-300 rounded-lg p-1">
                 <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinHs[0] + "px" }} />
+                <div className="h-3 flex items-center cursor-ns-resize group"
+                  onMouseDown={e => { e.stopPropagation(); startRowResize(0, e.clientY) }}
+                  onTouchStart={e => { e.stopPropagation(); e.preventDefault(); startRowResize(0, e.touches[0].clientY) }}>
+                  <div className="w-full h-px bg-yellow-300 group-hover:bg-yellow-500 transition-colors pointer-events-none" />
+                </div>
                 <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinHs[1] + "px" }} />
+                <div className="h-3 flex items-center cursor-ns-resize group"
+                  onMouseDown={e => { e.stopPropagation(); startRowResize(1, e.clientY) }}
+                  onTouchStart={e => { e.stopPropagation(); e.preventDefault(); startRowResize(1, e.touches[0].clientY) }}>
+                  <div className="w-full h-px bg-yellow-300 group-hover:bg-yellow-500 transition-colors pointer-events-none" />
+                </div>
                 <div className={cellCls("bg-yellow-100 dark:bg-yellow-900/20", "border border-yellow-200")} style={{ minHeight: cellMinHs[2] + "px" }} />
               </div>
             </div>
 
-            {/* ── 一の列（くりあがり上段にゴミ箱） ── */}
-            <div className="flex-1 flex flex-col gap-1 min-w-0">
+            {/* ── 一の列（flex:1 で狭め） ── */}
+            <div className="flex flex-col gap-1 min-w-0" style={{ flex: 1 }}>
               {/* 透明ラベル（高さ合わせ） */}
               <div className="text-[10px] text-transparent pointer-events-none leading-none">
                 くりあがり
@@ -685,35 +702,25 @@ export default function KazoeBouPage() {
               <div className="text-center text-xs font-bold text-gray-600 dark:text-gray-300 pointer-events-none">
                 一の位
               </div>
-              <div ref={el_ichi} className="flex-1 flex flex-col gap-1 border-2 border-blue-300 rounded-lg p-1">
+              <div ref={el_ichi} className="flex-1 flex flex-col border-2 border-blue-300 rounded-lg p-1">
                 <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinHs[0] + "px" }} />
+                <div className="h-3 flex items-center cursor-ns-resize group"
+                  onMouseDown={e => { e.stopPropagation(); startRowResize(0, e.clientY) }}
+                  onTouchStart={e => { e.stopPropagation(); e.preventDefault(); startRowResize(0, e.touches[0].clientY) }}>
+                  <div className="w-full h-px bg-blue-300 group-hover:bg-blue-500 transition-colors pointer-events-none" />
+                </div>
                 <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinHs[1] + "px" }} />
+                <div className="h-3 flex items-center cursor-ns-resize group"
+                  onMouseDown={e => { e.stopPropagation(); startRowResize(1, e.clientY) }}
+                  onTouchStart={e => { e.stopPropagation(); e.preventDefault(); startRowResize(1, e.touches[0].clientY) }}>
+                  <div className="w-full h-px bg-blue-300 group-hover:bg-blue-500 transition-colors pointer-events-none" />
+                </div>
                 <div className={cellCls("bg-blue-100 dark:bg-blue-900/20", "border border-blue-200")} style={{ minHeight: cellMinHs[2] + "px" }} />
               </div>
             </div>
 
           </div>
 
-          {/* 段ごとリサイズハンドル（段①②③ それぞれ独立してドラッグ可） */}
-          <div className="flex flex-col gap-0.5 mb-2">
-            {([0, 1, 2] as const).map(rowIdx => (
-              <div
-                key={rowIdx}
-                className="w-full flex items-center gap-2 px-2 py-1 cursor-ns-resize group
-                           bg-gray-50 dark:bg-gray-800 rounded
-                           hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors select-none"
-                onMouseDown={e => startRowResize(rowIdx, e.clientY)}
-                onTouchStart={e => { e.preventDefault(); startRowResize(rowIdx, e.touches[0].clientY) }}
-              >
-                <span className="text-[10px] text-gray-400 dark:text-gray-500 w-5 flex-shrink-0">
-                  段{rowIdx + 1}
-                </span>
-                <div className="flex-1 h-1.5 bg-gray-300 group-hover:bg-gray-500
-                                dark:bg-gray-600 dark:group-hover:bg-gray-400 rounded-full transition-colors" />
-                <span className="text-[10px] text-gray-400 dark:text-gray-500">↕</span>
-              </div>
-            ))}
-          </div>
 
           {/* ストック + ボタン群 */}
           <div className="flex items-center gap-2 flex-wrap mb-4
@@ -800,7 +807,7 @@ export default function KazoeBouPage() {
             <button onClick={handleCalc}
               className="px-3 py-2 bg-brand-500 text-white rounded-lg font-bold
                          hover:bg-brand-600 transition-colors text-sm">
-              {mode === "free" ? "けいさん" : "こたえあわせ"}
+              {mode === "free" ? "いくつ？" : "こたえあわせ"}
             </button>
 
             {/* リセット */}
@@ -827,8 +834,7 @@ export default function KazoeBouPage() {
           {/* コイン表示 */}
           <CoinDisplay coins={coins} className="w-full" />
 
-        </>
-      )}
+      </>
 
     </div>
   )
