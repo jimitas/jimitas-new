@@ -24,11 +24,7 @@ import { BtnStop } from "@/components/parts/buttons/BtnStop"
 import { PutText } from "@/components/parts/displays/PutText"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useCoins } from "@/hooks/useCoins"
-
-// ── 定数 ─────────────────────────────────────────────
-
-const NUM_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-const NUM_2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+import { NUM_1, NUM_2 } from "@/lib/constants"
 
 const SELECT_ITEMS = ["～10", "10-□", "1□-□", "1□-□（くり下がり）"]
 

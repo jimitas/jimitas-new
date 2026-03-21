@@ -25,6 +25,7 @@ import { PutText } from "@/components/parts/displays/PutText"
 import { PutImage } from "@/components/parts/displays/PutImage"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useCoins } from "@/hooks/useCoins"
+import { useAnswerCheck } from "@/hooks/useAnswerCheck"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -53,8 +54,31 @@ export default function KazoeyouPage() {
   // 1問につき初回正解のみコインを付与するフラグ
   const hasAnsweredRef = useRef<boolean>(false)
 
+  // answer の最新値を ref で保持（useAnswerCheck の onCorrect 内で参照するため）
+  const answerRef = useRef<number>(0)
+  useEffect(() => { answerRef.current = answer }, [answer])
+
   // コインシステム
   const { coins, addCoins } = useCoins()
+
+  // 正誤判定フック
+  // kazoeyou は正解テキストに枚数を含めるため、onCorrect で上書きする
+  const { checkAnswer } = useAnswerCheck({
+    addCoins,
+    hasAnsweredRef,
+    // 不正解後に戻すテキストは固定の "いくつかな？"
+    getPrevText: () => "いくつかな？",
+    el_text,
+    // 正解テキストを枚数付きに上書きする
+    onCorrect: () => {
+      if (el_text.current) {
+        el_text.current.innerHTML =
+          `<span style="color:red;">せいかい！　${answerRef.current} まい</span>`
+      }
+    },
+    // 不正解後1秒で再入力可能に（flag を true に戻す）
+    onWrongRestore: () => setFlag(true),
+  })
 
   // 初期メッセージを表示する
   useEffect(() => {
@@ -92,31 +116,11 @@ export default function KazoeyouPage() {
   }
 
   // 数字ボタンで答えを送信する
-  const checkAnswer = (myAnswer: number) => {
+  // useAnswerCheck フックの checkAnswer をラップして前処理を追加する
+  const handleCheckAnswer = (myAnswer: number) => {
     if (!flag) return
     setFlag(false)
-
-    if (myAnswer === answer) {
-      // 正解
-      if (!hasAnsweredRef.current) {
-        addCoins(1)
-        hasAnsweredRef.current = true
-      }
-      se.playSe(se.right)
-      if (el_text.current) {
-        el_text.current.innerHTML = `<span style="color:red;">せいかい！　${answer} まい</span>`
-      }
-    } else {
-      // 不正解：1秒後に再入力可能に
-      se.playSe(se.alertSound)
-      if (el_text.current) {
-        el_text.current.innerHTML = `<span style="color:gray;">ちがうよ</span>`
-        setTimeout(() => {
-          setFlag(true)
-          if (el_text.current) el_text.current.innerHTML = "いくつかな？"
-        }, 1000)
-      }
-    }
+    checkAnswer(myAnswer, answer)
   }
 
   // ── 描画 ─────────────────────────────────────────
@@ -166,7 +170,7 @@ export default function KazoeyouPage() {
       </PutImage>
 
       {/* 数字ボタン 1〜10 */}
-      <BtnNum ITEM={NUM} handleEvent={checkAnswer} />
+      <BtnNum ITEM={NUM} handleEvent={handleCheckAnswer} />
 
       {/* もんだいボタン */}
       <div className="flex justify-center mt-2">

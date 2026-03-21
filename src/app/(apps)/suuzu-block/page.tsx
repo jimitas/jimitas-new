@@ -23,12 +23,7 @@ import { BtnNum } from "@/components/parts/buttons/BtnNum"
 import { PutText } from "@/components/parts/displays/PutText"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
-
-// ── 定数 ─────────────────────────────────────────────
-
-// 数字ボタンの配列（mode 2 で使用）
-const NUM_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-const NUM_2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
+import { NUM_1, NUM_2 } from "@/lib/constants"
 
 // モードの型（1〜4）
 type Mode = 1 | 2 | 3 | 4

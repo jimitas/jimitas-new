@@ -33,15 +33,13 @@ import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
 import { PutShiki } from "@/components/parts/displays/PutShiki"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
+import { useAnswerCheck } from "@/hooks/useAnswerCheck"
+import { NUM_1, NUM_2 } from "@/lib/constants"
 
 // ── 定数 ─────────────────────────────────────────────
 
 // 難易度の選択肢
 const ITEMS = ["10までの　かず", "10+□,□+10", "1□+□,□+1□", "20までの　かず"]
-
-// 数字ボタン（1行目: 0〜10 / 2行目: 11〜20）
-const NUM_1 = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
-const NUM_2 = [11, 12, 13, 14, 15, 16, 17, 18, 19, 20]
 
 // ── コンポーネント ───────────────────────────────────
 
@@ -65,6 +63,17 @@ export default function Tashizan1Page() {
 
   // コインシステム（全アプリ共通フック）
   const { coins, addCoins } = useCoins()
+
+  // 正誤判定フック（tashizan-1 は hasProblem を false→true と切り替えるパターン）
+  const { checkAnswer } = useAnswerCheck({
+    addCoins,
+    hasAnsweredRef,
+    // 不正解時に1秒後に戻すテキストは el_text の現在値をそのまま使う
+    getPrevText: () => el_text.current?.innerHTML ?? "",
+    el_text,
+    // 不正解後1秒で再入力可能に（hasProblem を true に戻す）
+    onWrongRestore: () => setHasProblem(true),
+  })
 
   // ── イベントハンドラー ────────────────────────────
 
@@ -172,32 +181,12 @@ export default function Tashizan1Page() {
   }
 
   // 正誤を判定して結果を表示する（数字ボタン・こたえあわせ共通）
-  const checkAnswer = (myAnswer: number) => {
+  // useAnswerCheck フックの checkAnswer をラップして前処理を追加する
+  const handleCheckAnswer = (myAnswer: number) => {
     if (!hasProblem) return
     setHasProblem(false)
     if (el_answer.current) el_answer.current.value = myAnswer.toString()
-
-    if (myAnswer === answerRef.current) {
-      // ── 正解 ──
-      if (!hasAnsweredRef.current) {
-        addCoins(1)  // 初回正解のみコイン付与
-        hasAnsweredRef.current = true
-      }
-      se.playSe(se.right)
-      if (el_text.current)
-        el_text.current.innerHTML = `<span style="color:red;">せいかい</span>`
-    } else {
-      // ── 不正解：1秒後に再入力可能に ──
-      se.playSe(se.alertSound)
-      if (el_text.current) {
-        const prevText = el_text.current.innerHTML
-        el_text.current.innerHTML = `<span style="color:gray;">ちがうよ</span>`
-        setTimeout(() => {
-          setHasProblem(true)
-          if (el_text.current) el_text.current.innerHTML = prevText
-        }, 1000)
-      }
-    }
+    checkAnswer(myAnswer, answerRef.current)
   }
 
   // 「こたえあわせ」ボタン：答え欄に入力した値で判定する
@@ -205,7 +194,7 @@ export default function Tashizan1Page() {
     if (!hasProblem) return
     const myAnswer = parseInt(el_answer.current?.value ?? "")
     if (myAnswer) {
-      checkAnswer(myAnswer)
+      handleCheckAnswer(myAnswer)
     } else {
       se.playSe(se.alertSound)
       if (el_text.current) {
@@ -271,9 +260,9 @@ export default function Tashizan1Page() {
       />
 
       {/* 数字ボタン 0〜10 */}
-      <BtnNum ITEM={NUM_1} handleEvent={checkAnswer} />
+      <BtnNum ITEM={NUM_1} handleEvent={handleCheckAnswer} />
       {/* 数字ボタン 11〜20 */}
-      <BtnNum ITEM={NUM_2} handleEvent={checkAnswer} />
+      <BtnNum ITEM={NUM_2} handleEvent={handleCheckAnswer} />
 
       {/* コイン表示 */}
       <CoinDisplay coins={coins} />

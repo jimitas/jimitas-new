@@ -29,6 +29,7 @@ import { BtnNum } from "@/components/parts/buttons/BtnNum"
 import { PutText } from "@/components/parts/displays/PutText"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
+import { useAnswerCheck } from "@/hooks/useAnswerCheck"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -54,6 +55,17 @@ export default function IkutuPage() {
 
   // コインシステム（全アプリ共通フック）
   const { coins, addCoins } = useCoins()
+
+  // 正誤判定フック（ikutu は hasProblem を false→true と切り替えるパターン）
+  const { checkAnswer } = useAnswerCheck({
+    addCoins,
+    hasAnsweredRef,
+    // 不正解時に1秒後に戻すテキストは el_text の現在値をそのまま使う
+    getPrevText: () => el_text.current?.innerHTML ?? "",
+    el_text,
+    // 不正解後1秒で再入力可能に（hasProblem を true に戻す）
+    onWrongRestore: () => setHasProblem(true),
+  })
 
   // 初期メッセージを表示する
   useEffect(() => {
@@ -106,32 +118,11 @@ export default function IkutuPage() {
   }
 
   // 数字ボタンで答えを送信して正誤を判定する
-  const checkAnswer = (myAnswer: number) => {
+  // useAnswerCheck フックの checkAnswer をラップして前処理を追加する
+  const handleCheckAnswer = (myAnswer: number) => {
     if (!hasProblem) return
     setHasProblem(false)
-
-    if (myAnswer === answer) {
-      // ── 正解 ──
-      if (!hasAnsweredRef.current) {
-        addCoins(1)  // 初回正解のみコイン付与
-        hasAnsweredRef.current = true
-      }
-      se.playSe(se.right)
-      if (el_text.current) {
-        el_text.current.innerHTML = `<span style="color:red;">せいかい</span>`
-      }
-    } else {
-      // ── 不正解：1秒後に問題テキストに戻して再入力可能に ──
-      se.playSe(se.alertSound)
-      if (el_text.current) {
-        const prevText = el_text.current.innerHTML
-        el_text.current.innerHTML = `<span style="color:gray;">ちがうよ</span>`
-        setTimeout(() => {
-          setHasProblem(true)
-          if (el_text.current) el_text.current.innerHTML = prevText
-        }, 1000)
-      }
-    }
+    checkAnswer(myAnswer, answer)
   }
 
   // ── 描画 ─────────────────────────────────────────
@@ -173,7 +164,7 @@ export default function IkutuPage() {
       />
 
       {/* 数字ボタン 0〜10（□ に入る数を選ぶ） */}
-      <BtnNum ITEM={NUM} handleEvent={checkAnswer} />
+      <BtnNum ITEM={NUM} handleEvent={handleCheckAnswer} />
 
       {/* もんだいボタン */}
       <div className="flex justify-center mt-2">
