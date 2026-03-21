@@ -65,6 +65,9 @@ export default function TokeiPage() {
   // ── ヒント ──────────────────────────────────────────────
   const [hint, setHint] = useState<HintLevel>("")
 
+  // ── yomu モード: 時刻テキストの表示/非表示トグル ──────────
+  const [showTime, setShowTime] = useState(true)
+
   // ── 数字入力（なんじなんふん？タイプ用） ──────────────────
   const [inputHours,   setInputHours]   = useState("")
   const [inputMinutes, setInputMinutes] = useState("")
@@ -184,13 +187,17 @@ export default function TokeiPage() {
     draw()
   }, [draw])
 
-  // ── yomu モード: スライダーを動かすたびに現在の時刻を表示 ──
+  // ── yomu モード: 時刻を表示（showTime=false のときは非表示） ──
   // nanji / ugokasu モードでは el_text は useAnswerCheck が管理するため干渉しない
   useEffect(() => {
     if (type !== "yomu" || !el_text.current) return
-    const h = hours === 0 ? 12 : hours
-    el_text.current.innerHTML = `${h}じ　${minutes}ふん`
-  }, [type, hours, minutes])
+    if (showTime) {
+      const h = hours === 0 ? 12 : hours
+      el_text.current.innerHTML = `${h}じ　${minutes}ふん`
+    } else {
+      el_text.current.innerHTML = ""
+    }
+  }, [type, hours, minutes, showTime])
 
   // ── useAnswerCheck（なんじなんふん？タイプ用） ───────────
   // 時刻を hours * 100 + minutes に変換して1つの数値として比較する
@@ -332,6 +339,8 @@ export default function TokeiPage() {
     setHasProblem(false)
     hasAnsweredRef.current = false
     if (el_text.current) el_text.current.innerHTML = ""
+    // yomu モードに切り替えたとき、表示状態をリセット
+    if (v === "yomu") setShowTime(true)
   }, [])
 
   // ── 難易度変更: 問題をリセット ──────────────────────────
@@ -422,7 +431,7 @@ export default function TokeiPage() {
             >
               <option value="nanji">なんじなんふん？</option>
               <option value="ugokasu">はりをうごかそう</option>
-              <option value="yomu">なんじかな？</option>
+              <option value="yomu">なんじなんふんかな？</option>
             </select>
             {/* yomu モードでも難易度（スライダーの刻み）は選べる */}
             <select
@@ -500,6 +509,20 @@ export default function TokeiPage() {
               ヒント２
             </button>
           </div>
+
+          {/* じこく表示トグル（「なんじなんふんかな？」モードのみ） */}
+          {type === "yomu" && (
+            <button
+              onClick={() => { se.playSe(se.set); setShowTime(prev => !prev) }}
+              className={`px-4 py-2 font-bold rounded-lg border-2 transition-all
+                ${showTime
+                  ? "bg-brand-500 border-brand-500 text-white"
+                  : "bg-white border-brand-300 text-brand-600 hover:bg-brand-100"
+                }`}
+            >
+              {showTime ? "じこくをかくす" : "じこくをみる"}
+            </button>
+          )}
 
           {/* 数字入力欄（「なんじなんふん？」タイプのみ表示） */}
           {type === "nanji" && (
