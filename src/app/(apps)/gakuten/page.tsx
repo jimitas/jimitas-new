@@ -287,7 +287,7 @@ export default function GakutenPage() {
 
       {/* ===== フラッシュカードモード ===== */}
       {mode === "flash" && flashData && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+        <div className="bg-brand-50 dark:bg-gray-800 rounded-2xl shadow p-6">
           <h2 className="text-xl font-bold text-center mb-4">
             📇 フラッシュカード
           </h2>
@@ -367,16 +367,14 @@ export default function GakutenPage() {
 
       {/* ===== クイズモード ===== */}
       {mode === "quiz" && quizData && (
-        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow p-6">
+        <div className="bg-accent-50 dark:bg-gray-800 rounded-2xl shadow p-6">
           <h2 className="text-xl font-bold text-center mb-2">
             🎯 クイズ
           </h2>
 
           {/* 進捗・スコア */}
           <p className="text-center text-sm text-gray-500 mb-4">
-            {quizIndex + 1} / {DATA.length}
-            <span className="text-green-600 dark:text-green-400 font-bold">{score}問正解</span>
-            　（{quizStatus}）
+            {quizIndex + 1} / {DATA.length}　<span className="text-green-600 dark:text-green-400 font-bold">{score}問正解</span>　（{quizStatus}）
           </p>
 
           {/* 表示オプション */}
@@ -430,9 +428,9 @@ export default function GakutenPage() {
 
           {/* 記号グリッド（5行×8列） */}
           <div className="overflow-x-auto mb-5">
-            <div className="flex flex-col items-center gap-1">
+            <div className="flex flex-col items-center gap-2">
               {Array.from({ length: 5 }, (_, row) => (
-                <div key={row} className="flex gap-1">
+                <div key={row} className="flex gap-2">
                   {Array.from({ length: 8 }, (_, col) => {
                     const dataIndex = row * 8 + col
                     const symbol = DATA[dataIndex]
