@@ -119,6 +119,44 @@ export function OkaneGrid({
       ?.querySelector(`[data-row="${row}"][data-col="${col}"]`) ?? null
   }
 
+  // ── A: row10（合計行）ヒント更新（kake1 のみ） ───
+  // 空セル → 薄い「ここへあつめる」、コインあり → 右下に枚数を表示
+  function updateRow10Hints() {
+    if (variant !== "kake1") return
+    for (let col = 0; col < COLS; col++) {
+      const cell = getCell(10, col)
+      if (!cell) continue
+      cell.style.position = "relative"
+      cell.querySelector(".okane-row10-hint")?.remove()
+
+      // hissan-coin クラスを持つ img の枚数（種別問わず合計）
+      const count = cell.getElementsByClassName("hissan-coin").length
+
+      const span = document.createElement("span")
+      span.className          = "okane-row10-hint"
+      span.style.pointerEvents = "none"
+      span.style.userSelect    = "none"
+      span.style.position      = "absolute"
+
+      if (count === 0) {
+        span.style.top        = "50%"
+        span.style.left       = "50%"
+        span.style.transform  = "translate(-50%,-50%)"
+        span.style.fontSize   = "9px"
+        span.style.color      = "rgba(0,0,0,0.25)"
+        span.style.whiteSpace = "nowrap"
+        span.textContent      = "ここへあつめる"
+      } else {
+        span.style.bottom     = "2px"
+        span.style.right      = "3px"
+        span.style.fontSize   = "13px"
+        span.style.color      = "rgba(0,0,0,0.3)"
+        span.textContent      = String(count)
+      }
+      cell.appendChild(span)
+    }
+  }
+
   // ── actionsRef ─────────────────────────────────────
   // DnD useEffect（マウント時1回）の内部から最新コールバックを呼ぶための ref
   const actionsRef = useRef({
@@ -184,6 +222,8 @@ export function OkaneGrid({
             if (cell) placeCoins(cell, COL_COIN[col], digit)
           })
         }
+        // 合計行ヒントを初期表示（全クリア後なので全セル空 → 「ここへあつめる」）
+        updateRow10Hints()
       }
     }
 
@@ -236,6 +276,8 @@ export function OkaneGrid({
             se.playSe(se.reset)
           }
         }
+        // コインが移動したのでヒントを更新
+        updateRow10Hints()
       }
     }
   })  // 毎レンダーで更新
@@ -387,6 +429,8 @@ export function OkaneGrid({
       onCarryDetected?.(toCol)
       remaining -= 10
     }
+    // くり上がりでコインが移動したのでヒントを更新
+    updateRow10Hints()
   }
 
   // ── セルの droppable 判定 ─────────────────────────
