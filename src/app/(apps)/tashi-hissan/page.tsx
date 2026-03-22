@@ -1,267 +1,475 @@
 // ======================================================
-// たし算のひっ算 ページ
+// たし算のひっ算 ページ（14tahi.js を忠実に移植）
 //
 // URL: /tashi-hissan
 // 対象: 小学2〜3年生
 // 内容: 2〜3桁のたし算を筆算形式で練習する
 //
-// 操作:
-//   もんだい      → ランダム問題を生成
-//   セット        → 入力欄の値で問題をセット
-//   クリア        → 編集セルをリセット
-//   こたえ        → 正解とくり上がりを表示
-//   黄セルをタップ → そのセルを選択（リングで強調）
-//   数字パレット  → 選択中のセルに数字を入力
+// レイアウト:
+//   [ボタン群][問題タイプ選択]
+//   [式の入力欄]
+//   [筆算テーブル] [ゴミ箱] [お金テーブル]  ← 横並び
+//   [数字パレット]
+//   [コイン（スコア）]
+//
+// D&D:
+//   数字パレット(0〜9) → 筆算 row0/row3（droppable-elem）
+//   硬貨画像           → お金テーブル全セル（droppable-elem-2）
+//   両方               → ゴミ箱（droppable-elem）で削除
+//
+// 繰り上がり:
+//   row3 に同金種が10枚溜まると自動的に上位金種に変換し row0 へ
 // ======================================================
 
 "use client"
 
-import { useState, useCallback } from "react"
+import { useRef, useEffect, useState } from "react"
 import * as se from "@/lib/se"
+import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
-import { useCoins } from "@/hooks/useCoins"
 
-// ── 定数 ────────────────────────────────────────────────
-const COLS = 4  // グリッド列数（最大4桁）
-const TYPES = ["(2けた)+(2けた)", "(3けた)+(2けた)", "(2けた)+(3けた)", "(3けた)+(3けた)"]
+// ── 定数 ─────────────────────────────────────────────
+const MAX_KETA = 4
+const TYPE_DATA = [
+  "(２けた)+(２けた)",
+  "(３けた)+(２けた)",
+  "(２けた)+(３けた)",
+  "(３けた)+(３けた)",
+]
+// 元コードの img_arr に対応（index 0=一の位 … 3=千の位）
+// 画像は /images/ 配下（public/images/）
+const COIN_ARR = ["ichi", "juu", "hyaku", "sen"]
 
-// ── ヘルパー ─────────────────────────────────────────────
-
-// 数値 → 桁配列（index 0 = 一の位）
-function toDigits(n: number): number[] {
-  return String(Math.abs(Math.floor(n))).split("").reverse().map(Number)
-}
-
-function rand(min: number, max: number): number {
-  return Math.floor(Math.random() * (max - min + 1)) + min
-}
-
-// ── ページ本体 ──────────────────────────────────────────
+// ── ページ本体 ────────────────────────────────────────
 export default function TashiHissanPage() {
 
-  const [num1, setNum1] = useState(23)       // 上の数（被加数）
-  const [num2, setNum2] = useState(45)       // 下の数（加数）
-  const [input1, setInput1] = useState("23") // 手入力用
-  const [input2, setInput2] = useState("45")
+  // 問題タイプ選択（セレクトボックスの再描画が必要なため state で管理）
   const [typeIndex, setTypeIndex] = useState(0)
+  const typeIndexRef = useRef(0)
+  typeIndexRef.current = typeIndex
 
-  // 編集可能なセル（行0: くり上がり、行3: こたえ）
-  const [carryRow, setCarryRow] = useState<string[]>(Array(COLS).fill(""))
-  const [ansRow,   setAnsRow]   = useState<string[]>(Array(COLS).fill(""))
+  // コイン（同問題の重複防止付き）
+  const { coins, tryAddCoins, resetProblem } = useProblemCoins()
 
-  // 選択中のセル（行0 or 行3）
-  const [selCell, setSelCell] = useState<{ r: 0 | 3; c: number } | null>(null)
+  // ── DOM 参照 ──────────────────────────────────────
+  const tblRef    = useRef<HTMLTableElement>(null)   // 筆算テーブル
+  const tbl2Ref   = useRef<HTMLTableElement>(null)   // お金テーブル
+  const numPalRef = useRef<HTMLDivElement>(null)     // 数字パレット
+  const box1Ref   = useRef<HTMLInputElement>(null)   // 被加数入力
+  const box3Ref   = useRef<HTMLInputElement>(null)   // 加数入力
+  const box5Ref   = useRef<HTMLInputElement>(null)   // 答え入力
 
-  const [isCorrect, setIsCorrect] = useState(false)
+  // ── 問題データ（ref で保持 ─ レンダー不要） ────────
+  const hikasRef  = useRef(123)
+  const kasuRef   = useRef(456)
+  const waRef     = useRef(0)
+  const hikasArr  = useRef<number[]>([])
+  const kasuArr   = useRef<number[]>([])
+  const waArr     = useRef<number[]>([])
+  const hikasKeta = useRef(0)
+  const kasuKeta  = useRef(0)
+  const waKeta    = useRef(0)
+  const kuriagari = useRef(0)
 
-  const { coins, addCoins } = useCoins()
-
-  const answer = num1 + num2
-
-  // ── 問題セット（共通処理） ─────────────────────────────
-  const setProblem = useCallback((a: number, b: number) => {
-    setNum1(a); setNum2(b)
-    setInput1(String(a)); setInput2(String(b))
-    setCarryRow(Array(COLS).fill(""))
-    setAnsRow(Array(COLS).fill(""))
-    setSelCell(null)
-    setIsCorrect(false)
-    se.playSe(se.set)
-  }, [])
-
-  // ── もんだい ──────────────────────────────────────────
-  const handleMondai = useCallback(() => {
-    let a = 0, b = 0
-    switch (typeIndex) {
-      case 0: a = rand(10, 99);   b = rand(10, 99);   break
-      case 1: a = rand(100, 999); b = rand(10, 99);   break
-      case 2: a = rand(10, 99);   b = rand(100, 999); break
-      case 3: a = rand(100, 999); b = rand(100, 999); break
-    }
-    setProblem(a, b)
-  }, [typeIndex, setProblem])
-
-  // ── セット（手入力） ──────────────────────────────────
-  const handleSet = useCallback(() => {
-    const a = parseInt(input1, 10)
-    const b = parseInt(input2, 10)
-    if (!isFinite(a) || !isFinite(b) || a < 10 || b < 10 || a > 999 || b > 999) {
-      se.playSe(se.alertSound)
-      return
-    }
-    setProblem(a, b)
-  }, [input1, input2, setProblem])
-
-  // ── クリア ────────────────────────────────────────────
-  const handleClear = () => {
-    setCarryRow(Array(COLS).fill(""))
-    setAnsRow(Array(COLS).fill(""))
-    setSelCell(null)
-    setIsCorrect(false)
-    se.playSe(se.reset)
+  // ── タッチ: 開始（スクロール禁止） ────────────────
+  function touchStartEvent(event: TouchEvent) {
+    event.preventDefault()
   }
 
-  // ── こたえ表示 ────────────────────────────────────────
-  const handleShowAnswer = () => {
-    const d1 = toDigits(num1)
-    const d2 = toDigits(num2)
-
-    // くり上がり計算（一の位から順に）
-    const newCarry = Array(COLS).fill("")
-    let carry = 0
-    const minLen = Math.min(d1.length, d2.length)
-    for (let i = 0; i < minLen; i++) {
-      const sum = d1[i] + d2[i] + carry
-      carry = sum >= 10 ? 1 : 0
-      if (carry === 1) {
-        // くり上がりは「1つ上の桁」の列に表示
-        // 桁 i の1つ上 = グリッド列 COLS-2-i
-        const col = COLS - 2 - i
-        if (col >= 0) newCarry[col] = "1"
-      }
-    }
-
-    // こたえ桁を設定
-    const dAns = toDigits(answer)
-    const newAns = Array(COLS).fill("")
-    dAns.forEach((d, i) => { newAns[COLS - 1 - i] = String(d) })
-
-    setCarryRow(newCarry)
-    setAnsRow(newAns)
-    setIsCorrect(false)
-    se.playSe(se.seikai2)
+  // ── タッチ: 移動中（要素を指に追従） ──────────────
+  function touchMoveEvent(event: TouchEvent) {
+    event.preventDefault()
+    const elem  = event.target as HTMLElement
+    const touch = event.changedTouches[0]
+    elem.style.position = "fixed"
+    elem.style.zIndex   = "9999"
+    elem.style.top  = touch.pageY - window.pageYOffset - elem.offsetHeight / 2 + "px"
+    elem.style.left = touch.pageX - window.pageXOffset - elem.offsetWidth  / 2 + "px"
   }
 
-  // ── セルクリック ──────────────────────────────────────
-  const handleCellClick = (r: 0 | 3, c: number) => {
-    setSelCell({ r, c })
+  // ── タッチ終了: 数字パレット用 ────────────────────
+  // ドロップ先が droppable-elem ならそこへ移動し、パレットをリフレッシュ
+  function touchEndEvent(event: TouchEvent) {
+    event.preventDefault()
+    const elem  = event.target as HTMLElement
+    elem.style.position = ""
+    elem.style.zIndex   = ""
+    elem.style.top      = ""
+    elem.style.left     = ""
+
+    const touch     = event.changedTouches[0]
+    const newParent = document.elementFromPoint(
+      touch.pageX - window.pageXOffset,
+      touch.pageY - window.pageYOffset,
+    ) as HTMLElement | null
+
+    if (newParent?.className === "droppable-elem") {
+      newParent.appendChild(elem)
+      // 数字パレットを一旦クリアして再生成（常に 0〜9 が使える状態を保つ）
+      const pal = numPalRef.current!
+      while (pal.firstChild) pal.removeChild(pal.firstChild)
+      numSet()
+      kotaeInput()
+    }
     se.playSe(se.pi)
   }
 
-  // ── 数字入力 ──────────────────────────────────────────
-  const handleDigit = (digit: number) => {
-    if (!selCell) return
-    const { r, c } = selCell
+  // ── タッチ終了: 硬貨用 ────────────────────────────
+  // ドロップ先が droppable-elem-2 ならそこへ移動し、繰り上がりを確認
+  function touchEndEvent2(event: TouchEvent) {
+    event.preventDefault()
+    const elem  = event.target as HTMLElement
+    elem.style.position = ""
+    elem.style.zIndex   = ""
+    elem.style.top      = ""
+    elem.style.left     = ""
+    // Tailwind preflight が display をリセットするため明示指定
+    elem.style.display  = "inline-block"
 
-    if (r === 0) {
-      const next = [...carryRow]
-      next[c] = String(digit)
-      setCarryRow(next)
+    const touch     = event.changedTouches[0]
+    const newParent = document.elementFromPoint(
+      touch.pageX - window.pageXOffset,
+      touch.pageY - window.pageYOffset,
+    ) as HTMLElement | null
+
+    if (newParent?.className === "droppable-elem-2") {
+      newParent.appendChild(elem)
+    }
+    se.playSe(se.pi)
+    imgKuriagari()
+  }
+
+  // ── くり上がり処理 ────────────────────────────────
+  // row3 に同金種が 10 枚溜まったら自動で上位金種に変換して row0 へ
+  function imgKuriagari() {
+    const TBL_2 = tbl2Ref.current!
+    for (let j = 0; j < 3; j++) {
+      const count = TBL_2.rows[3].cells[3 - j].getElementsByClassName(COIN_ARR[j]).length
+      if (count > 9) {
+        se.playSe(se.reset)
+        // 10枚削除
+        for (let i = 0; i < 10; i++) {
+          TBL_2.rows[3].cells[3 - j].getElementsByClassName(COIN_ARR[j])[0].remove()
+        }
+        // 1つ上の金種を繰り上がり行（row0）に追加
+        imgStyle(j)
+      }
+    }
+  }
+
+  // 上位金種の硬貨画像を row0 に追加する（imgKuriagari の内部処理）
+  // j=0: 1円×10→10円を col2 へ
+  // j=1: 10円×10→100円を col1 へ
+  // j=2: 100円×10→1000円を col0 へ
+  function imgStyle(j: number) {
+    const TBL_2 = tbl2Ref.current!
+    const img   = document.createElement("img")
+    img.setAttribute("src", `/images/${COIN_ARR[j + 1]}.png`)
+    img.setAttribute("class", COIN_ARR[j + 1])
+    // 1000円（j=2）は幅 60px、それ以外は 25px
+    img.style.width   = j === 2 ? "60px" : "25px"
+    img.style.height  = "25px"
+    img.style.display = "inline-block"
+    img.addEventListener("touchstart", touchStartEvent as EventListener, false)
+    img.addEventListener("touchmove",  touchMoveEvent  as EventListener, false)
+    img.addEventListener("touchend",   touchEndEvent2  as EventListener, false)
+    TBL_2.rows[0].cells[2 - j].appendChild(img)
+  }
+
+  // ── 硬貨画像を生成 ───────────────────────────────
+  function makeCoinImg(col: number): HTMLImageElement {
+    const img = document.createElement("img")
+    img.setAttribute("src", `/images/${COIN_ARR[col]}.png`)
+    img.setAttribute("class", COIN_ARR[col])
+    img.setAttribute("draggable", "true")
+    // 1000円（col=3）は幅 60px
+    img.style.width   = col === 3 ? "60px" : "25px"
+    img.style.height  = "25px"
+    img.style.cursor  = "pointer"
+    img.style.display = "inline-block"
+    img.addEventListener("touchstart", touchStartEvent as EventListener, false)
+    img.addEventListener("touchmove",  touchMoveEvent  as EventListener, false)
+    img.addEventListener("touchend",   touchEndEvent2  as EventListener, false)
+    return img
+  }
+
+  // ── 数字パレットを生成（0〜9） ────────────────────
+  function numSet() {
+    const pal = numPalRef.current!
+    // 呼ぶ前に必ずクリア（StrictMode 二重実行・D&D後リフレッシュの両方に対応）
+    while (pal.firstChild) pal.removeChild(pal.firstChild)
+    for (let i = 0; i < 10; i++) {
+      const div = document.createElement("div")
+      div.innerHTML = String(i)
+      div.className = "draggable-elem"
+      div.setAttribute("draggable", "true")
+      div.style.cssText = [
+        "width:50px", "height:50px", "line-height:50px",
+        "background:white", "font-size:30px", "text-align:center",
+        "border-radius:10%", "border:1px solid #333",
+        "cursor:pointer", "user-select:none", "display:inline-block",
+      ].join(";")
+      div.addEventListener("touchstart", touchStartEvent as EventListener, false)
+      div.addEventListener("touchmove",  touchMoveEvent  as EventListener, false)
+      div.addEventListener("touchend",   touchEndEvent   as EventListener, false)
+      pal.appendChild(div)
+    }
+  }
+
+  // ── お金テーブルに硬貨を配置 ──────────────────────
+  function okaneSet() {
+    const TBL_2 = tbl2Ref.current!
+    // 全セルをクリア（クリアせずに配置するとお金が増え続けてバグになる）
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        TBL_2.rows[row].cells[col].innerHTML = ""
+      }
+    }
+    // 被加数のお金を row1 に
+    for (let col = 0; col < hikasKeta.current; col++) {
+      for (let i = 0; i < hikasArr.current[col]; i++) {
+        TBL_2.rows[1].cells[MAX_KETA - col - 1].appendChild(makeCoinImg(col))
+      }
+    }
+    // 加数のお金を row2 に
+    for (let col = 0; col < kasuKeta.current; col++) {
+      for (let i = 0; i < kasuArr.current[col]; i++) {
+        TBL_2.rows[2].cells[MAX_KETA - col - 1].appendChild(makeCoinImg(col))
+      }
+    }
+    // ＋記号の位置（両数が2桁以下なら十の位、それ以外は百の位）
+    if (hikasRef.current < 100 && kasuRef.current < 100) {
+      TBL_2.rows[2].cells[1].innerHTML = "+"
     } else {
-      const next = [...ansRow]
-      next[c] = String(digit)
-      setAnsRow(next)
-      checkAnswer(next)
+      TBL_2.rows[2].cells[0].innerHTML = "+"
     }
-    // 右のセルへ移動（なければ選択解除）
-    if (c < COLS - 1) setSelCell({ r, c: c + 1 })
-    else setSelCell(null)
   }
 
-  // ── セル削除 ──────────────────────────────────────────
-  const handleDelete = () => {
-    if (!selCell) return
-    const { r, c } = selCell
-    if (r === 0) {
-      const next = [...carryRow]; next[c] = ""; setCarryRow(next)
+  // ── 筆算テーブルに数字を配置 ──────────────────────
+  function suujiSet() {
+    const TBL = tblRef.current!
+    // 全セルをクリア
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        TBL.rows[row].cells[col].innerHTML = ""
+      }
+    }
+    // 被加数を row1 に（右詰め）
+    for (let col = 0; col < hikasKeta.current; col++) {
+      TBL.rows[1].cells[MAX_KETA - col - 1].innerHTML = String(hikasArr.current[col])
+    }
+    // 加数を row2 に（右詰め）
+    for (let col = 0; col < kasuKeta.current; col++) {
+      TBL.rows[2].cells[MAX_KETA - col - 1].innerHTML = String(kasuArr.current[col])
+    }
+    // ＋記号
+    if (hikasRef.current < 100 && kasuRef.current < 100) {
+      TBL.rows[2].cells[1].innerHTML = "+"
     } else {
-      const next = [...ansRow]; next[c] = ""; setAnsRow(next)
-      setIsCorrect(false)
+      TBL.rows[2].cells[0].innerHTML = "+"
     }
   }
 
-  // ── 答えチェック ──────────────────────────────────────
-  const checkAnswer = (row: string[]) => {
-    if (isCorrect) return
-    const userAns =
-      Number(row[0]) * 1000 +
-      Number(row[1]) * 100 +
-      Number(row[2]) * 10 +
-      Number(row[3])
-    if (userAns === answer) {
-      setIsCorrect(true)
-      se.playSe(se.seikai1)
-      addCoins(1)
+  // ── 筆算セット（メイン処理） ──────────────────────
+  function hissanSet(h: number, k: number) {
+    // バリデーション
+    if (h > 999 || k > 999 || h < 0 || k < 0) {
+      se.playSe(se.alertSound)
+      alert("数字は1～999までにしてください。")
+      box1Ref.current!.value = ""
+      box3Ref.current!.value = ""
+      return
+    }
+
+    hikasRef.current  = Math.floor(h)
+    kasuRef.current   = Math.floor(k)
+    waRef.current     = Math.floor(h + k)
+    kuriagari.current = 0
+    resetProblem()  // 新問題なので正解済みフラグをリセット
+
+    // 式入力欄を更新
+    box1Ref.current!.value       = String(hikasRef.current)
+    box3Ref.current!.value       = String(kasuRef.current)
+    box5Ref.current!.value       = ""
+    box5Ref.current!.style.color = "black"
+
+    // 桁配列を設定（index 0 = 一の位）
+    const hs = String(hikasRef.current)
+    const ks = String(kasuRef.current)
+    const ws = String(waRef.current)
+    hikasKeta.current = hs.length
+    kasuKeta.current  = ks.length
+    waKeta.current    = ws.length
+
+    hikasArr.current = []
+    kasuArr.current  = []
+    waArr.current    = []
+    for (let i = 0; i < hikasKeta.current; i++) {
+      hikasArr.current[i] = Number(hs.charAt(hikasKeta.current - i - 1))
+    }
+    for (let i = 0; i < kasuKeta.current; i++) {
+      kasuArr.current[i] = Number(ks.charAt(kasuKeta.current - i - 1))
+    }
+    for (let i = 0; i < waKeta.current; i++) {
+      waArr.current[i] = Number(ws.charAt(waKeta.current - i - 1))
+    }
+
+    suujiSet()
+    okaneSet()
+  }
+
+  // ── クリア ───────────────────────────────────────
+  function masuClear() {
+    se.playSe(se.reset)
+    const TBL = tblRef.current!
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        TBL.rows[row].cells[col].innerHTML = ""
+      }
+    }
+    TBL.rows[2].cells[0].innerHTML = "+"
+    box1Ref.current!.value = ""
+    box3Ref.current!.value = ""
+    box5Ref.current!.value = ""
+  }
+
+  // ── もんだい（ランダム問題生成） ──────────────────
+  function shutudai() {
+    let h = 0, k = 0
+    switch (typeIndexRef.current) {
+      case 0: h = Math.floor(Math.random() * 90 + 10);   k = Math.floor(Math.random() * 90 + 10);   break
+      case 1: h = Math.floor(Math.random() * 900 + 100); k = Math.floor(Math.random() * 90 + 10);   break
+      case 2: h = Math.floor(Math.random() * 90 + 10);   k = Math.floor(Math.random() * 900 + 10);  break
+      case 3: h = Math.floor(Math.random() * 900 + 100); k = Math.floor(Math.random() * 900 + 100); break
+    }
+    box1Ref.current!.value = String(h)
+    box3Ref.current!.value = String(k)
+    hissanSet(h, k)
+    se.playSe(se.set)
+  }
+
+  // ── セット（手入力から問題をセット） ─────────────
+  function mondaiSet() {
+    const h = Number(box1Ref.current!.value)
+    const k = Number(box3Ref.current!.value)
+    hissanSet(h, k)
+    se.playSe(se.set)
+  }
+
+  // ── こたえ表示 ───────────────────────────────────
+  function showAnswer() {
+    const box5 = box5Ref.current!
+    box5.value       = String(waRef.current)
+    box5.style.color = "blue"
+    se.playSe(se.seikai2)
+
+    const TBL = tblRef.current!
+    // くり上がりを計算して row0 に表示
+    kuriagari.current = 0
+    for (let col = 0; col < Math.min(hikasKeta.current, kasuKeta.current); col++) {
+      if (Math.floor(hikasArr.current[col] + kasuArr.current[col] + kuriagari.current) > 9) {
+        const cell = TBL.rows[0].cells[MAX_KETA - col - 2]
+        cell.innerHTML           = "1"
+        cell.style.fontSize      = "20px"
+        cell.style.color         = "red"
+        cell.style.verticalAlign = "bottom"
+        kuriagari.current = 1
+      } else {
+        kuriagari.current = 0
+      }
+    }
+    // 答えを row3 に表示（右詰め）
+    for (let col = 0; col < waKeta.current; col++) {
+      TBL.rows[3].cells[MAX_KETA - col - 1].innerHTML = String(waArr.current[col])
     }
   }
 
-  // ── グリッド計算 ──────────────────────────────────────
+  // ── 答え入力チェック（row3 から読み取り） ──────────
+  // 数字パレットを筆算 row3 にドロップするたびに呼ばれる
+  function kotaeInput() {
+    const TBL  = tblRef.current!
+    const box5 = box5Ref.current!
 
-  // ＋ の位置: 両方が2桁以下なら col1、それ以外は col0
-  const signCol = (num1 < 100 && num2 < 100) ? 1 : 0
+    // row3 の 4 セルから数値を読み取って合成
+    const ans =
+      Number(TBL.rows[3].cells[0].innerText) * 1000 +
+      Number(TBL.rows[3].cells[1].innerText) * 100  +
+      Number(TBL.rows[3].cells[2].innerText) * 10   +
+      Number(TBL.rows[3].cells[3].innerText)
 
-  // セルの表示内容を返す
-  function getCellContent(r: number, c: number): string {
-    const d1 = toDigits(num1)
-    const d2 = toDigits(num2)
-    const digitIdx = COLS - 1 - c  // col3→0(一の位), col2→1(十の位), ...
+    box5.value = String(ans)
 
-    if (r === 0) return carryRow[c]
-    if (r === 1) return digitIdx < d1.length ? String(d1[digitIdx]) : ""
-    if (r === 2) {
-      if (c === signCol) return "＋"
-      return (digitIdx < d2.length && c !== signCol) ? String(d2[digitIdx]) : ""
+    if (ans === waRef.current) {
+      box5.style.color = "red"
+      // 初回正解のときだけ音とコイン（2回目以降は tryAddCoins が false を返す）
+      if (tryAddCoins(1)) se.playSe(se.seikai1)
+    } else {
+      box5.style.color = "black"
     }
-    if (r === 3) return ansRow[c]
-    return ""
   }
 
-  // ── グリッドの描画 ────────────────────────────────────
-  function renderGrid() {
-    return [0, 1, 2, 3].map(r => (
-      <div key={r} className="flex">
-        {Array.from({ length: COLS }, (_, c) => {
-          const isEditable = r === 0 || r === 3
-          const isSelected = selCell?.r === r && selCell?.c === c
-          const content = getCellContent(r, c)
+  // ── 初期化（マウント後に実行） ────────────────────
+  useEffect(() => {
+    hissanSet(123, 456)
+    numSet()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-          // 行ごとのスタイル
-          const heightCls  = r === 0 ? "h-8"  : "h-14"
-          const bgCls      = (r === 0 || r === 3) ? "bg-amber-50" : "bg-white"
-          const textSizeCls = r === 0 ? "text-sm"  : "text-2xl"
-          const textColorCls = r === 0
-            ? "text-red-500 font-semibold"
-            : r === 3 && isCorrect
-              ? "text-brand-600 font-bold"
-              : "text-gray-800 font-bold"
-          // 行2の下に太線（筆算の横線）
-          const borderBCls = r === 2 ? "border-b-4 border-b-gray-700" : ""
-          // 選択中のセルのリング
-          const ringCls = isSelected ? "ring-2 ring-inset ring-brand-500 z-10 relative" : ""
-          // 編集可能なセルはカーソルを変える
-          const cursorCls = isEditable ? "cursor-pointer" : ""
+  // ── マウス D&D ────────────────────────────────────
+  // タッチと同じ動作をマウスでも実現する
+  useEffect(() => {
+    let dragged: HTMLElement | null = null
 
-          return (
-            <div
-              key={c}
-              onClick={() => isEditable && handleCellClick(r as 0 | 3, c)}
-              className={`w-14 ${heightCls} flex items-center justify-center
-                border border-gray-400
-                ${bgCls} ${textSizeCls} ${textColorCls}
-                ${borderBCls} ${ringCls} ${cursorCls}`}
-            >
-              {content}
-            </div>
-          )
-        })}
-      </div>
-    ))
-  }
+    const onDragStart = (e: DragEvent) => { dragged = e.target as HTMLElement }
+    const onDragOver  = (e: DragEvent) => { e.preventDefault() }
+    const onDrop      = (e: DragEvent) => {
+      e.preventDefault()
+      if (!dragged) return
+      const target = e.target as HTMLElement
 
-  // ── 描画 ─────────────────────────────────────────────
+      if (target.className === "droppable-elem") {
+        // 数字を筆算セルへ（またはゴミ箱へ）
+        dragged.parentNode?.removeChild(dragged)
+        target.appendChild(dragged)
+        const pal = numPalRef.current!
+        while (pal.firstChild) pal.removeChild(pal.firstChild)
+        numSet()
+        kotaeInput()
+        se.playSe(se.pi)
+      } else if (target.className === "droppable-elem-2" && dragged.tagName === "IMG") {
+        // 硬貨をお金テーブルのセルへ
+        dragged.parentNode?.removeChild(dragged)
+        target.appendChild(dragged)
+        imgKuriagari()
+        se.playSe(se.pi)
+      }
+    }
+
+    document.addEventListener("dragstart", onDragStart)
+    document.addEventListener("dragover",  onDragOver)
+    document.addEventListener("drop",      onDrop)
+    return () => {
+      document.removeEventListener("dragstart", onDragStart)
+      document.removeEventListener("dragover",  onDragOver)
+      document.removeEventListener("drop",      onDrop)
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // ── 描画 ─────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
+    <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
 
       {/* タイトル */}
       <h1 className="text-xl font-bold text-center text-gray-800">
         ➕ たし算のひっ算
       </h1>
 
-      {/* コントロール行 */}
-      <div className="flex flex-wrap justify-center items-center gap-2">
+      {/* ボタン群エリア */}
+      <div className="flex flex-wrap items-center gap-2">
         <button
-          onClick={handleClear}
-          className="px-3 py-2 rounded-lg font-bold border-2 border-gray-400
+          onClick={masuClear}
+          className="px-3 py-2 rounded font-bold border-2 border-gray-400
                      text-gray-600 hover:bg-gray-100 text-sm active:scale-95 transition-all"
         >
           クリア
@@ -269,93 +477,161 @@ export default function TashiHissanPage() {
         <select
           value={typeIndex}
           onChange={e => setTypeIndex(Number(e.target.value))}
-          className="text-sm font-bold p-2 border-2 border-brand-400 rounded-lg text-gray-700"
+          className="text-sm font-bold p-2 border-2 border-brand-400 rounded text-gray-700"
         >
-          {TYPES.map((t, i) => <option key={i} value={i}>{t}</option>)}
+          {TYPE_DATA.map((t, i) => <option key={i} value={i}>{t}</option>)}
         </select>
         <button
-          onClick={handleMondai}
-          className="px-4 py-2 rounded-lg font-bold bg-brand-500 text-white
+          onClick={shutudai}
+          className="px-4 py-2 rounded font-bold bg-brand-500 text-white
                      hover:bg-brand-600 text-sm active:scale-95 transition-all"
         >
           もんだい
         </button>
         <button
-          onClick={handleShowAnswer}
-          className="px-4 py-2 rounded-lg font-bold bg-accent-500 text-white
+          onClick={mondaiSet}
+          className="px-4 py-2 rounded font-bold bg-accent-500 text-white
                      hover:bg-accent-600 text-sm active:scale-95 transition-all"
+        >
+          セット
+        </button>
+        <button
+          onClick={showAnswer}
+          className="px-4 py-2 rounded font-bold bg-warm-500 text-white
+                     hover:bg-warm-600 text-sm active:scale-95 transition-all"
         >
           こたえ
         </button>
       </div>
 
-      {/* 手入力行 */}
-      <div className="flex flex-wrap justify-center items-center gap-2">
+      {/* 式の入力欄 */}
+      <div className="flex flex-wrap items-center gap-2">
         <input
+          ref={box1Ref}
           type="number" min={10} max={999}
-          value={input1}
-          onChange={e => setInput1(e.target.value)}
-          className="w-20 text-center p-1 border-2 border-gray-300 rounded
-                     font-bold text-lg text-gray-800"
+          defaultValue={123}
+          className="w-24 h-12 text-center border-2 border-gray-300 rounded
+                     font-bold text-2xl p-1"
         />
-        <span className="text-gray-500 font-bold text-lg">＋</span>
+        <span className="text-2xl font-bold text-gray-600">＋</span>
         <input
+          ref={box3Ref}
           type="number" min={10} max={999}
-          value={input2}
-          onChange={e => setInput2(e.target.value)}
-          className="w-20 text-center p-1 border-2 border-gray-300 rounded
-                     font-bold text-lg text-gray-800"
+          defaultValue={456}
+          className="w-24 h-12 text-center border-2 border-gray-300 rounded
+                     font-bold text-2xl p-1"
         />
-        <button
-          onClick={handleSet}
-          className="px-3 py-1 rounded font-bold border-2 border-accent-400
-                     text-accent-600 hover:bg-accent-50 text-sm active:scale-95 transition-all"
+        <span className="text-2xl font-bold text-gray-600">＝</span>
+        {/* 答え入力欄: 正解なら赤、こたえボタンで青 */}
+        <input
+          ref={box5Ref}
+          type="number"
+          className="w-24 h-12 text-center border-2 border-gray-300 rounded
+                     font-bold text-2xl p-1"
+          onChange={() => {
+            const box5 = box5Ref.current!
+            if (Number(box5.value) === waRef.current) {
+              box5.style.color = "red"
+              if (tryAddCoins(1)) se.playSe(se.seikai1)
+            } else {
+              box5.style.color = "black"
+            }
+          }}
+        />
+      </div>
+
+      {/* フィールド: 筆算テーブル ＋ ゴミ箱 ＋ お金テーブル（横並び） */}
+      <div className="flex items-start overflow-x-auto" style={{ gap: 0 }}>
+
+        {/* 筆算テーブル（4行×4列、60×60px） */}
+        <table
+          ref={tblRef}
+          style={{ height: 240, borderCollapse: "collapse", flexShrink: 0 }}
         >
-          セット
-        </button>
-      </div>
+          <tbody>
+            {[0, 1, 2, 3].map(row => (
+              <tr key={row} style={{ maxHeight: 60 }}>
+                {[0, 1, 2, 3].map(col => (
+                  <td
+                    key={col}
+                    // row0（繰り上がり）と row3（答え）のみドロップ可
+                    className={row === 0 || row === 3 ? "droppable-elem" : ""}
+                    style={{
+                      border: "1px solid #333",
+                      width: 60,
+                      maxWidth: 60,
+                      height: 60,
+                      maxHeight: 60,
+                      fontSize: 30,
+                      textAlign: "center",
+                      backgroundColor: row === 0 || row === 3 ? "lightyellow" : "white",
+                      // row2 の下線（加数の下の横線）
+                      borderBottom: row === 2 ? "3px solid #333" : "1px solid #333",
+                    }}
+                  />
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
 
-      {/* 正解メッセージ */}
-      <div className="h-8 flex items-center justify-center">
-        {isCorrect && (
-          <p className="text-2xl font-bold text-brand-600 animate-bounce">
-            せいかい！🎉
-          </p>
-        )}
-      </div>
+        {/* 財布（droppable-elem ─ 硬貨・数字をドロップで削除） */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/images/saifu.png"
+          className="droppable-elem"
+          style={{
+            width: 50,
+            height: 60,
+            position: "relative",
+            left: 10,
+            top: 150,
+            flexShrink: 0,
+          }}
+          alt="財布"
+          draggable={false}
+        />
 
-      {/* 筆算グリッド */}
-      <div className="flex justify-center">
-        <div className="inline-block">
-          {renderGrid()}
-        </div>
-      </div>
-
-      {/* 数字パレット */}
-      <div className="flex flex-wrap justify-center gap-2">
-        {[0,1,2,3,4,5,6,7,8,9].map(n => (
-          <button
-            key={n}
-            onClick={() => handleDigit(n)}
-            className="w-12 h-12 text-xl font-bold border-2 border-gray-300 rounded-lg
-                       bg-white hover:bg-brand-50 hover:border-brand-400
-                       active:scale-95 transition-all"
-          >
-            {n}
-          </button>
-        ))}
-        {/* 削除ボタン */}
-        <button
-          onClick={handleDelete}
-          className="w-12 h-12 text-sm font-bold border-2 border-gray-300 rounded-lg
-                     bg-white hover:bg-red-50 hover:border-red-400
-                     active:scale-95 transition-all text-gray-500"
+        {/* お金テーブル（4行×4列、200×60px） */}
+        <table
+          ref={tbl2Ref}
+          style={{ height: 240, marginLeft: 20, borderCollapse: "collapse", flexShrink: 0 }}
         >
-          ✕
-        </button>
+          <tbody>
+            {[0, 1, 2, 3].map(row => (
+              <tr key={row} style={{ maxHeight: 60 }}>
+                {[0, 1, 2, 3].map(col => (
+                  <td
+                    key={col}
+                    // 全セルドロップ可
+                    className="droppable-elem-2"
+                    style={{
+                      border: "1px solid #333",
+                      // 25px × 5枚 = 125px がちょうど5枚並ぶ幅
+                      width: 130,
+                      maxWidth: 130,
+                      height: 60,
+                      maxHeight: 60,
+                      backgroundColor: row === 0 || row === 3 ? "lightyellow" : "white",
+                    }}
+                  />
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
       </div>
 
-      {/* コイン */}
+      {/* 数字パレット（0〜9、ドラッグして筆算に配置） */}
+      {/* className は "droppable-elem" のみ（余計なクラスを混ぜると D&D の判定が壊れる） */}
+      <div
+        ref={numPalRef}
+        className="droppable-elem"
+        style={{ display: "flex", flexWrap: "wrap", gap: 4, minHeight: 54 }}
+      />
+
+      {/* コイン（正解スコア） */}
       <CoinDisplay coins={coins} />
 
     </div>
