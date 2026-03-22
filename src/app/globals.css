@@ -96,6 +96,26 @@ input, textarea {
 }
 
 /* -------------------------------------------------------
+   筆算アプリ：取り消し線スタイル（ひき算の繰り下がり可視化）
+   .naname1 に設定した数字に赤い斜め線が引かれる
+   ------------------------------------------------------- */
+.naname1 {
+  position: relative;
+  display: inline-block;
+}
+.naname1::before {
+  content: "";
+  position: absolute;
+  display: block;
+  transform: rotate(45deg);
+  background-color: red;
+  width: 100%;
+  height: 1px;
+  top: 50%;
+  left: 0;
+}
+
+/* -------------------------------------------------------
    ダークモード フォールバック
    Tailwind の dark: プレフィックスが効かない場合の保険として
    プレーンな CSS セレクタでも背景・文字色を切り替える
