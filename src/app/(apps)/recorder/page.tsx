@@ -4,8 +4,7 @@
 // リコーダー（けんばん + 運指表示）
 //
 // 旧版 07reco.js の移植。
-// けんばん（XylophoneBoard）で演奏でき、
-// 演奏中の音の運指を図でリアルタイム表示する。
+// ピアノ鍵盤で演奏でき、演奏中の音の運指を図でリアルタイム表示する。
 //
 // 【音域】ﾄﾞ4（soundIndex 8）〜 ﾚ6（soundIndex 34）
 //
@@ -15,30 +14,18 @@
 import { useState, useCallback } from "react"
 import { useAudioUnlock } from "@/hooks/useAudioUnlock"
 import { useInstrumentSounds } from "@/hooks/useInstrumentSounds"
-import XylophoneBoard, { BarItem } from "@/components/parts/block/XylophoneBoard"
 
-// ── バーデータ ────────────────────────────────────────
-// 旧版 No[] 配列の値をそのまま soundIndex に対応させている
+// ── 鍵盤データ型 ──────────────────────────────────────
 
-const BK_BARS: BarItem[] = [
-  { soundIndex: 9,  note: "#ﾄﾞ/♭ﾚ" },
-  { soundIndex: 11, note: "#ﾚ/♭ﾐ"  },
-  { soundIndex: 0,  note: ""         },  // スペーサー（ﾐ〜ﾌｧの間）
-  { soundIndex: 14, note: "#ﾌｧ/♭ｿ" },
-  { soundIndex: 16, note: "#ｿ/♭ﾗ"  },
-  { soundIndex: 18, note: "#ﾗ/♭ｼ"  },
-  { soundIndex: 0,  note: ""         },  // スペーサー（ｼ〜ﾄﾞの間）
-  { soundIndex: 21, note: "#ﾄﾞ/♭ﾚ" },
-  { soundIndex: 23, note: "#ﾚ/♭ﾐ"  },
-  { soundIndex: 0,  note: ""         },  // スペーサー
-  { soundIndex: 26, note: "#ﾌｧ/♭ｿ" },
-  { soundIndex: 28, note: "#ｿ/♭ﾗ"  },
-  { soundIndex: 30, note: "#ﾗ/♭ｼ"  },
-  { soundIndex: 0,  note: ""         },  // スペーサー
-  { soundIndex: 33, note: "#ﾄﾞ/♭ﾚ" },
-]
+type PianoKey = {
+  soundIndex: number  // 0またはスペーサー用の90台以外は音符インデックス
+  note: string
+}
 
-const WH_BARS: BarItem[] = [
+// ── 白鍵データ ─────────────────────────────────────────
+// soundIndex 8〜34 の白鍵（ﾄﾞ4〜ﾚ6）
+
+const WH_KEYS: PianoKey[] = [
   { soundIndex: 8,  note: "ﾄﾞ" },
   { soundIndex: 10, note: "ﾚ"   },
   { soundIndex: 12, note: "ﾐ"   },
@@ -57,8 +44,26 @@ const WH_BARS: BarItem[] = [
   { soundIndex: 34, note: "ﾚ"   },
 ]
 
-// リコーダーのバー色（温かみのある木製感）
-const BAR_COLOR = "#8b5e3c"
+// ── 黒鍵データ ─────────────────────────────────────────
+// soundIndex 91〜94 はスペーサー（ミ→ファ、シ→ドの間に黒鍵がない隙間）
+
+const BK_KEYS: PianoKey[] = [
+  { soundIndex: 9,  note: "#ﾄﾞ" },
+  { soundIndex: 11, note: "#ﾚ"  },
+  { soundIndex: 91, note: ""    },  // スペーサー（ﾐ〜ﾌｧ）
+  { soundIndex: 14, note: "#ﾌｧ" },
+  { soundIndex: 16, note: "#ｿ"  },
+  { soundIndex: 18, note: "#ﾗ"  },
+  { soundIndex: 92, note: ""    },  // スペーサー（ｼ〜ﾄﾞ）
+  { soundIndex: 21, note: "#ﾄﾞ" },
+  { soundIndex: 23, note: "#ﾚ"  },
+  { soundIndex: 93, note: ""    },  // スペーサー（ﾐ〜ﾌｧ）
+  { soundIndex: 26, note: "#ﾌｧ" },
+  { soundIndex: 28, note: "#ｿ"  },
+  { soundIndex: 30, note: "#ﾗ"  },
+  { soundIndex: 94, note: ""    },  // スペーサー（ｼ〜ﾄﾞ）
+  { soundIndex: 33, note: "#ﾄﾞ" },
+]
 
 // ── 運指データ ────────────────────────────────────────
 // FINGERING[soundIndex] = 10穴の状態配列
@@ -102,17 +107,15 @@ const FINGERING: Record<number, number[]> = {
 }
 
 // ── 運指表示コンポーネント ────────────────────────────
-// リコーダーの10穴を上から下の順で表示する。
-// 表示順（上=高音側の穴）:
-//   [8,9]   小指ペア（右手）
-//   [6,7]   薬指ペア（右手）
-//   [5]     中指（右手）
-//   [4]     人差し指（右手）
-//   [3]     薬指（左手）
-//   [2]     中指（左手）
-//   [0,1]   親指（左）＋人差し指（左）
+//
+// 2カラムレイアウト:
+//   左カラム: hole0（親指・裏側）を一番下に配置
+//   右カラム: hole1〜hole9（表側・上から下へ）
+//
+// これにより hole1・hole2・hole3 が同じ縦ラインに揃う
 
 function RecorderFingering({ holes }: { holes: number[] }) {
+  // 穴のスタイル: 0=あける（薄色）, 1=おさえる（黒）, 2=サミング（半黒）
   const holeStyle = (state: number, small = false): React.CSSProperties => {
     const size = small ? 16 : 24
     const base: React.CSSProperties = {
@@ -132,28 +135,42 @@ function RecorderFingering({ holes }: { holes: number[] }) {
   return (
     <div className="flex flex-col items-center gap-1.5 py-3 px-4 bg-amber-50 border border-amber-200 rounded-lg select-none">
       <p className="text-xs font-bold text-amber-800 mb-0.5">運指</p>
-      {/* 小指ペア */}
-      <div className="flex gap-1">
-        <div style={holeStyle(holes[8], true)} />
-        <div style={holeStyle(holes[9], true)} />
-      </div>
-      {/* 薬指ペア */}
-      <div className="flex gap-1">
-        <div style={holeStyle(holes[6], true)} />
-        <div style={holeStyle(holes[7], true)} />
-      </div>
-      {/* 中指R */}
-      <div style={holeStyle(holes[5])} />
-      {/* 人差R */}
-      <div style={holeStyle(holes[4])} />
-      {/* 薬指L */}
-      <div style={holeStyle(holes[3])} />
-      {/* 中指L */}
-      <div style={holeStyle(holes[2])} />
-      {/* 親指L + 人差L */}
-      <div className="flex gap-1">
-        <div style={holeStyle(holes[0])} />
-        <div style={holeStyle(holes[1])} />
+
+      {/* 2カラム: items-end で両カラムを下揃えにする */}
+      <div className="flex gap-3 items-end">
+
+        {/* 左カラム: 親指（裏）*/}
+        {/* 「裏」ラベルは absolute で配置し、hole0 のレイアウト高さに影響させない */}
+        {/* → items-end により hole0 と hole1 が横方向に揃う */}
+        <div className="relative flex items-center justify-center">
+          <div style={holeStyle(holes[0])} />
+          <span className="absolute top-full mt-0.5 text-[0.6rem] text-amber-700 font-bold leading-none whitespace-nowrap">裏</span>
+        </div>
+
+        {/* 右カラム: 表側の穴（上=高音側から下=低音側へ） */}
+        <div className="flex flex-col items-center gap-1.5">
+          {/* 小指ペア（右手）*/}
+          <div className="flex gap-1">
+            <div style={holeStyle(holes[8], true)} />
+            <div style={holeStyle(holes[9], true)} />
+          </div>
+          {/* 薬指ペア（右手）*/}
+          <div className="flex gap-1">
+            <div style={holeStyle(holes[6], true)} />
+            <div style={holeStyle(holes[7], true)} />
+          </div>
+          {/* 中指（右手）*/}
+          <div style={holeStyle(holes[5])} />
+          {/* 人差し指（右手）*/}
+          <div style={holeStyle(holes[4])} />
+          {/* 薬指（左手）*/}
+          <div style={holeStyle(holes[3])} />
+          {/* 中指（左手）*/}
+          <div style={holeStyle(holes[2])} />
+          {/* 人差し指（左手）— 親指（hole0）と同じ高さに揃う */}
+          <div style={holeStyle(holes[1])} />
+        </div>
+
       </div>
     </div>
   )
@@ -170,28 +187,30 @@ export default function RecorderPage() {
     new Array(10).fill(0)
   )
 
+  // 鍵を押したとき: 音を鳴らし、運指を更新
   const handlePressDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    const idx = Number((e.currentTarget as HTMLElement).dataset.sound)
-    if (idx > 0) {
+    const idx = Number((e.currentTarget as HTMLElement).id)
+    if (idx >= 8 && idx <= 34) {
       playSound(idx)
       ;(e.currentTarget as HTMLElement).style.filter = "brightness(1.4)"
-      // 対応する運指を表示
       const f = FINGERING[idx]
       if (f) setActiveFingering([...f])
     }
   }, [playSound])
 
+  // 鍵を離したとき: 音を止める
   const handlePressUp = useCallback((e: React.MouseEvent | React.TouchEvent) => {
-    const idx = Number((e.currentTarget as HTMLElement).dataset.sound)
-    if (idx > 0) {
+    const idx = Number((e.currentTarget as HTMLElement).id)
+    if (idx >= 8 && idx <= 34) {
       stopSound(idx)
       ;(e.currentTarget as HTMLElement).style.filter = ""
     }
   }, [stopSound])
 
+  // マウスが鍵から外れたとき: 音を止める
   const handleMouseLeave = useCallback((e: React.MouseEvent) => {
-    const idx = Number((e.currentTarget as HTMLElement).dataset.sound)
-    if (idx > 0) {
+    const idx = Number((e.currentTarget as HTMLElement).id)
+    if (idx >= 8 && idx <= 34) {
       stopSound(idx)
       ;(e.currentTarget as HTMLElement).style.filter = ""
     }
@@ -204,41 +223,103 @@ export default function RecorderPage() {
         けんばんをおして演奏しよう・運指をかくにんしてね
       </p>
 
-      {/* 運指図 + 凡例 */}
-      <div className="flex flex-col md:flex-row items-center md:items-start justify-center gap-6 mb-6">
-        {/* 運指図 */}
-        <RecorderFingering holes={activeFingering} />
+      {/* 注意書き: 鍵盤の上に配置 */}
+      <p className="text-center text-xs text-gray-400 mb-4">
+        ※ うまく表示されない場合は「PC版で表示」にしてお試しください
+      </p>
 
-        {/* 凡例 */}
-        <div className="text-sm text-gray-600">
-          <p className="font-bold text-gray-700 mb-2">●運指の見かた</p>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-block w-5 h-5 rounded-full border-2 border-amber-700 bg-amber-100 flex-shrink-0" />
-            <span>あける</span>
+      {/* 運指図・凡例・鍵盤を横並び（中央揃え、モバイルは縦積み） */}
+      <div className="flex flex-col md:flex-row justify-center items-start gap-6">
+
+        {/* 左エリア: 運指図 + 凡例 */}
+        <div className="flex flex-col items-center md:items-start gap-4 md:shrink-0">
+
+          {/* 運指図 */}
+          <RecorderFingering holes={activeFingering} />
+
+          {/* 凡例 */}
+          <div className="text-sm text-gray-600">
+            <p className="font-bold text-gray-700 mb-2">●運指の見かた</p>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-block w-5 h-5 rounded-full border-2 border-amber-700 bg-amber-100 flex-shrink-0" />
+              <span>あける</span>
+            </div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="inline-block w-5 h-5 rounded-full border-2 border-amber-700 bg-gray-900 flex-shrink-0" />
+              <span>おさえる</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span
+                className="inline-block w-5 h-5 rounded-full border-2 border-amber-700 flex-shrink-0"
+                style={{ background: "linear-gradient(90deg, #1a1a1a 50%, #fef3c7 50%)" }}
+              />
+              <span>サミング（半開き）</span>
+            </div>
           </div>
-          <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-block w-5 h-5 rounded-full border-2 border-amber-700 bg-gray-900 flex-shrink-0" />
-            <span>おさえる</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span
-              className="inline-block w-5 h-5 rounded-full border-2 border-amber-700 flex-shrink-0"
-              style={{ background: "linear-gradient(90deg, #1a1a1a 50%, #fef3c7 50%)" }}
-            />
-            <span>サミング（半開き）</span>
+
+        </div>
+
+        {/* 右エリア: ピアノ鍵盤（横スクロール対応） */}
+        <div className="overflow-x-auto pb-4">
+
+          {/*
+            鍵盤コンテナ。
+            白鍵 16 本 × (24px mobile / 40px desktop) = 384px / 640px
+          */}
+          <div className="relative mx-auto w-[384px] h-40 md:w-[640px] md:h-64">
+
+            {/* 黒鍵行: 白鍵の半幅ぶん右にずらして白鍵の間に入るようにする */}
+            <div className="absolute top-0 left-3 md:left-5 flex">
+              {BK_KEYS.map((key) => {
+                const isSpacer = key.soundIndex > 90
+                if (isSpacer) {
+                  return (
+                    <div key={key.soundIndex} className="w-5 h-24 md:w-9 md:h-40 mx-0.5" />
+                  )
+                }
+                return (
+                  <div
+                    key={key.soundIndex}
+                    id={String(key.soundIndex)}
+                    className="select-none w-5 h-24 md:w-9 md:h-40 bg-gray-800 text-white flex flex-col items-center justify-end pb-2 md:pb-3 mx-0.5 border border-gray-500 rounded-b cursor-pointer z-20 hover:bg-red-400 active:translate-y-1"
+                    onMouseDown={handlePressDown}
+                    onMouseUp={handlePressUp}
+                    onMouseLeave={handleMouseLeave}
+                    onTouchStart={handlePressDown}
+                    onTouchEnd={handlePressUp}
+                  >
+                    <span className="font-bold text-[0.55rem] md:text-xs text-gray-100 leading-tight text-center">
+                      {key.note}
+                    </span>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* 白鍵行: z-10 で黒鍵の下に入る */}
+            <div className="absolute top-0 flex">
+              {WH_KEYS.map((key) => (
+                <div
+                  key={key.soundIndex}
+                  id={String(key.soundIndex)}
+                  className="select-none w-6 h-40 md:w-10 md:h-64 bg-white text-gray-900 flex flex-col items-center justify-end pb-2 md:pb-3 border border-gray-500 rounded-b cursor-pointer z-10 hover:bg-red-200 active:translate-y-1"
+                  onMouseDown={handlePressDown}
+                  onMouseUp={handlePressUp}
+                  onMouseLeave={handleMouseLeave}
+                  onTouchStart={handlePressDown}
+                  onTouchEnd={handlePressUp}
+                >
+                  <span className="font-bold text-[0.7rem] md:text-sm text-gray-800 leading-tight">
+                    {key.note}
+                  </span>
+                </div>
+              ))}
+            </div>
+
           </div>
         </div>
-      </div>
 
-      {/* 鍵盤エリア */}
-      <XylophoneBoard
-        bkBars={BK_BARS}
-        whBars={WH_BARS}
-        barColor={BAR_COLOR}
-        onPressDown={handlePressDown}
-        onPressUp={handlePressUp}
-        onMouseLeave={handleMouseLeave}
-      />
+      </div>
     </main>
   )
 }
