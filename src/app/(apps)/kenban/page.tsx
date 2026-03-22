@@ -383,16 +383,18 @@ export default function KenbanPage() {
                   <span className="font-bold text-[0.55rem] md:text-xs text-gray-100 leading-tight">
                     {key.note}
                   </span>
-                  {/* 黒鍵: キーラベル（兼用キーは2段表示） */}
-                  {key.label2 ? (
-                    <span className="font-bold text-[0.6rem] md:text-xs text-yellow-300 leading-none mt-0.5">
-                      {key.label}<br/>{key.label2}
-                    </span>
-                  ) : (
-                    <span className="font-bold text-[0.6rem] md:text-xs text-yellow-300 leading-tight">
-                      {key.label}
-                    </span>
-                  )}
+                  {/* 黒鍵: キーラベル（固定高さで音名の位置を揃える） */}
+                  <div className="h-5 md:h-7 flex items-center justify-center mt-0.5">
+                    {key.label2 ? (
+                      <span className="font-bold text-[0.6rem] md:text-xs text-yellow-300 leading-none text-center">
+                        {key.label}<br/>{key.label2}
+                      </span>
+                    ) : (
+                      <span className="font-bold text-[0.6rem] md:text-xs text-yellow-300 leading-tight text-center">
+                        {key.label}
+                      </span>
+                    )}
+                  </div>
                 </div>
               )
             })}
@@ -415,16 +417,18 @@ export default function KenbanPage() {
                 <span className="font-bold text-[0.7rem] md:text-sm text-gray-800 leading-tight">
                   {key.note}
                 </span>
-                {/* 白鍵: キーラベル（兼用キーは2段表示） */}
-                {key.label2 ? (
-                  <span className="font-bold text-[0.6rem] md:text-xs text-blue-600 leading-none mt-0.5">
-                    {key.label}<br/>{key.label2}
-                  </span>
-                ) : (
-                  <span className="font-bold text-[0.65rem] md:text-xs text-blue-600 leading-tight">
-                    {key.label}
-                  </span>
-                )}
+                {/* 白鍵: キーラベル（固定高さで音名の位置を揃える） */}
+                <div className="h-6 md:h-8 flex items-center justify-center mt-0.5">
+                  {key.label2 ? (
+                    <span className="font-bold text-[0.6rem] md:text-xs text-blue-600 leading-none text-center">
+                      {key.label}<br/>{key.label2}
+                    </span>
+                  ) : (
+                    <span className="font-bold text-[0.65rem] md:text-xs text-blue-600 leading-tight text-center">
+                      {key.label}
+                    </span>
+                  )}
+                </div>
               </div>
             ))}
           </div>
