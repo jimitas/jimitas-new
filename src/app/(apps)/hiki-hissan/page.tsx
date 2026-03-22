@@ -176,6 +176,63 @@ export default function HikiHissanPage() {
     }
   }
 
+  // ── お金テーブルのヒント表示 ──────────────────────
+  // 薄い透かし文字で各行の使い方を案内する（pointer-events:none で D&D に影響しない）
+  //
+  // row0（くり下がり行）: col2・col3 のみ「ばらすときはここへドロップ」
+  //   千と百の位（col0・col1）はひき算では使わないため表示しない
+  // row2（減数行）: col2・col3 のみ「ひく分だけここへ」
+  //   col0・col1 は「-」記号が入る可能性があるため除外
+  // row3（こたえ行）: col1〜col3 に「のこりをここへあつめる」
+  function updateOkaneHints() {
+    const TBL_2 = tbl2Ref.current!
+
+    // ヒント span を生成するヘルパー
+    function makeHint(text: string): HTMLSpanElement {
+      const span = document.createElement("span")
+      span.className       = "okane-hint"
+      span.style.pointerEvents = "none"
+      span.style.userSelect    = "none"
+      span.style.position      = "absolute"
+      span.style.top           = "50%"
+      span.style.left          = "50%"
+      span.style.transform     = "translate(-50%,-50%)"
+      span.style.fontSize      = "9px"
+      span.style.color         = "rgba(0,0,0,0.28)"
+      span.style.whiteSpace    = "nowrap"
+      span.style.textAlign     = "center"
+      span.textContent         = text
+      return span
+    }
+
+    // 既存ヒントを削除してから再描画（okaneSet 後に呼ぶ想定だが念のため）
+    function clearHints(cell: HTMLTableCellElement) {
+      cell.querySelector(".okane-hint")?.remove()
+      cell.style.position = "relative"
+    }
+
+    // row0: col2（十の位）・col3（一の位）のみ
+    for (const col of [2, 3]) {
+      const cell = TBL_2.rows[0].cells[col]
+      clearHints(cell)
+      cell.appendChild(makeHint("ばらすときはここへドロップ"))
+    }
+
+    // row2: col2（十の位）・col3（一の位）のみ
+    for (const col of [2, 3]) {
+      const cell = TBL_2.rows[2].cells[col]
+      clearHints(cell)
+      cell.appendChild(makeHint("ひく分だけここへ"))
+    }
+
+    // row3: col1〜col3（百・十・一の位）
+    for (const col of [1, 2, 3]) {
+      const cell = TBL_2.rows[3].cells[col]
+      clearHints(cell)
+      cell.appendChild(makeHint("のこりをここへあつめる"))
+    }
+  }
+
   // ── 硬貨画像を生成 ───────────────────────────────
   // ひき算は ichi/juu/hyaku の3種のみ、すべて 25×25px
   function makeCoinImg(col: number): HTMLImageElement {
@@ -241,6 +298,9 @@ export default function HikiHissanPage() {
     } else {
       TBL_2.rows[2].cells[0].innerHTML = "-"
     }
+
+    // 各行の使い方ヒントを透かし文字で表示
+    updateOkaneHints()
   }
 
   // ── 筆算テーブルに数字を配置 ──────────────────────
@@ -643,6 +703,8 @@ export default function HikiHissanPage() {
                       width: 130, maxWidth: 130,
                       height: 60, maxHeight: 60,
                       backgroundColor: row === 0 || row === 3 ? "lightyellow" : "white",
+                      // ヒント span の absolute 配置に必要
+                      position: "relative",
                     }}
                   />
                 ))}
