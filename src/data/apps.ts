@@ -320,6 +320,16 @@ export const apps: AppItem[] = [
     path: "/gakuten",
   },
   {
+    id: "kenban-easy",
+    title: "けんばんハーモニカ（かんたん）",
+    description: "ドレミファソラシドの8つの鍵盤で演奏しよう。1年生の鍵盤ハーモニカ入門に",
+    grades: [1],
+    subjects: ["音楽"],
+    tags: ["楽器", "演奏", "入門"],
+    type: "app",
+    path: "/kenban-easy",
+  },
+  {
     id: "kenban",
     title: "けんばんハーモニカ",
     description: "けんばんハーモニカ・リコーダー・もっきん・てっきんの4種類の音色で演奏できる。合奏練習にも使える",
