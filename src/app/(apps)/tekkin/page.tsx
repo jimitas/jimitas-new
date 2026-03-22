@@ -48,14 +48,14 @@ const WH_BARS = [
   { soundIndex: 8,  note: "ド"   },
   { soundIndex: 10, note: "レ"   },
   { soundIndex: 12, note: "ミ"   },
-  { soundIndex: 13, note: "ファ" },
+  { soundIndex: 13, note: "ﾌｧ" },
   { soundIndex: 15, note: "ソ"   },
   { soundIndex: 17, note: "ラ"   },
   { soundIndex: 19, note: "シ"   },
   { soundIndex: 20, note: "ド"   },
   { soundIndex: 22, note: "レ"   },
   { soundIndex: 24, note: "ミ"   },
-  { soundIndex: 25, note: "ファ" },
+  { soundIndex: 25, note: "ﾌｧ" },
   { soundIndex: 27, note: "ソ"   },
 ]
 
