@@ -218,8 +218,10 @@ export default function HikiHissanPage() {
       cell.appendChild(makeHint("ばらすときはここへドロップ"))
     }
 
-    // row2: col2（十の位）・col3（一の位）のみ
-    for (const col of [2, 3]) {
+    // row2: col2（十の位）・col3（一の位）は常に表示
+    // 減数が3桁のときは col1（百の位）も追加
+    const row2Cols = gensuRef.current >= 100 ? [1, 2, 3] : [2, 3]
+    for (const col of row2Cols) {
       const cell = TBL_2.rows[2].cells[col]
       clearHints(cell)
       cell.appendChild(makeHint("ひく分だけここへ"))
