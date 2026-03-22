@@ -15,24 +15,28 @@ import { useEffect, useCallback, useRef } from "react"
 import { Howl, Howler } from "howler"
 
 // ── 8鍵盤のデータ ─────────────────────────────────────
-// index は ke-*.mp3 のファイル番号（全版と共通の音源）
-// key   は対応するキーボードキー（A=ド, S=レ, ... K=高ド）
+// index  : ke-*.mp3 のファイル番号（全版と共通の音源）
+// key    : 主キーのラベル
+// key2   : 兼用キーのラベル（ド・ファは親指マタギの練習のために2キー割り当て）
+// keyCode / keyCode2 : 対応する KeyboardEvent.code
 
 const KEYS = [
-  { index: 8,  note: "ド", key: "A", keyCode: "KeyA" },
-  { index: 10, note: "レ", key: "S", keyCode: "KeyS" },
-  { index: 12, note: "ミ", key: "D", keyCode: "KeyD" },
-  { index: 13, note: "ファ", key: "F", keyCode: "KeyF" },
-  { index: 15, note: "ソ", key: "G", keyCode: "KeyG" },
-  { index: 17, note: "ラ", key: "H", keyCode: "KeyH" },
-  { index: 19, note: "シ", key: "J", keyCode: "KeyJ" },
-  { index: 20, note: "ド", key: "K", keyCode: "KeyK" },
+  { index: 8,  note: "ド",   key: "D", keyCode: "KeyD", key2: "C", keyCode2: "KeyC" },
+  { index: 10, note: "レ",   key: "F", keyCode: "KeyF" },
+  { index: 12, note: "ミ",   key: "G", keyCode: "KeyG" },
+  { index: 13, note: "ファ", key: "H", keyCode: "KeyH", key2: "N", keyCode2: "KeyN" },
+  { index: 15, note: "ソ",   key: "J", keyCode: "KeyJ" },
+  { index: 17, note: "ラ",   key: "K", keyCode: "KeyK" },
+  { index: 19, note: "シ",   key: "L", keyCode: "KeyL" },
+  { index: 20, note: "ド",   key: ";", keyCode: "Semicolon" },
 ]
 
 // KeyCode → KEYS配列のインデックス（0〜7）のマップ
-const KEY_MAP: Record<string, number> = Object.fromEntries(
-  KEYS.map((k, i) => [k.keyCode, i])
-)
+// key2 がある場合はそのキーコードも同じインデックスに対応させる
+const KEY_MAP: Record<string, number> = Object.fromEntries([
+  ...KEYS.map((k, i) => [k.keyCode, i]),
+  ...KEYS.flatMap((k, i) => k.keyCode2 ? [[k.keyCode2, i]] : []),
+])
 
 // キー押下中のハイライト色
 const PRESSED_BG = "rgba(252, 165, 165)"
@@ -172,17 +176,30 @@ export default function KenbanEasyPage() {
             <span className="font-bold text-base md:text-xl text-gray-800 leading-tight">
               {k.note}
             </span>
-            {/* キーボードのキー */}
-            <span className="font-bold text-sm md:text-base text-blue-600 mt-1">
-              {k.key}
-            </span>
+            {/*
+              キーボードのキーラベル。
+              全キーで高さを揃えるために固定高さのコンテナに入れる。
+              1行キーも2行キーも同じ高さ → 音名の位置が揃う。
+            */}
+            <div className="h-9 md:h-11 flex items-center justify-center mt-1">
+              {k.key2 ? (
+                <span className="font-bold text-sm md:text-base text-blue-600 leading-tight text-center">
+                  {k.key}<br/>{k.key2}
+                </span>
+              ) : (
+                <span className="font-bold text-sm md:text-base text-blue-600 text-center">
+                  {k.key}
+                </span>
+              )}
+            </div>
           </div>
         ))}
       </div>
 
       {/* キーボードガイド */}
-      <div className="mt-8 text-center text-xs text-gray-400">
-        キーボード: A S D F G H J K = ドレミファソラシド
+      <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
+        <p>キーボード: D(C) F G H(N) J K L ; = ドレミファソラシド</p>
+        <p className="mt-1">※ ドとファは2つのキーで弾けます（指マタギの練習用）</p>
       </div>
     </main>
   )
