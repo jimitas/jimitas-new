@@ -20,6 +20,8 @@
 
 import { useState, useCallback, useEffect, useRef } from "react"
 import { useSound } from "@/hooks/useSound"
+import { useProblemCoins } from "@/hooks/useProblemCoins"
+import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── データ定義 ──────────────────────────────────────────
 // 40種の音楽記号（no は画像ファイル名に対応: ongaku{no}.png）
@@ -94,6 +96,7 @@ type QuizOption = 0 | 1 | 2
 // ── メインコンポーネント ─────────────────────────────────
 export default function GakutenPage() {
   const { play } = useSound()
+  const { coins, tryAddCoins, resetProblem } = useProblemCoins()
 
   // ── モード ────────────────────────────────────────────
   const [mode, setMode] = useState<Mode>("top")
@@ -183,6 +186,7 @@ export default function GakutenPage() {
   // ── クイズ：「つぎへ」ボタン ──────────────────────────
   function handleQuizNext() {
     play("/sounds/pi.mp3", 0.4)
+    resetProblem()
     setQuizIndex((prev) => (prev + 1) % DATA.length)
     setSelectedAnswer(null)
   }
@@ -190,6 +194,7 @@ export default function GakutenPage() {
   // ── クイズ：「もどる」ボタン ──────────────────────────
   function handleQuizPrev() {
     play("/sounds/pi.mp3", 0.4)
+    resetProblem()
     setQuizIndex((prev) => (prev - 1 + DATA.length) % DATA.length)
     setSelectedAnswer(null)
   }
@@ -198,6 +203,7 @@ export default function GakutenPage() {
   function handleQuizShuffle() {
     play("/sounds/set.mp3", 0.4)
     if (!confirm("順番をシャッフルしますか？")) return
+    resetProblem()
     setQuizOrder(createShuffledOrder(DATA.length))
     setQuizIndex(0)
     setQuizFlags(Array(DATA.length).fill(false))
@@ -214,8 +220,9 @@ export default function GakutenPage() {
       // 正解
       play("/sounds/seikai.mp3", 0.6)
       showSeikai()
-      // まだ正解済でない問題なら得点を加算
+      // まだ正解済でない問題なら得点・コインを加算
       if (!quizFlags[quizIndex]) {
+        tryAddCoins(1)
         setQuizFlags((prev) => {
           const next = [...prev]
           next[quizIndex] = true
@@ -371,6 +378,9 @@ export default function GakutenPage() {
           <h2 className="text-xl font-bold text-center mb-2">
             🎯 クイズ
           </h2>
+
+          {/* コイン表示 */}
+          <CoinDisplay coins={coins} />
 
           {/* 進捗・スコア */}
           <p className="text-center text-sm text-gray-500 mb-4">
