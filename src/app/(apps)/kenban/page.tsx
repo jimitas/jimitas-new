@@ -47,21 +47,21 @@ type KeyData = {
 // 音域: ファ(F3) 〜 レ(D6)
 
 const WH_KEYS: KeyData[] = [
-  { index: 1,  note: "ファ", label: "Sh" },       // ShiftLeft
+  { index: 1,  note: "ﾌｧ", label: "Sh" },       // ShiftLeft
   { index: 3,  note: "ソ",   label: "Z" },
   { index: 5,  note: "ラ",   label: "X" },
   { index: 7,  note: "シ",   label: "C" },
   { index: 8,  note: "ド",   label: "V" },
   { index: 10, note: "レ",   label: "B" },
   { index: 12, note: "ミ",   label: "N" },
-  { index: 13, note: "ファ", label: "M" },
+  { index: 13, note: "ﾌｧ", label: "M" },
   { index: 15, note: "ソ",   label: ",", label2: "Q" },   // 兼用
   { index: 17, note: "ラ",   label: ".", label2: "W" },   // 兼用
   { index: 19, note: "シ",   label: "/", label2: "E" },   // 兼用
   { index: 20, note: "ド",   label: "_", label2: "R" },   // 兼用（IntlRo）
   { index: 22, note: "レ",   label: "T" },
   { index: 24, note: "ミ",   label: "Y" },
-  { index: 25, note: "ファ", label: "U" },
+  { index: 25, note: "ﾌｧ", label: "U" },
   { index: 27, note: "ソ",   label: "I" },
   { index: 29, note: "ラ",   label: "O" },
   { index: 31, note: "シ",   label: "P" },
@@ -73,21 +73,21 @@ const WH_KEYS: KeyData[] = [
 // index 91〜95 はスペーサー（ミ→ファ、シ→ドの間に黒鍵がない隙間）
 
 const BK_KEYS: KeyData[] = [
-  { index: 2,  note: "#ファ", label: "A" },
+  { index: 2,  note: "#ﾌｧ", label: "A" },
   { index: 4,  note: "#ソ",   label: "S" },
   { index: 6,  note: "#ラ",   label: "D" },
   { index: 91, note: "",       label: "" },             // スペーサー
   { index: 9,  note: "#ド",   label: "G" },
   { index: 11, note: "#レ",   label: "H" },
   { index: 92, note: "",       label: "" },             // スペーサー
-  { index: 14, note: "#ファ", label: "K", label2: "1" }, // 兼用
+  { index: 14, note: "#ﾌｧ", label: "K", label2: "1" }, // 兼用
   { index: 16, note: "#ソ",   label: "L", label2: "2" }, // 兼用
   { index: 18, note: "#ラ",   label: ";", label2: "3" }, // 兼用
   { index: 93, note: "",       label: "" },             // スペーサー
   { index: 21, note: "#ド",   label: "5" },
   { index: 23, note: "#レ",   label: "6" },
   { index: 94, note: "",       label: "" },             // スペーサー
-  { index: 26, note: "#ファ", label: "8" },
+  { index: 26, note: "#ﾌｧ", label: "8" },
   { index: 28, note: "#ソ",   label: "9" },
   { index: 30, note: "#ラ",   label: "0" },
   { index: 95, note: "",       label: "" },             // スペーサー

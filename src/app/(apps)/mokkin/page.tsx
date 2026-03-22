@@ -23,25 +23,25 @@ import { Howl, Howler } from "howler"
 // soundIndex === 0 はスペーサー（音なし・バーなし）
 
 const BK_BARS = [
-  { soundIndex: 2,  note: "#ファ/♭ソ" },
+  { soundIndex: 2,  note: "#ﾌｧ/♭ソ" },
   { soundIndex: 4,  note: "#ソ/♭ラ"  },
   { soundIndex: 6,  note: "#ラ/♭シ"  },
   { soundIndex: 0,  note: ""          },  // スペーサー（ミ〜ファの間）
   { soundIndex: 9,  note: "#ド/♭レ"  },
   { soundIndex: 11, note: "#レ/♭ミ"  },
   { soundIndex: 0,  note: ""          },  // スペーサー（シ〜ドの間）
-  { soundIndex: 14, note: "#ファ/♭ソ" },
+  { soundIndex: 14, note: "#ﾌｧ/♭ソ" },
   { soundIndex: 16, note: "#ソ/♭ラ"  },
   { soundIndex: 18, note: "#ラ/♭シ"  },
   { soundIndex: 0,  note: ""          },  // スペーサー
   { soundIndex: 21, note: "#ド/♭レ"  },
   { soundIndex: 23, note: "#レ/♭ミ"  },
   { soundIndex: 0,  note: ""          },  // スペーサー
-  { soundIndex: 26, note: "#ファ/♭ソ" },
+  { soundIndex: 26, note: "#ﾌｧ/♭ソ" },
 ]
 
 const WH_BARS = [
-  { soundIndex: 1,  note: "ファ" },
+  { soundIndex: 1,  note: "ﾌｧ" },
   { soundIndex: 3,  note: "ソ"   },
   { soundIndex: 5,  note: "ラ"   },
   { soundIndex: 7,  note: "シ"   },
@@ -205,7 +205,7 @@ export default function MokkinPage() {
           >
             {BK_BARS.map((bar, i) => {
               if (bar.soundIndex === 0) {
-                return <div key={i} style={spacerStyle} />
+                return <div key={`sp-${i}`} style={spacerStyle} />
               }
               return (
                 <div

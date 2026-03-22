@@ -24,7 +24,7 @@ const KEYS = [
   { index: 8,  note: "ド",   key: "D", keyCode: "KeyD", key2: "C", keyCode2: "KeyC" },
   { index: 10, note: "レ",   key: "F", keyCode: "KeyF" },
   { index: 12, note: "ミ",   key: "G", keyCode: "KeyG" },
-  { index: 13, note: "ファ", key: "H", keyCode: "KeyH", key2: "N", keyCode2: "KeyN" },
+  { index: 13, note: "ﾌｧ", key: "H", keyCode: "KeyH", key2: "N", keyCode2: "KeyN" },
   { index: 15, note: "ソ",   key: "J", keyCode: "KeyJ" },
   { index: 17, note: "ラ",   key: "K", keyCode: "KeyK" },
   { index: 19, note: "シ",   key: "L", keyCode: "KeyL" },
@@ -198,8 +198,8 @@ export default function KenbanEasyPage() {
 
       {/* キーボードガイド */}
       <div className="mt-8 text-center text-xs text-gray-400 leading-relaxed">
-        <p>キーボード: D(C) F G H(N) J K L ; = ドレミファソラシド</p>
-        <p className="mt-1">※ ドとファは2つのキーで弾けます（指マタギの練習用）</p>
+        <p>キーボード: D(C) F G H(N) J K L ; = ドレミﾌｧソラシド</p>
+        <p className="mt-1">※ ドとﾌｧは2つのキーで弾けます（指マタギの練習用）</p>
       </div>
     </main>
   )
