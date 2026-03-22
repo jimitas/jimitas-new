@@ -109,8 +109,9 @@ export default function KakeHissan1Page() {
       while (pal.firstChild) pal.removeChild(pal.firstChild)
       numSet()
       kotaeInput()
+      // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
+      se.playSe(newParent.tagName === "IMG" ? se.cancel : se.pi)
     }
-    se.playSe(se.pi)
   }
 
   // ── 数字パレットを生成（0〜9） ────────────────────
@@ -310,7 +311,8 @@ export default function KakeHissan1Page() {
         while (pal.firstChild) pal.removeChild(pal.firstChild)
         numSet()
         kotaeInput()
-        se.playSe(se.pi)
+        // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
+        se.playSe(target.tagName === "IMG" ? se.cancel : se.pi)
       }
     }
 

@@ -118,8 +118,9 @@ export default function HikiHissanPage() {
       while (pal.firstChild) pal.removeChild(pal.firstChild)
       numSet()
       kotaeInput()
+      // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
+      se.playSe(newParent.tagName === "IMG" ? se.cancel : se.pi)
     }
-    se.playSe(se.pi)
   }
 
   // ── タッチ終了: 硬貨用 ────────────────────────────
@@ -467,7 +468,8 @@ export default function HikiHissanPage() {
         while (pal.firstChild) pal.removeChild(pal.firstChild)
         numSet()
         kotaeInput()
-        se.playSe(se.pi)
+        // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
+        se.playSe(target.tagName === "IMG" ? se.cancel : se.pi)
       } else if (target.className === "droppable-elem-2" && dragged.tagName === "IMG") {
         // 硬貨をお金テーブルのセルへ
         dragged.parentNode?.removeChild(dragged)
