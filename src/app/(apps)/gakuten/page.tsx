@@ -311,10 +311,10 @@ export default function GakutenPage() {
           </div>
 
           {/* 名前・意味テーブル */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600 mb-6">
+          <div className="overflow-hidden rounded-xl border-2 border-gray-400 dark:border-gray-500 mb-6">
             <table className="w-full">
               <tbody>
-                <tr className="border-b border-gray-200 dark:border-gray-600">
+                <tr className="border-b-2 border-gray-400 dark:border-gray-500">
                   <td className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300
                                   font-bold text-center py-3 px-4 w-20 text-lg">
                     名前
@@ -401,10 +401,10 @@ export default function GakutenPage() {
           </div>
 
           {/* 名前・意味テーブル */}
-          <div className="overflow-hidden rounded-xl border border-gray-200 dark:border-gray-600 mb-5">
+          <div className="overflow-hidden rounded-xl border-2 border-gray-400 dark:border-gray-500 mb-5">
             <table className="w-full">
               <tbody>
-                <tr className="border-b border-gray-200 dark:border-gray-600">
+                <tr className="border-b-2 border-gray-400 dark:border-gray-500">
                   <td className="bg-red-50 dark:bg-red-900/30 text-red-700 dark:text-red-300
                                   font-bold text-center py-3 px-4 w-20 text-lg">
                     名前
