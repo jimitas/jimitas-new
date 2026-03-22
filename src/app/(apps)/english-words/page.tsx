@@ -233,8 +233,6 @@ export default function EnglishWordsPage() {
         英語の単語を聞いて・見て覚えよう
       </p>
 
-      {mode === "quiz" && <CoinDisplay coins={coins} />}
-
       {/* 正解演出 */}
       <div
         ref={seikaiRef}
@@ -409,6 +407,9 @@ export default function EnglishWordsPage() {
           ※ このカテゴリは語数が少ないためクイズに対応していません
         </p>
       )}
+
+      {/* コイン表示（クイズモードのみ・最下部） */}
+      {mode === "quiz" && <div className="mt-6"><CoinDisplay coins={coins} /></div>}
     </main>
   )
 }

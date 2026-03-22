@@ -47,7 +47,7 @@ type QuizPatternDef = { id: QuizPattern; label: string; desc: string }
 const QUIZ_PATTERNS: QuizPatternDef[] = [
   { id: "audio-both", label: "🔊 → 英+日",  desc: "音声を聞いて 英語+日本語 カードから選ぶ" },
   { id: "audio-en",   label: "🔊 → 英語",   desc: "音声を聞いて 英語のみ から選ぶ（上級）" },
-  { id: "ja-en",      label: "日語 → 英語",  desc: "日本語を見て 英語 から選ぶ" },
+  { id: "ja-en",      label: "日本語 → 英語", desc: "日本語を見て 英語 から選ぶ" },
 ]
 
 // ── ページコンポーネント ──────────────────────────────
@@ -171,8 +171,6 @@ export default function ClassroomEnglishPage() {
       <p className="text-center text-sm text-gray-500 mb-4">
         教室で使える英語表現を学ぼう
       </p>
-
-      {mode === "quiz" && <CoinDisplay coins={coins} />}
 
       {/* 正解演出 */}
       <div
@@ -338,6 +336,8 @@ export default function ClassroomEnglishPage() {
           )}
         </div>
       )}
+      {/* コイン表示（クイズモードのみ・最下部） */}
+      {mode === "quiz" && <div className="mt-6"><CoinDisplay coins={coins} /></div>}
     </main>
   )
 }
