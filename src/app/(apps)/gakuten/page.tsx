@@ -379,9 +379,6 @@ export default function GakutenPage() {
             🎯 クイズ
           </h2>
 
-          {/* コイン表示 */}
-          <CoinDisplay coins={coins} />
-
           {/* 進捗・スコア */}
           <p className="text-center text-sm text-gray-500 mb-4">
             {quizIndex + 1} / {DATA.length}　<span className="text-green-600 dark:text-green-400 font-bold">{score}問正解</span>　（{quizStatus}）
@@ -503,6 +500,9 @@ export default function GakutenPage() {
               つぎへ ➡️
             </button>
           </div>
+
+          {/* コイン表示 */}
+          <CoinDisplay coins={coins} />
         </div>
       )}
 
