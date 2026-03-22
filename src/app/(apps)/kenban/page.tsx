@@ -21,7 +21,8 @@
 // ======================================================
 
 import { useState, useEffect, useCallback, useRef } from "react"
-import { Howl, Howler } from "howler"
+import { useAudioUnlock } from "@/hooks/useAudioUnlock"
+import { useInstrumentSounds } from "@/hooks/useInstrumentSounds"
 
 // ── 楽器の定義 ────────────────────────────────────────
 // prefix: 音声ファイルのプレフィックス（例: ke-1.mp3, mo_1.mp3）
@@ -152,31 +153,12 @@ export default function KenbanPage() {
   // キーボード入力ON/OFF
   const [isKeyboardEnabled, setIsKeyboardEnabled] = useState(false)
 
-  // 音源インスタンスをrefで管理（state にすると毎回再レンダーが走るため ref を使う）
-  // soundsRef.current[1〜34] に各鍵盤の Howl インスタンスが入る
-  const soundsRef = useRef<(Howl | null)[]>([])
-
   // キーが押されているかどうかのフラグ（パフォーマンスのため ref）
   // 同じ鍵盤に2つのキーが割り当てられているので、音の重複再生を防ぐ
   const keyDownFlagsRef = useRef<boolean[]>(new Array(35).fill(false))
 
   // ── AudioContext の事前起動 ────────────────────────
-  // ブラウザは最初のユーザー操作まで音声を止めている（自動再生ポリシー）。
-  // ページを開いた後、最初のクリック or タッチで AudioContext を起こしておく。
-  // これにより「最初の1音が遅い」問題を解消できる。
-  useEffect(() => {
-    const unlock = () => {
-      Howler.ctx?.resume()
-      document.removeEventListener("click", unlock)
-      document.removeEventListener("touchstart", unlock)
-    }
-    document.addEventListener("click", unlock)
-    document.addEventListener("touchstart", unlock)
-    return () => {
-      document.removeEventListener("click", unlock)
-      document.removeEventListener("touchstart", unlock)
-    }
-  }, [])
+  useAudioUnlock()
 
   // isKeyboardEnabled の最新値をイベントハンドラーから参照するための ref
   // （handleKeyDown は useCallback でキャッシュされているため、最新値を ref 経由で取得する）
@@ -185,42 +167,12 @@ export default function KenbanPage() {
     isKeyboardEnabledRef.current = isKeyboardEnabled
   }, [isKeyboardEnabled])
 
-  // ── 楽器切り替え時に音源を再生成 ──────────────────
-  useEffect(() => {
-    // 既存の音源を停止・破棄
-    soundsRef.current.forEach(s => s?.stop())
-
-    const prefix = INSTRUMENTS[instrumentIdx].prefix
-
-    // index 0 は使わないので null を置いておく
-    const newSounds: (Howl | null)[] = [null]
-    for (let i = 1; i <= 34; i++) {
-      newSounds[i] = new Howl({
-        src: [`/sounds/kenban/${prefix}${i}.mp3`],
-        preload: true,
-        volume: 1.0,
-      })
-    }
-    soundsRef.current = newSounds
-  }, [instrumentIdx])
-
-  // ── 音の再生・停止ヘルパー ──────────────────────────
-
-  // 音を鳴らす
-  const playSound = useCallback((index: number) => {
-    if (index < 1 || index > 34) return
-    soundsRef.current[index]?.play()
-  }, [])
-
-  // 音を止める（先頭に巻き戻す）
-  const stopSound = useCallback((index: number) => {
-    if (index < 1 || index > 34) return
-    const s = soundsRef.current[index]
-    if (s) {
-      s.pause()
-      s.seek(0)
-    }
-  }, [])
+  // ── 音源の管理（楽器切り替えで prefix が変わると自動再ロード） ──
+  const { playSound, stopSound } = useInstrumentSounds(
+    INSTRUMENTS[instrumentIdx].prefix,
+    34,
+    { stopMethod: "pause" },
+  )
 
   // ── マウス・タッチイベント ──────────────────────────
   // div の id 属性に音源インデックスをセットしてあるので、それを読んで音を鳴らす

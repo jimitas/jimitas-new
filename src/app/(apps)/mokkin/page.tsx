@@ -4,25 +4,19 @@
 // もっきん
 //
 // 旧版 22mokn.js の CSS・レイアウトを忠実に再現。
-//
-// 【レイアウト】
-//   上段: 黒鍵バー（#音）が横一列（左に 28px オフセット）
-//   下段: 白鍵バー（♮音）が横一列（margin-top: 222px で下にずらす）
-//   バーサイズ: 幅 58px × 高さ 220px（黒も白も同じ）
-//   色: #691c0d（こげ茶）
-//
-// 【操作】
-//   タッチ・マウスのみ
+// XylophoneBoard コンポーネントで描画し、
+// useAudioUnlock / useInstrumentSounds フックで音声管理する。
 // ======================================================
 
-import { useEffect, useCallback, useRef } from "react"
-import { Howl, Howler } from "howler"
+import { useCallback } from "react"
+import { useAudioUnlock } from "@/hooks/useAudioUnlock"
+import { useInstrumentSounds } from "@/hooks/useInstrumentSounds"
+import XylophoneBoard, { BarItem } from "@/components/parts/block/XylophoneBoard"
 
 // ── バーデータ ────────────────────────────────────────
-// soundIndex: 音源ファイルの番号（mo_*.mp3）
 // soundIndex === 0 はスペーサー（音なし・バーなし）
 
-const BK_BARS = [
+const BK_BARS: BarItem[] = [
   { soundIndex: 2,  note: "#ﾌｧ/♭ソ" },
   { soundIndex: 4,  note: "#ソ/♭ラ"  },
   { soundIndex: 6,  note: "#ラ/♭シ"  },
@@ -40,7 +34,7 @@ const BK_BARS = [
   { soundIndex: 26, note: "#ﾌｧ/♭ソ" },
 ]
 
-const WH_BARS = [
+const WH_BARS: BarItem[] = [
   { soundIndex: 1,  note: "ﾌｧ" },
   { soundIndex: 3,  note: "ソ"   },
   { soundIndex: 5,  note: "ラ"   },
@@ -65,48 +59,8 @@ const BAR_COLOR = "#691c0d"
 // ── ページコンポーネント ──────────────────────────────
 
 export default function MokkinPage() {
-  const soundsRef = useRef<(Howl | null)[]>([])
-
-  // ── AudioContext 事前起動 ──────────────────────────
-  useEffect(() => {
-    const unlock = () => {
-      Howler.ctx?.resume()
-      document.removeEventListener("click", unlock)
-      document.removeEventListener("touchstart", unlock)
-    }
-    document.addEventListener("click", unlock)
-    document.addEventListener("touchstart", unlock)
-    return () => {
-      document.removeEventListener("click", unlock)
-      document.removeEventListener("touchstart", unlock)
-    }
-  }, [])
-
-  // ── 全34音をページ読み込み時にプリロード ────────────
-  useEffect(() => {
-    const newSounds: (Howl | null)[] = [null]
-    for (let i = 1; i <= 34; i++) {
-      newSounds[i] = new Howl({
-        src: [`/sounds/kenban/mo_${i}.mp3`],
-        preload: true,
-        volume: 1.0,
-      })
-    }
-    soundsRef.current = newSounds
-  }, [])
-
-  // ── 音の再生・停止 ────────────────────────────────
-
-  const playSound = useCallback((index: number) => {
-    soundsRef.current[index]?.play()
-  }, [])
-
-  const stopSound = useCallback((index: number) => {
-    soundsRef.current[index]?.stop()
-  }, [])
-
-  // ── イベントハンドラー ────────────────────────────
-  // data-sound 属性に soundIndex をセット
+  useAudioUnlock()
+  const { playSound, stopSound } = useInstrumentSounds("mo_", 34)
 
   const handlePressDown = useCallback((e: React.MouseEvent | React.TouchEvent) => {
     const idx = Number((e.currentTarget as HTMLElement).dataset.sound)
@@ -132,120 +86,20 @@ export default function MokkinPage() {
     }
   }, [stopSound])
 
-  // ── バーの共通スタイル ──────────────────────────────
-  // 旧版 CSS の値をそのまま再現:
-  //   width: 58px, height: 220px, margin-right: 2px, border: 1px black solid
-  // 黒鍵バー: padding-top 30px, font-size 18px, line-height 24px
-  // 白鍵バー: margin-top 222px, padding-top 20px, font-size 30px
-
-  const bkBarStyle: React.CSSProperties = {
-    width: "58px",
-    height: "220px",
-    marginRight: "2px",
-    paddingTop: "30px",
-    fontSize: "18px",
-    lineHeight: "24px",
-    textAlign: "center",
-    border: "1px solid black",
-    backgroundColor: BAR_COLOR,
-    color: "white",
-    cursor: "pointer",
-    userSelect: "none",
-    flexShrink: 0,
-  }
-
-  const whBarStyle: React.CSSProperties = {
-    width: "58px",
-    height: "220px",
-    marginTop: "222px",
-    marginRight: "2px",
-    paddingTop: "20px",
-    fontSize: "30px",
-    textAlign: "center",
-    border: "1px solid black",
-    backgroundColor: BAR_COLOR,
-    color: "white",
-    cursor: "pointer",
-    userSelect: "none",
-    flexShrink: 0,
-  }
-
-  // スペーサー（幅を白鍵バーと揃えてオフセットを保つ）
-  const spacerStyle: React.CSSProperties = {
-    width: "58px",
-    height: "220px",
-    marginRight: "2px",
-    flexShrink: 0,
-  }
-
-  // ── JSX ──────────────────────────────────────────────
-
   return (
     <main className="p-4">
       <h1 className="text-2xl font-bold text-center mb-1">もっきん</h1>
       <p className="text-center text-sm text-gray-500 mb-6">
         けんばんをおして演奏しよう
       </p>
-
-      {/* 鍵盤エリア: 横スクロール対応 */}
-      <div className="overflow-x-auto pb-4">
-        {/*
-          旧版 .Kenhamo を再現。
-          コンテナ幅: 白鍵 16 本 × (58+2)px = 960px
-          コンテナ高さ: 白鍵の margin-top(222) + height(220) = 442px
-        */}
-        <div
-          className="relative mx-auto"
-          style={{ width: "960px", height: "442px" }}
-        >
-          {/* 黒鍵バー行: 旧版 .B_Kenban（left: 28px） */}
-          <div
-            className="absolute flex"
-            style={{ left: "28px", top: 0, zIndex: 3 }}
-          >
-            {BK_BARS.map((bar, i) => {
-              if (bar.soundIndex === 0) {
-                return <div key={`sp-${i}`} style={spacerStyle} />
-              }
-              return (
-                <div
-                  key={bar.soundIndex}
-                  data-sound={String(bar.soundIndex)}
-                  style={bkBarStyle}
-                  onMouseDown={handlePressDown}
-                  onMouseUp={handlePressUp}
-                  onMouseLeave={handleMouseLeave}
-                  onTouchStart={handlePressDown}
-                  onTouchEnd={handlePressUp}
-                >
-                  {bar.note}
-                </div>
-              )
-            })}
-          </div>
-
-          {/* 白鍵バー行: 旧版 .W_Kenban */}
-          <div
-            className="absolute flex"
-            style={{ left: 0, top: 0, zIndex: 2 }}
-          >
-            {WH_BARS.map((bar) => (
-              <div
-                key={bar.soundIndex}
-                data-sound={String(bar.soundIndex)}
-                style={whBarStyle}
-                onMouseDown={handlePressDown}
-                onMouseUp={handlePressUp}
-                onMouseLeave={handleMouseLeave}
-                onTouchStart={handlePressDown}
-                onTouchEnd={handlePressUp}
-              >
-                {bar.note}
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
+      <XylophoneBoard
+        bkBars={BK_BARS}
+        whBars={WH_BARS}
+        barColor={BAR_COLOR}
+        onPressDown={handlePressDown}
+        onPressUp={handlePressUp}
+        onMouseLeave={handleMouseLeave}
+      />
     </main>
   )
 }

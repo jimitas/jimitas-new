@@ -12,7 +12,8 @@
 // ======================================================
 
 import { useEffect, useCallback, useRef } from "react"
-import { Howl, Howler } from "howler"
+import { Howl } from "howler"
+import { useAudioUnlock } from "@/hooks/useAudioUnlock"
 
 // ── 8鍵盤のデータ ─────────────────────────────────────
 // index  : ke-*.mp3 のファイル番号（全版と共通の音源）
@@ -51,20 +52,7 @@ export default function KenbanEasyPage() {
   const keyDownFlagsRef = useRef<boolean[]>(new Array(8).fill(false))
 
   // ── AudioContext の事前起動 ────────────────────────
-  // 最初のクリック or タッチで AudioContext を起こして、最初の音の遅延を防ぐ
-  useEffect(() => {
-    const unlock = () => {
-      Howler.ctx?.resume()
-      document.removeEventListener("click", unlock)
-      document.removeEventListener("touchstart", unlock)
-    }
-    document.addEventListener("click", unlock)
-    document.addEventListener("touchstart", unlock)
-    return () => {
-      document.removeEventListener("click", unlock)
-      document.removeEventListener("touchstart", unlock)
-    }
-  }, [])
+  useAudioUnlock()
 
   // ── 音源のロード ──────────────────────────────────
   useEffect(() => {
