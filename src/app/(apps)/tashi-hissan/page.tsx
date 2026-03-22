@@ -156,6 +156,61 @@ export default function TashiHissanPage() {
         imgStyle(j)
       }
     }
+    updateRow3Hints()
+  }
+
+  // ── row3 のガイド表示を更新 ───────────────────────
+  // A: 硬貨が0枚のセルに薄い「↓」を表示（集め方の誘導）
+  // B: 1枚以上のセルに右下小さく「枚数/10」カウンターを表示
+  //    9枚になったら「あと1こ！」に変化
+  // pointer-events:none で D&D 判定に影響させない
+  function updateRow3Hints() {
+    const TBL_2 = tbl2Ref.current!
+    const row3  = TBL_2.rows[3]
+    for (let col = 0; col < 4; col++) {
+      const cell  = row3.cells[col]
+      cell.style.position = "relative"  // 子要素の absolute 配置に必要
+
+      // 前回のヒントを削除してから再描画
+      const old = cell.querySelector(".row3-hint")
+      if (old) old.remove()
+
+      // 硬貨（img）の枚数をカウント
+      const count = cell.getElementsByTagName("img").length
+
+      const span = document.createElement("span")
+      span.className = "row3-hint"
+      // pointer-events:none → タッチ/マウス D&D の elementFromPoint を透過
+      span.style.pointerEvents = "none"
+      span.style.userSelect    = "none"
+      span.style.position      = "absolute"
+
+      if (count === 0) {
+        // A: 薄い「↓」ガイド（中央）
+        span.style.top       = "50%"
+        span.style.left      = "50%"
+        span.style.transform = "translate(-50%,-50%)"
+        span.style.fontSize  = "22px"
+        span.style.color     = "rgba(0,0,0,0.18)"
+        span.textContent     = "↓"
+      } else {
+        // B: 枚数カウンター（右下）
+        span.style.bottom   = "3px"
+        span.style.right    = "5px"
+        span.style.fontSize = "11px"
+        span.style.lineHeight = "1"
+        if (count >= 9) {
+          // 9枚以上: 少し目立つ色で「あと1こ！」
+          span.style.color = "rgba(200,80,0,0.7)"
+          span.textContent = count === 9 ? "あと1こ！" : `${count}/10`
+        } else {
+          // 1〜8枚: 薄いグレーでカウント
+          span.style.color = "rgba(0,0,0,0.25)"
+          span.textContent = `${count}/10`
+        }
+      }
+      cell.appendChild(span)
+    }
   }
 
   // 上位金種の硬貨画像を row0 に追加する（imgKuriagari の内部処理）
@@ -244,6 +299,9 @@ export default function TashiHissanPage() {
     } else {
       TBL_2.rows[2].cells[0].innerHTML = "+"
     }
+
+    // 新問題セット直後（row3 が空）にヒントを初期表示
+    updateRow3Hints()
   }
 
   // ── 筆算テーブルに数字を配置 ──────────────────────
@@ -611,6 +669,8 @@ export default function TashiHissanPage() {
                       height: 60,
                       maxHeight: 60,
                       backgroundColor: row === 0 || row === 3 ? "lightyellow" : "white",
+                      // row3: hint の absolute 配置に必要
+                      position: row === 3 ? "relative" : undefined,
                     }}
                   />
                 ))}
