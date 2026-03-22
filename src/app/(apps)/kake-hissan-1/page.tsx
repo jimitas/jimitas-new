@@ -105,12 +105,32 @@ export default function KakeHissan1Page() {
 
     if (newParent?.className === "droppable-elem") {
       newParent.appendChild(elem)
+      resizeDroppedNumber(elem, newParent)
       const pal = numPalRef.current!
       while (pal.firstChild) pal.removeChild(pal.firstChild)
       numSet()
       kotaeInput()
       // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
       se.playSe(newParent.tagName === "IMG" ? se.cancel : se.pi)
+    }
+  }
+
+  // ── ドロップ後に数字の大きさを調整 ───────────────
+  // くり上がり行（row2、高さ 36px）は小さく、こたえ行（row3）は元サイズ
+  function resizeDroppedNumber(elem: HTMLElement, parent: HTMLElement) {
+    const TBL     = tblRef.current!
+    const isCarry = Array.from(TBL.rows[2].cells).some(cell => cell === parent)
+    if (isCarry) {
+      elem.style.width      = "28px"
+      elem.style.height     = "28px"
+      elem.style.lineHeight = "28px"
+      elem.style.fontSize   = "16px"
+    } else {
+      // row3 やパレットに戻ったとき → 元のサイズに戻す
+      elem.style.width      = "44px"
+      elem.style.height     = "44px"
+      elem.style.lineHeight = "44px"
+      elem.style.fontSize   = "26px"
     }
   }
 
@@ -307,6 +327,7 @@ export default function KakeHissan1Page() {
       if (target.className === "droppable-elem" && dragged.tagName !== "IMG") {
         dragged.parentNode?.removeChild(dragged)
         target.appendChild(dragged)
+        resizeDroppedNumber(dragged, target)
         const pal = numPalRef.current!
         while (pal.firstChild) pal.removeChild(pal.firstChild)
         numSet()
