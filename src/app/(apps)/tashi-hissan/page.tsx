@@ -186,28 +186,22 @@ export default function TashiHissanPage() {
       span.style.position      = "absolute"
 
       if (count === 0) {
-        // A: 薄い「↓」ガイド（中央）
+        // A: 薄いガイドテキスト（中央）
         span.style.top       = "50%"
         span.style.left      = "50%"
         span.style.transform = "translate(-50%,-50%)"
-        span.style.fontSize  = "22px"
-        span.style.color     = "rgba(0,0,0,0.18)"
-        span.textContent     = "↓"
+        span.style.fontSize  = "11px"
+        span.style.color     = "rgba(0,0,0,0.25)"
+        span.style.whiteSpace = "nowrap"
+        span.textContent     = "ここへあつめる"
       } else {
-        // B: 枚数カウンター（右下）
-        span.style.bottom   = "3px"
-        span.style.right    = "5px"
-        span.style.fontSize = "11px"
+        // B: 枚数カウンター（右下）— 枚数のみ表示（/10 は付けない）
+        span.style.bottom     = "3px"
+        span.style.right      = "5px"
+        span.style.fontSize   = "13px"
         span.style.lineHeight = "1"
-        if (count >= 9) {
-          // 9枚以上: 少し目立つ色で「あと1こ！」
-          span.style.color = "rgba(200,80,0,0.7)"
-          span.textContent = count === 9 ? "あと1こ！" : `${count}/10`
-        } else {
-          // 1〜8枚: 薄いグレーでカウント
-          span.style.color = "rgba(0,0,0,0.25)"
-          span.textContent = `${count}/10`
-        }
+        span.style.color      = "rgba(0,0,0,0.3)"
+        span.textContent      = String(count)
       }
       cell.appendChild(span)
     }
