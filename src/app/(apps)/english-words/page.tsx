@@ -244,46 +244,63 @@ export default function EnglishWordsPage() {
         </span>
       </div>
 
-      {/* カテゴリ選択 + 学習ボタン */}
-      <div className="flex gap-2 mb-3">
+      {/* カテゴリ選択 */}
+      <div className="mb-4">
         <select
           value={categoryIdx}
           onChange={e => handleCategoryChange(Number(e.target.value))}
-          className="flex-1 px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-bold
+          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-bold
             bg-white focus:border-brand-400 focus:outline-none"
         >
           {ENGLISH_WORDS.map((cat, i) => (
             <option key={cat.id} value={i}>{cat.title}</option>
           ))}
         </select>
-        <button
-          onClick={() => { playSe("/sounds/pi.mp3", 0.4); setMode("learn") }}
-          className={`px-4 py-2 rounded-lg font-bold border-2 text-sm transition-colors whitespace-nowrap
-            ${mode === "learn"
-              ? "bg-brand-500 text-white border-brand-500"
-              : "bg-white text-brand-600 border-brand-300 hover:bg-brand-50"}`}
-        >
-          学習
-        </button>
       </div>
 
-      {/* クイズパターン選択（3ボタン） */}
+      {/* ── 学習モード ボタン ── */}
+      <button
+        onClick={() => { playSe("/sounds/pi.mp3", 0.4); setMode("learn") }}
+        className={`w-full py-3 rounded-xl font-bold border-2 text-sm transition-colors mb-3
+          flex items-center justify-center gap-2
+          ${mode === "learn"
+            ? "bg-brand-500 text-white border-brand-500 shadow-md"
+            : "bg-white text-brand-600 border-brand-300 hover:bg-brand-50"}`}
+      >
+        <span className="text-lg">📖</span>
+        <span>
+          <span className="block font-bold">きいて・みて覚えよう</span>
+          <span className="block text-xs font-normal opacity-80">カードをタッチして音声を確認</span>
+        </span>
+      </button>
+
+      {/* ── クイズエリア ── */}
       {canQuiz && (
-        <div className="grid grid-cols-3 gap-2 mb-5">
-          {QUIZ_PATTERNS.map(p => (
-            <button
-              key={p.id}
-              onClick={() => startQuiz(p.id)}
-              disabled={isLoading}
-              title={p.desc}
-              className={`px-2 py-2 rounded-lg border-2 text-xs font-bold transition-colors disabled:opacity-40
-                ${mode === "quiz" && quizPattern === p.id
-                  ? "bg-accent-500 text-white border-accent-500"
-                  : "bg-white text-accent-700 border-accent-200 hover:bg-accent-50"}`}
-            >
-              {p.label}
-            </button>
-          ))}
+        <div className="rounded-xl border-2 border-accent-300 bg-accent-50 p-3 mb-5">
+          <p className="text-center font-bold text-accent-700 mb-3 text-sm flex items-center justify-center gap-1">
+            <span>🎯</span> クイズに挑戦！
+            <span className="text-xs font-normal text-accent-500 ml-1">パターンを選んでスタート</span>
+          </p>
+          <div className="grid grid-cols-3 gap-2">
+            {QUIZ_PATTERNS.map(p => (
+              <button
+                key={p.id}
+                onClick={() => startQuiz(p.id)}
+                disabled={isLoading}
+                className={`flex flex-col items-center gap-1 px-2 py-2.5 rounded-lg border-2
+                  text-xs font-bold transition-colors disabled:opacity-40
+                  ${mode === "quiz" && quizPattern === p.id
+                    ? "bg-accent-500 text-white border-accent-500 shadow-md"
+                    : "bg-white text-accent-700 border-accent-200 hover:bg-accent-100"}`}
+              >
+                <span className="font-bold">{p.label}</span>
+                <span className={`text-[10px] font-normal leading-tight text-center
+                  ${mode === "quiz" && quizPattern === p.id ? "opacity-90" : "text-gray-500"}`}>
+                  {p.desc}
+                </span>
+              </button>
+            ))}
+          </div>
         </div>
       )}
 
