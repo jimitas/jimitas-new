@@ -156,33 +156,6 @@ export default function KakeHissan1Page() {
     TBL.rows[1].cells[COLS - 1].innerHTML = String(num2Ref.current)
   }
 
-  // ── B: 筆算 row3 のヒント表示 ─────────────────────
-  // 空セルに薄く「ここへ」を表示し、数字が入ったら消える
-  function updateTblRow3Hints() {
-    const TBL = tblRef.current!
-    for (let col = 0; col < COLS; col++) {
-      const cell = TBL.rows[3].cells[col]
-      cell.style.position = "relative"
-      // 既存ヒントを削除してから内容を確認
-      cell.querySelector(".tbl-row3-hint")?.remove()
-      // 残っている innerHTML が空なら「ここへ」を表示
-      if (cell.innerHTML.trim() !== "") continue
-      const span = document.createElement("span")
-      span.className          = "tbl-row3-hint"
-      span.style.pointerEvents = "none"
-      span.style.userSelect    = "none"
-      span.style.position      = "absolute"
-      span.style.top           = "50%"
-      span.style.left          = "50%"
-      span.style.transform     = "translate(-50%,-50%)"
-      span.style.fontSize      = "11px"
-      span.style.color         = "rgba(0,0,0,0.25)"
-      span.style.whiteSpace    = "nowrap"
-      span.textContent         = "ここへ"
-      cell.appendChild(span)
-    }
-  }
-
   // ── 答えチェック（row3 から読み取り） ──────────────
   function kotaeInput() {
     const TBL  = tblRef.current!
@@ -203,8 +176,6 @@ export default function KakeHissan1Page() {
     } else {
       box5.style.color = "black"
     }
-    // 数字が増減したのでヒントを更新
-    updateTblRow3Hints()
   }
 
   // ── 問題セット（メイン処理） ──────────────────────
@@ -241,8 +212,6 @@ export default function KakeHissan1Page() {
     setNum1(num1Ref.current)
     setNum2(num2Ref.current)
     setProblemKey(k => k + 1)
-    // row3 が空になったのでヒントを表示
-    updateTblRow3Hints()
   }
 
   // ── もんだい（ランダム問題生成） ──────────────────
@@ -281,8 +250,6 @@ export default function KakeHissan1Page() {
       box5Ref.current.style.color = "black"
     }
     if (seikaiRef.current) seikaiRef.current.style.display = "none"
-    // row3 が空になったのでヒントを再表示
-    updateTblRow3Hints()
   }
 
   // ── こたえ表示 ───────────────────────────────────
@@ -477,8 +444,6 @@ export default function KakeHissan1Page() {
                         verticalAlign: "middle",
                         backgroundColor: row === 2 || row === 3 ? "lightyellow" : "white",
                         borderBottom: row === 1 ? "3px solid #333" : "1px solid #333",
-                        // row3: ヒント span の absolute 配置に必要
-                        position: row === 3 ? "relative" : undefined,
                       }}
                     />
                   ))}

@@ -119,41 +119,49 @@ export function OkaneGrid({
       ?.querySelector(`[data-row="${row}"][data-col="${col}"]`) ?? null
   }
 
-  // ── A: row10（合計行）ヒント更新（kake1 のみ） ───
-  // 空セル → 薄い「ここへあつめる」、コインあり → 右下に枚数を表示
+  // ── A: kake1 グリッドヒント更新（row10・row11） ──
+  // row10（下から2行め）: 空 → 「くり上がりをおしてここへ」、コインあり → 枚数
+  // row11（下から1行め）: 空 → 「ここへあつめる」、コインあり → 枚数
   function updateRow10Hints() {
     if (variant !== "kake1") return
-    for (let col = 0; col < COLS; col++) {
-      const cell = getCell(10, col)
-      if (!cell) continue
-      cell.style.position = "relative"
-      cell.querySelector(".okane-row10-hint")?.remove()
 
-      // hissan-coin クラスを持つ img の枚数（種別問わず合計）
-      const count = cell.getElementsByClassName("hissan-coin").length
+    const rowDefs: { row: number; emptyText: string }[] = [
+      { row: 10, emptyText: "くり上がりをおしてここへ" },
+      { row: 11, emptyText: "ここへあつめる" },
+    ]
 
-      const span = document.createElement("span")
-      span.className          = "okane-row10-hint"
-      span.style.pointerEvents = "none"
-      span.style.userSelect    = "none"
-      span.style.position      = "absolute"
+    for (const { row, emptyText } of rowDefs) {
+      for (let col = 0; col < COLS; col++) {
+        const cell = getCell(row, col)
+        if (!cell) continue
+        cell.style.position = "relative"
+        cell.querySelector(".okane-row10-hint")?.remove()
 
-      if (count === 0) {
-        span.style.top        = "50%"
-        span.style.left       = "50%"
-        span.style.transform  = "translate(-50%,-50%)"
-        span.style.fontSize   = "9px"
-        span.style.color      = "rgba(0,0,0,0.25)"
-        span.style.whiteSpace = "nowrap"
-        span.textContent      = "ここへあつめる"
-      } else {
-        span.style.bottom     = "2px"
-        span.style.right      = "3px"
-        span.style.fontSize   = "13px"
-        span.style.color      = "rgba(0,0,0,0.3)"
-        span.textContent      = String(count)
+        const count = cell.getElementsByClassName("hissan-coin").length
+
+        const span = document.createElement("span")
+        span.className           = "okane-row10-hint"
+        span.style.pointerEvents = "none"
+        span.style.userSelect    = "none"
+        span.style.position      = "absolute"
+
+        if (count === 0) {
+          span.style.top        = "50%"
+          span.style.left       = "50%"
+          span.style.transform  = "translate(-50%,-50%)"
+          span.style.fontSize   = "9px"
+          span.style.color      = "rgba(0,0,0,0.25)"
+          span.style.whiteSpace = "nowrap"
+          span.textContent      = emptyText
+        } else {
+          span.style.bottom   = "2px"
+          span.style.right    = "3px"
+          span.style.fontSize = "13px"
+          span.style.color    = "rgba(0,0,0,0.3)"
+          span.textContent    = String(count)
+        }
+        cell.appendChild(span)
       }
-      cell.appendChild(span)
     }
   }
 
@@ -261,22 +269,24 @@ export function OkaneGrid({
         se.playSe(se.pi)
       }
 
-      // kake1: 行10（合計エリア）の自動くり上がり
-      else if (variant === "kake1" && row === 10) {
-        for (let c = COLS - 1; c >= 1; c--) {
-          const target = getCell(10, c)
-          if (!target) continue
-          const ct = COL_COIN[c]
-          if (countCoin(target, ct) >= 10) {
-            const coins = Array.from(target.getElementsByClassName(`hissan-coin-${ct}`))
-            for (let i = 0; i < 10; i++) coins[i]?.remove()
-            const higherCell = getCell(10, c - 1)
-            if (higherCell) higherCell.appendChild(createCoin(COL_COIN[c - 1]))
-            onCarryDetected?.(c - 1)
-            se.playSe(se.reset)
+      // kake1: 行10（合計エリア）の自動くり上がり、行11 はそのまま配置
+      else if (variant === "kake1") {
+        if (row === 10) {
+          for (let c = COLS - 1; c >= 1; c--) {
+            const target = getCell(10, c)
+            if (!target) continue
+            const ct = COL_COIN[c]
+            if (countCoin(target, ct) >= 10) {
+              const coins = Array.from(target.getElementsByClassName(`hissan-coin-${ct}`))
+              for (let i = 0; i < 10; i++) coins[i]?.remove()
+              const higherCell = getCell(10, c - 1)
+              if (higherCell) higherCell.appendChild(createCoin(COL_COIN[c - 1]))
+              onCarryDetected?.(c - 1)
+              se.playSe(se.reset)
+            }
           }
         }
-        // コインが移動したのでヒントを更新
+        // row10・row11 どちらへのドロップでもヒントを更新
         updateRow10Hints()
       }
     }
