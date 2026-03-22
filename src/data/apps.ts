@@ -322,10 +322,10 @@ export const apps: AppItem[] = [
   {
     id: "kenban",
     title: "けんばんハーモニカ",
-    description: "ブラウザ上でけんばんハーモニカを演奏しよう。マウス・タッチ・キーボード対応",
+    description: "けんばんハーモニカ・リコーダー・もっきん・てっきんの4種類の音色で演奏できる。合奏練習にも使える",
     grades: [1, 2, 4, 5, 6],
     subjects: ["音楽"],
-    tags: ["楽器", "演奏"],
+    tags: ["楽器", "演奏", "合奏"],
     type: "app",
     path: "/kenban",
   },
