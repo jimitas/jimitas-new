@@ -61,6 +61,7 @@ export default function HikiHissanPage() {
   const box1Ref   = useRef<HTMLInputElement>(null)   // 被減数入力
   const box3Ref   = useRef<HTMLInputElement>(null)   // 減数入力
   const box5Ref   = useRef<HTMLInputElement>(null)   // 答え入力
+  const seikaiRef = useRef<HTMLSpanElement>(null)    // せいかい！表示
 
   // ── 問題データ（ref で保持 ─ レンダー不要） ────────
   const higensuRef  = useRef(456)
@@ -361,6 +362,7 @@ export default function HikiHissanPage() {
     box3Ref.current!.value       = String(gensuRef.current)
     box5Ref.current!.value       = ""
     box5Ref.current!.style.color = "black"
+    if (seikaiRef.current) seikaiRef.current.style.display = "none"
 
     // 桁配列を設定（index 0 = 一の位）
     const hs = String(higensuRef.current)
@@ -402,6 +404,7 @@ export default function HikiHissanPage() {
     box3Ref.current!.value = ""
     box5Ref.current!.value = ""
     kurisagariDoneRef.current = [false, false, false]  // 繰り下がりフラグもリセット
+    if (seikaiRef.current) seikaiRef.current.style.display = "none"
   }
 
   // ── もんだい（ランダム問題生成） ──────────────────
@@ -499,6 +502,7 @@ export default function HikiHissanPage() {
       box5.style.color = "red"
       // 初回正解のみ音とコイン（2回目以降は tryAddCoins が false を返す）
       if (tryAddCoins(1)) se.playSe(se.seikai1)
+      if (seikaiRef.current) seikaiRef.current.style.display = ""
     } else {
       box5.style.color = "black"
     }
@@ -629,11 +633,20 @@ export default function HikiHissanPage() {
             if (Number(box5.value) === saRef.current) {
               box5.style.color = "red"
               if (tryAddCoins(1)) se.playSe(se.seikai1)
+              if (seikaiRef.current) seikaiRef.current.style.display = ""
             } else {
               box5.style.color = "black"
             }
           }}
         />
+        {/* せいかい！表示（正解時に animate-bounce で出現） */}
+        <span
+          ref={seikaiRef}
+          style={{ display: "none" }}
+          className="text-xl font-bold text-brand-600 animate-bounce"
+        >
+          せいかい！🎉
+        </span>
       </div>
 
       {/* フィールド: 筆算テーブル ＋ ゴミ箱 ＋ お金テーブル（横並び） */}

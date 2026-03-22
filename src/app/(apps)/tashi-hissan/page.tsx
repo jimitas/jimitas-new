@@ -58,6 +58,7 @@ export default function TashiHissanPage() {
   const box1Ref   = useRef<HTMLInputElement>(null)   // 被加数入力
   const box3Ref   = useRef<HTMLInputElement>(null)   // 加数入力
   const box5Ref   = useRef<HTMLInputElement>(null)   // 答え入力
+  const seikaiRef = useRef<HTMLSpanElement>(null)    // せいかい！表示
 
   // ── 問題データ（ref で保持 ─ レンダー不要） ────────
   const hikasRef  = useRef(123)
@@ -345,6 +346,7 @@ export default function TashiHissanPage() {
     box3Ref.current!.value       = String(kasuRef.current)
     box5Ref.current!.value       = ""
     box5Ref.current!.style.color = "black"
+    if (seikaiRef.current) seikaiRef.current.style.display = "none"
 
     // 桁配列を設定（index 0 = 一の位）
     const hs = String(hikasRef.current)
@@ -384,6 +386,7 @@ export default function TashiHissanPage() {
     box1Ref.current!.value = ""
     box3Ref.current!.value = ""
     box5Ref.current!.value = ""
+    if (seikaiRef.current) seikaiRef.current.style.display = "none"
   }
 
   // ── もんだい（ランダム問題生成） ──────────────────
@@ -456,6 +459,7 @@ export default function TashiHissanPage() {
       box5.style.color = "red"
       // 初回正解のときだけ音とコイン（2回目以降は tryAddCoins が false を返す）
       if (tryAddCoins(1)) se.playSe(se.seikai1)
+      if (seikaiRef.current) seikaiRef.current.style.display = ""
     } else {
       box5.style.color = "black"
     }
@@ -587,11 +591,20 @@ export default function TashiHissanPage() {
             if (Number(box5.value) === waRef.current) {
               box5.style.color = "red"
               if (tryAddCoins(1)) se.playSe(se.seikai1)
+              if (seikaiRef.current) seikaiRef.current.style.display = ""
             } else {
               box5.style.color = "black"
             }
           }}
         />
+        {/* せいかい！表示（正解時に animate-bounce で出現） */}
+        <span
+          ref={seikaiRef}
+          style={{ display: "none" }}
+          className="text-xl font-bold text-brand-600 animate-bounce"
+        >
+          せいかい！🎉
+        </span>
       </div>
 
       {/* フィールド: 筆算テーブル ＋ ゴミ箱 ＋ お金テーブル（横並び） */}
