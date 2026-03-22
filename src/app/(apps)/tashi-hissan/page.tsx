@@ -166,9 +166,9 @@ export default function TashiHissanPage() {
     const img   = document.createElement("img")
     img.setAttribute("src", `/images/${COIN_ARR[j + 1]}.png`)
     img.setAttribute("class", COIN_ARR[j + 1])
-    // 1000円（j=2）は幅 60px、それ以外は 25px
-    img.style.width   = j === 2 ? "60px" : "25px"
-    img.style.height  = "25px"
+    // 1000円（j=2）は大きめ、それ以外は 25px
+    img.style.width   = j === 2 ? "90px" : "25px"
+    img.style.height  = j === 2 ? "38px" : "25px"
     img.style.display = "inline-block"
     img.addEventListener("touchstart", touchStartEvent as EventListener, false)
     img.addEventListener("touchmove",  touchMoveEvent  as EventListener, false)
@@ -182,9 +182,9 @@ export default function TashiHissanPage() {
     img.setAttribute("src", `/images/${COIN_ARR[col]}.png`)
     img.setAttribute("class", COIN_ARR[col])
     img.setAttribute("draggable", "true")
-    // 1000円（col=3）は幅 60px
-    img.style.width   = col === 3 ? "60px" : "25px"
-    img.style.height  = "25px"
+    // 1000円（col=3）は大きめ
+    img.style.width   = col === 3 ? "90px" : "25px"
+    img.style.height  = col === 3 ? "38px" : "25px"
     img.style.cursor  = "pointer"
     img.style.display = "inline-block"
     img.addEventListener("touchstart", touchStartEvent as EventListener, false)
@@ -427,8 +427,8 @@ export default function TashiHissanPage() {
       if (!dragged) return
       const target = e.target as HTMLElement
 
-      if (target.className === "droppable-elem") {
-        // 数字を筆算セルへ（またはゴミ箱へ）
+      if (target.className === "droppable-elem" && dragged.tagName !== "IMG") {
+        // 数字パレットの数字のみ筆算セル・ゴミ箱へ（硬貨はドロップ不可）
         dragged.parentNode?.removeChild(dragged)
         target.appendChild(dragged)
         const pal = numPalRef.current!
@@ -541,12 +541,12 @@ export default function TashiHissanPage() {
       </div>
 
       {/* フィールド: 筆算テーブル ＋ ゴミ箱 ＋ お金テーブル（横並び） */}
-      <div className="flex items-start overflow-x-auto" style={{ gap: 0 }}>
+      <div className="flex items-start" style={{ gap: 0 }}>
 
         {/* 筆算テーブル（4行×4列、60×60px） */}
         <table
           ref={tblRef}
-          style={{ height: 240, borderCollapse: "collapse", flexShrink: 0 }}
+          style={{ borderCollapse: "collapse", flexShrink: 0 }}
         >
           <tbody>
             {[0, 1, 2, 3].map(row => (
@@ -575,27 +575,25 @@ export default function TashiHissanPage() {
           </tbody>
         </table>
 
-        {/* 財布（droppable-elem ─ 硬貨・数字をドロップで削除） */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/saifu.png"
-          className="droppable-elem"
-          style={{
-            width: 50,
-            height: 60,
-            position: "relative",
-            left: 10,
-            top: 150,
-            flexShrink: 0,
-          }}
-          alt="財布"
-          draggable={false}
-        />
+        {/* ゴミ箱（数字パレットの数字のみドロップで削除、硬貨は不可） */}
+        <div style={{
+          display: "flex", flexDirection: "column", justifyContent: "flex-end",
+          alignSelf: "stretch", flexShrink: 0, padding: "0 10px",
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/gomibako.png"
+            className="droppable-elem"
+            style={{ width: 50, height: 60 }}
+            alt="ゴミ箱"
+            draggable={false}
+          />
+        </div>
 
         {/* お金テーブル（4行×4列、200×60px） */}
         <table
           ref={tbl2Ref}
-          style={{ height: 240, marginLeft: 20, borderCollapse: "collapse", flexShrink: 0 }}
+          style={{ marginLeft: 20, borderCollapse: "collapse", flexShrink: 0 }}
         >
           <tbody>
             {[0, 1, 2, 3].map(row => (
@@ -603,11 +601,9 @@ export default function TashiHissanPage() {
                 {[0, 1, 2, 3].map(col => (
                   <td
                     key={col}
-                    // 全セルドロップ可
                     className="droppable-elem-2"
                     style={{
                       border: "1px solid #333",
-                      // 25px × 5枚 = 125px がちょうど5枚並ぶ幅
                       width: 130,
                       maxWidth: 130,
                       height: 60,

@@ -459,8 +459,8 @@ export default function HikiHissanPage() {
       if (!dragged) return
       const target = e.target as HTMLElement
 
-      if (target.className === "droppable-elem") {
-        // 数字を筆算セルへ（または財布へ）
+      if (target.className === "droppable-elem" && dragged.tagName !== "IMG") {
+        // 数字を筆算セルへ（またはゴミ箱へ）
         dragged.parentNode?.removeChild(dragged)
         target.appendChild(dragged)
         const pal = numPalRef.current!
@@ -572,13 +572,13 @@ export default function HikiHissanPage() {
         />
       </div>
 
-      {/* フィールド: 筆算テーブル ＋ 財布 ＋ お金テーブル（横並び） */}
-      <div className="flex items-start overflow-x-auto" style={{ gap: 0 }}>
+      {/* フィールド: 筆算テーブル ＋ ゴミ箱 ＋ お金テーブル（横並び） */}
+      <div className="flex items-start" style={{ gap: 0 }}>
 
         {/* 筆算テーブル（4行×4列、60×60px） */}
         <table
           ref={tblRef}
-          style={{ height: 240, borderCollapse: "collapse", flexShrink: 0 }}
+          style={{ borderCollapse: "collapse", flexShrink: 0 }}
         >
           <tbody>
             {[0, 1, 2, 3].map(row => (
@@ -605,22 +605,20 @@ export default function HikiHissanPage() {
           </tbody>
         </table>
 
-        {/* 財布（droppable-elem ─ 硬貨・数字をドロップで削除） */}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/images/saifu.png"
-          className="droppable-elem"
-          style={{
-            width: 50,
-            height: 60,
-            position: "relative",
-            left: 10,
-            top: 150,
-            flexShrink: 0,
-          }}
-          alt="財布"
-          draggable={false}
-        />
+        {/* ゴミ箱（数字パレットの数字のみドロップで削除、硬貨は不可） */}
+        <div style={{
+          display: "flex", flexDirection: "column", justifyContent: "flex-end",
+          alignSelf: "stretch", flexShrink: 0, padding: "0 10px",
+        }}>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/gomibako.png"
+            className="droppable-elem"
+            style={{ width: 50, height: 60 }}
+            alt="ゴミ箱"
+            draggable={false}
+          />
+        </div>
 
         {/* お金テーブル（4行×4列、130×60px） */}
         {/* row0: 繰り下がり硬貨を置いて崩す場所（lightyellow） */}
@@ -629,7 +627,7 @@ export default function HikiHissanPage() {
         {/* row3: 答え行（lightyellow） */}
         <table
           ref={tbl2Ref}
-          style={{ height: 240, marginLeft: 20, borderCollapse: "collapse", flexShrink: 0 }}
+          style={{ marginLeft: 20, borderCollapse: "collapse", flexShrink: 0 }}
         >
           <tbody>
             {[0, 1, 2, 3].map(row => (
@@ -640,7 +638,6 @@ export default function HikiHissanPage() {
                     className="droppable-elem-2"
                     style={{
                       border: "1px solid #333",
-                      // 25px × 5枚 = 125px がちょうど5枚並ぶ幅
                       width: 130, maxWidth: 130,
                       height: 60, maxHeight: 60,
                       backgroundColor: row === 0 || row === 3 ? "lightyellow" : "white",
