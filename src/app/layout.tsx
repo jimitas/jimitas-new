@@ -97,7 +97,7 @@ export default function RootLayout({
     //   テーマスクリプトが html の class や data 属性を書き換えるため、
     //   サーバー側とブラウザ側でHTMLが一致しないことがある。
     //   この警告を抑制するために必要。
-    {/* translate="no": Google翻訳などによるアプリUIの自動翻訳を禁止する */}
+    // translate="no": Google翻訳などによるアプリUIの自動翻訳を禁止する
     <html
       lang="ja"
       translate="no"
