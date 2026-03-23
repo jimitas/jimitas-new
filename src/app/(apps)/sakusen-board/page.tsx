@@ -80,7 +80,9 @@ export default function SakusenBoardPage() {
     // このポインターをこの要素に「捕捉」する。
     // 指が要素の外にはみ出しても onPointerMove が届くようになる。
     e.currentTarget.setPointerCapture(e.pointerId);
-    se.playSe(se.move1); // ピースをつかんだとき
+    // ドラッグ中は最前面に出す（React state ではなく DOM を直接操作）
+    e.currentTarget.style.zIndex = "50";
+    se.playSe(se.move1);
     const cur = positions[id] ?? { x: 0, y: 0 };
     dragInfo.current = {
       id,
@@ -95,25 +97,24 @@ export default function SakusenBoardPage() {
   // ── ドラッグ中（指/カーソルが動くたびに呼ばれる） ──
   const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
     if (!dragInfo.current) return;
-    // setPositions のコールバックは非同期実行されるため、
-    // コールバック内で dragInfo.current を参照すると
-    // handlePointerUp に null にされた後になる場合がある。
-    // → 必要な値をここで変数に取り出しておく。
-    const { id, startPx, startPy, startOx, startOy } = dragInfo.current;
-    const dx = e.clientX - startPx;
-    const dy = e.clientY - startPy;
-    setPositions(prev => ({
-      ...prev,
-      [id]: {
-        x: startOx + dx,
-        y: startOy + dy,
-      },
-    }));
+    const { startPx, startPy, startOx, startOy } = dragInfo.current;
+    const x = startOx + (e.clientX - startPx);
+    const y = startOy + (e.clientY - startPy);
+    // ポイント: setPositions（React state）は呼ばない。
+    // DOM の style を直接書き換えることで React の再レンダリングを起こさず、
+    // 37個のピースを毎フレーム再描画するコストをゼロにする。
+    e.currentTarget.style.transform = `translate(${x}px, ${y}px)`;
   };
 
   // ── ドラッグ終了 ────────────────────────────────────
-  const handlePointerUp = () => {
-    if (dragInfo.current) se.playSe(se.move2); // ピースを置いたとき
+  const handlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
+    if (!dragInfo.current) return;
+    se.playSe(se.move2);
+    const { id, startPx, startPy, startOx, startOy } = dragInfo.current;
+    const x = startOx + (e.clientX - startPx);
+    const y = startOy + (e.clientY - startPy);
+    // ドロップ時に1回だけ React state を更新して位置を確定させる
+    setPositions(prev => ({ ...prev, [id]: { x, y } }));
     dragInfo.current = null;
     setDraggingId(null);
   };
