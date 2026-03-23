@@ -95,14 +95,18 @@ export default function SakusenBoardPage() {
   // ── ドラッグ中（指/カーソルが動くたびに呼ばれる） ──
   const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
     if (!dragInfo.current) return;
-    // 開始点からの差分 + 開始時のオフセット = 新しい位置
-    const dx = e.clientX - dragInfo.current.startPx;
-    const dy = e.clientY - dragInfo.current.startPy;
+    // setPositions のコールバックは非同期実行されるため、
+    // コールバック内で dragInfo.current を参照すると
+    // handlePointerUp に null にされた後になる場合がある。
+    // → 必要な値をここで変数に取り出しておく。
+    const { id, startPx, startPy, startOx, startOy } = dragInfo.current;
+    const dx = e.clientX - startPx;
+    const dy = e.clientY - startPy;
     setPositions(prev => ({
       ...prev,
-      [dragInfo.current!.id]: {
-        x: dragInfo.current!.startOx + dx,
-        y: dragInfo.current!.startOy + dy,
+      [id]: {
+        x: startOx + dx,
+        y: startOy + dy,
       },
     }));
   };
