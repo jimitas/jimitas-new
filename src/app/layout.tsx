@@ -10,7 +10,7 @@
 //   4. Header・Footer で全ページを囲む
 // ======================================================
 
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { Noto_Sans_JP, M_PLUS_1p } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/common/Header"
@@ -65,6 +65,20 @@ const themeInitScript = `
 `
 
 // -------------------------------------------------------
+// ビューポート設定（タブレット・スマホのピンチズーム・スケール制御）
+//
+// user-scalable=no, maximum-scale=1:
+//   ピンチアウトによる意図しないズームを禁止する。
+//   ボタン連打時にブラウザが画面を拡大するのを防ぐ。
+// -------------------------------------------------------
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
+// -------------------------------------------------------
 // メタデータ（ブラウザのタブや検索結果に使われる）
 // -------------------------------------------------------
 export const metadata: Metadata = {
@@ -83,8 +97,10 @@ export default function RootLayout({
     //   テーマスクリプトが html の class や data 属性を書き換えるため、
     //   サーバー側とブラウザ側でHTMLが一致しないことがある。
     //   この警告を抑制するために必要。
+    {/* translate="no": Google翻訳などによるアプリUIの自動翻訳を禁止する */}
     <html
       lang="ja"
+      translate="no"
       suppressHydrationWarning
       className={`${notoSansJP.variable} ${mPlus1p.variable}`}
     >

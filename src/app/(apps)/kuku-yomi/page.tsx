@@ -14,13 +14,13 @@
 //   同じ段・モードの2周目はコインを付与しない。
 // ======================================================
 
-"use client"
+"use client";
 
-import { useState, useRef } from "react"
-import * as se from "@/lib/se"
-import { useCoins } from "@/hooks/useCoins"
-import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
-import { ArrayDots } from "@/components/parts/displays/ArrayDots"
+import { useState, useRef } from "react";
+import * as se from "@/lib/se";
+import { useCoins } from "@/hooks/useCoins";
+import { CoinDisplay } from "@/components/parts/displays/CoinDisplay";
+import { ArrayDots } from "@/components/parts/displays/ArrayDots";
 
 // ── 九九の読み方データ ──────────────────────────────────
 //
@@ -51,7 +51,7 @@ const KUKU_MONDAI: string[][] = [
   ["はちいち　が", "はちに", "はちさん（はっさん）", "はちし（はっし）", "はちご", "はちろく", "はちしち", "はっぱ", "はっく"],
   // 9の段
   ["くいち　が", "くに", "くさん", "くし", "くご", "くろく", "くしち", "くはち", "くく"],
-]
+];
 
 const KUKU_KOTAE: string[][] = [
   // 1の段
@@ -72,125 +72,125 @@ const KUKU_KOTAE: string[][] = [
   ["はち", "じゅうろく", "にじゅうし", "さんじゅうに", "しじゅう", "しじゅうはち", "ごじゅうろく", "ろくじゅうし", "しちじゅうに"],
   // 9の段
   ["く", "じゅうはち", "にじゅうしち", "さんじゅうろく", "しじゅうご", "ごじゅうし", "ろくじゅうさん", "しちじゅうに", "はちじゅういち"],
-]
+];
 
 // ── 型定義 ──────────────────────────────────────────────
-type Mode  = "up" | "down" | "random"
-type Phase = "ready" | "practice" | "done"
+type Mode = "up" | "down" | "random";
+type Phase = "ready" | "practice" | "done";
 
 // ── モード定義（表示名付き） ─────────────────────────────
-const MODES: { value: Mode; label: string }[] = [
-  { value: "up",     label: "上がり九九" },
-  { value: "down",   label: "下がり九九" },
+const MODES: { value: Mode; label: string; }[] = [
+  { value: "up", label: "上がり九九" },
+  { value: "down", label: "下がり九九" },
   { value: "random", label: "バラバラ" },
-]
+];
 
 // ── Fisher-Yates シャッフル ─────────────────────────────
 function shuffled(arr: number[]): number[] {
-  const a = [...arr]
+  const a = [...arr];
   for (let i = a.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
+      ;[a[i], a[j]] = [a[j], a[i]];
   }
-  return a
+  return a;
 }
 
 // ── モードに応じた問題順序を生成（0〜8: かける数インデックス） ──
 function generateOrder(mode: Mode): number[] {
-  const base = [0, 1, 2, 3, 4, 5, 6, 7, 8]
-  if (mode === "down")   return [...base].reverse()
-  if (mode === "random") return shuffled(base)
-  return base
+  const base = [0, 1, 2, 3, 4, 5, 6, 7, 8];
+  if (mode === "down") return [...base].reverse();
+  if (mode === "random") return shuffled(base);
+  return base;
 }
 
 // ── ページ本体 ────────────────────────────────────────────
 export default function KukuYomiPage() {
 
   // ── コインシステム ──────────────────────────────────────
-  const { coins, addCoins } = useCoins()
+  const { coins, addCoins } = useCoins();
 
   // ── 段・モード ──────────────────────────────────────────
-  const [dan,  setDan]  = useState(2)           // 初期: 2の段
-  const [mode, setMode] = useState<Mode>("up")  // 初期: 上がり九九
+  const [dan, setDan] = useState(2);           // 初期: 2の段
+  const [mode, setMode] = useState<Mode>("up");  // 初期: 上がり九九
 
   // ── 練習の進行状態 ──────────────────────────────────────
-  const [phase, setPhase] = useState<Phase>("ready")
-  const [step,  setStep]  = useState(0)      // 0〜17（偶数=問題, 奇数=答え）
-  const [order, setOrder] = useState<number[]>([])  // かける数インデックスの順序
+  const [phase, setPhase] = useState<Phase>("ready");
+  const [step, setStep] = useState(0);      // 0〜17（偶数=問題, 奇数=答え）
+  const [order, setOrder] = useState<number[]>([]);  // かける数インデックスの順序
 
   // ── アレイ図の表示/非表示 ────────────────────────────────
-  const [showArray, setShowArray] = useState(true)
+  const [showArray, setShowArray] = useState(true);
 
   // ── コイン付与フラグ（段・モードが変わったらリセット） ───────
-  const hasCompletedRef = useRef(false)
+  const hasCompletedRef = useRef(false);
 
   // ── 段変更（練習中は無効） ────────────────────────────
   const handleDanChange = (n: number) => {
-    if (phase === "practice") return
-    se.playSe(se.set)
-    setDan(n)
-    hasCompletedRef.current = false
-    setPhase("ready")
-  }
+    if (phase === "practice") return;
+    se.playSe(se.set);
+    setDan(n);
+    hasCompletedRef.current = false;
+    setPhase("ready");
+  };
 
   // ── モード変更（練習中は無効） ─────────────────────────
   const handleModeChange = (m: Mode) => {
-    if (phase === "practice") return
-    se.playSe(se.set)
-    setMode(m)
-    hasCompletedRef.current = false
-    setPhase("ready")
-  }
+    if (phase === "practice") return;
+    se.playSe(se.set);
+    setMode(m);
+    hasCompletedRef.current = false;
+    setPhase("ready");
+  };
 
   // ── スタート ────────────────────────────────────────────
   const handleStart = () => {
-    se.playSe(se.pi)
-    setOrder(generateOrder(mode))
-    setStep(0)
-    setPhase("practice")
-  }
+    se.playSe(se.pi);
+    setOrder(generateOrder(mode));
+    setStep(0);
+    setPhase("practice");
+  };
 
   // ── つぎ ────────────────────────────────────────────────
   const handleNext = () => {
-    se.playSe(se.pi)
-    const nextStep = step + 1
+    se.playSe(se.pi);
+    const nextStep = step + 1;
 
     if (nextStep >= 18) {
       // 9問すべて完走
-      se.playSe(se.seikai1)
+      se.playSe(se.seikai1);
       if (!hasCompletedRef.current) {
-        addCoins(1)
-        hasCompletedRef.current = true
+        addCoins(1);
+        hasCompletedRef.current = true;
       }
-      setPhase("done")
+      setPhase("done");
     } else {
-      setStep(nextStep)
+      setStep(nextStep);
     }
-  }
+  };
 
   // ── もういちど / やめる（ready に戻る） ───────────────
   const handleReset = () => {
-    se.playSe(se.set)
-    setPhase("ready")
-  }
+    se.playSe(se.set);
+    setPhase("ready");
+  };
 
   const handleStop = () => {
-    se.playSe(se.set)
-    setPhase("ready")
-  }
+    se.playSe(se.set);
+    setPhase("ready");
+  };
 
   // ── 現在の問題情報（practice フェーズ用） ─────────────
-  const qIdx     = phase === "practice" ? (order[Math.floor(step / 2)] ?? 0) : 0
-  const mult     = qIdx + 1                      // かける数（1〜9）
-  const isAnswer = step % 2 === 1                // 答えフェーズかどうか
-  const mondai   = KUKU_MONDAI[dan - 1][qIdx]   // 問題の読み方（例: "さんし"）
-  const kotae    = KUKU_KOTAE[dan - 1][qIdx]    // 答えの読み方（例: "じゅうに"）
-  const product  = dan * mult                    // 積
-  const progress = Math.floor(step / 2) + 1     // 現在の問題番号（1〜9）
+  const qIdx = phase === "practice" ? (order[Math.floor(step / 2)] ?? 0) : 0;
+  const mult = qIdx + 1;                      // かける数（1〜9）
+  const isAnswer = step % 2 === 1;                // 答えフェーズかどうか
+  const mondai = KUKU_MONDAI[dan - 1][qIdx];   // 問題の読み方（例: "さんし"）
+  const kotae = KUKU_KOTAE[dan - 1][qIdx];    // 答えの読み方（例: "じゅうに"）
+  const product = dan * mult;                    // 積
+  const progress = Math.floor(step / 2) + 1;     // 現在の問題番号（1〜9）
 
   // ── ボタンクラスのヘルパー ─────────────────────────────
-  const activeBtnCls   = "bg-brand-500 text-white"
-  const inactiveBtnCls = "bg-white border border-brand-300 text-brand-600 hover:bg-brand-100"
+  const activeBtnCls = "bg-brand-500 text-white";
+  const inactiveBtnCls = "bg-white border border-brand-300 text-brand-600 hover:bg-brand-100";
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
@@ -276,7 +276,7 @@ export default function KukuYomiPage() {
                   アレイ図表示中は幅が半分になるためフォントを小さくして1行に収める */}
               <div className={`bg-yellow-50 border border-yellow-200 rounded-xl
                               px-4 py-4 text-center font-bold text-gray-800
-                              min-h-[4rem] flex items-center justify-center gap-2
+                              min-h-16 flex items-center justify-center gap-2
                               ${showArray ? "text-xl tracking-wide" : "text-3xl tracking-widest"}`}>
                 <span>{mondai}</span>
                 {isAnswer
@@ -312,12 +312,11 @@ export default function KukuYomiPage() {
               {/* アレイ図トグル ＋ やめるボタン */}
               <div className="flex justify-center gap-3 flex-wrap">
                 <button
-                  onClick={() => { se.playSe(se.pi); setShowArray(prev => !prev) }}
-                  className={`px-5 py-2 text-sm font-bold rounded-lg border-2 transition-all ${
-                    showArray
+                  onClick={() => { se.playSe(se.pi); setShowArray(prev => !prev); }}
+                  className={`px-5 py-2 text-sm font-bold rounded-lg border-2 transition-all ${showArray
                       ? "bg-brand-500 border-brand-500 text-white"
                       : "bg-white border-brand-300 text-brand-600 hover:bg-brand-100"
-                  }`}
+                    }`}
                 >
                   {showArray ? "アレイ図をかくす" : "アレイ図をみせる"}
                 </button>
@@ -368,5 +367,5 @@ export default function KukuYomiPage() {
       <CoinDisplay coins={coins} />
 
     </div>
-  )
+  );
 }

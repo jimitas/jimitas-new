@@ -82,11 +82,22 @@
 /* -------------------------------------------------------
    ベーススタイル
    ------------------------------------------------------- */
-body {
-  font-family: var(--font-current);
-  /* ドラッグ操作中に文字や画像が選択されないようにする */
+
+/* タブレット・スマホ操作の誤動作防止設定 */
+html, body {
+  /* 上スワイプでのページ再読み込み（pull-to-refresh）を禁止 */
+  overscroll-behavior: none;
+  /* テキスト・画像の選択禁止（ドラッグ操作や長押しの誤作動防止） */
   user-select: none;
   -webkit-user-select: none;
+  /* iOS の長押し保存メニューを禁止 */
+  -webkit-touch-callout: none;
+  /* ダブルタップズームを禁止（タップ遅延も解消） */
+  touch-action: manipulation;
+}
+
+body {
+  font-family: var(--font-current);
 }
 
 /* テキスト入力欄では選択を有効にする */
