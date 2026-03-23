@@ -23,9 +23,14 @@
 //
 // 【アルトリコーダー】
 //   音番号を7下げることで移調（完全一致ではない）
+//
+// 【穴の移動・リサイズ】
+//   react-moveable を使い、手の小さい子用に穴の位置・サイズを調整可能。
+//   設定は localStorage に自動保存される。
 // ======================================================
 
 import { useState, useRef, useCallback, useEffect } from "react"
+import Moveable from "react-moveable"
 import { useAudioUnlock } from "@/hooks/useAudioUnlock"
 import { useInstrumentSounds } from "@/hooks/useInstrumentSounds"
 
@@ -59,7 +64,8 @@ type HoleData = {
   label: string
 }
 
-const HOLES: HoleData[] = [
+// デフォルト配置（リセット時に使う）
+const DEFAULT_HOLES: HoleData[] = [
   { id: 0,  top: 430, left: 200, width: 100, height: 150, borderRadius: "50% 0 0 50%", label: "親指"     },
   { id: 1,  top: 430, left: 300, width: 100, height: 150, borderRadius: "0 50% 50% 0", label: "人差し指L" },
   { id: 2,  top: 250, left: 225, width: 100, height: 100, borderRadius: "50%",          label: "中指L"    },
@@ -77,6 +83,19 @@ const HOLES: HoleData[] = [
 // COUPLED[j]: hole[j] を押したとき自動で一緒に押さえる穴
 const COUPLED: Record<number, number> = { 1: 0, 8: 7, 10: 9 }
 
+// ── localStorage ─────────────────────────────────────
+// 穴の位置・サイズのみ保存する（borderRadius は固定）
+type SavedPos = { top: number; left: number; width: number; height: number }
+const LS_KEY = "recorder-play-holes-v1"
+
+function getDefaultPositions(): SavedPos[] {
+  return DEFAULT_HOLES.map(h => ({ top: h.top, left: h.left, width: h.width, height: h.height }))
+}
+
+function savePositions(positions: SavedPos[]) {
+  try { localStorage.setItem(LS_KEY, JSON.stringify(positions)) } catch {}
+}
+
 // ── ページコンポーネント ──────────────────────────────
 
 export default function RecorderPlayPage() {
@@ -88,25 +107,44 @@ export default function RecorderPlayPage() {
   const altOffsetRef = useRef(0)
   useEffect(() => { altOffsetRef.current = isAlt ? 7 : 0 }, [isAlt])
 
-  // 穴の状態（0=離す, 1=押す）
+  // 穴の押下状態（0=離す, 1=押す）
   const holesRef = useRef<number[]>(new Array(11).fill(0))
   const [holesDisplay, setHolesDisplay] = useState<number[]>(new Array(11).fill(0))
   const currentSoundRef = useRef(0)  // 現在鳴らしている soundIndex
 
+  // 穴の位置・サイズ（デフォルトで初期化 → useEffect で localStorage から上書き）
+  const [positions, setPositions] = useState<SavedPos[]>(getDefaultPositions)
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(LS_KEY)
+      if (saved) {
+        const parsed: SavedPos[] = JSON.parse(saved)
+        if (Array.isArray(parsed) && parsed.length === 11) setPositions(parsed)
+      }
+    } catch {}
+  }, [])
+
+  // 移動モード・選択中の穴
+  const [isMoveMode, setIsMoveMode] = useState(false)
+  const [selectedId, setSelectedId] = useState<number | null>(null)
+
+  // 移動モードを切ったとき選択を解除
+  useEffect(() => {
+    if (!isMoveMode) setSelectedId(null)
+  }, [isMoveMode])
+
+  // 各穴の DOM ref（Moveable のターゲット指定用）
+  const holeRefs = useRef<(HTMLDivElement | null)[]>(new Array(11).fill(null))
+
   // 現在の運指コードに合う音を再生（前の音を止めてから）
   const updateSound = useCallback(() => {
-    // 前の音を止める
     if (currentSoundRef.current > 0) {
       stopSound(currentSoundRef.current)
       currentSoundRef.current = 0
     }
-
-    // 穴の状態をビットコード化
     const holes = holesRef.current
     let code = 0
     for (let i = 0; i < 11; i++) code += holes[i] * (2 ** i)
-
-    // LIST_A から対応する音を探して鳴らす
     const idx = LIST_A.indexOf(code)
     if (idx !== -1) {
       const soundIdx = LIST_B[idx] - altOffsetRef.current
@@ -117,7 +155,7 @@ export default function RecorderPlayPage() {
     }
   }, [playSound, stopSound])
 
-  // 穴を押す
+  // 穴を押す（演奏モードのみ）
   const pressHole = useCallback((j: number) => {
     const holes = holesRef.current
     holes[j] = 1
@@ -126,7 +164,7 @@ export default function RecorderPlayPage() {
     updateSound()
   }, [updateSound])
 
-  // 穴を離す
+  // 穴を離す（演奏モードのみ）
   const releaseHole = useCallback((j: number) => {
     const holes = holesRef.current
     holes[j] = 0
@@ -134,6 +172,23 @@ export default function RecorderPlayPage() {
     setHolesDisplay([...holes])
     updateSound()
   }, [updateSound])
+
+  // 位置・サイズを更新して localStorage に保存
+  const updatePosition = useCallback((id: number, partial: Partial<SavedPos>) => {
+    setPositions(prev => {
+      const next = prev.map((p, i) => i === id ? { ...p, ...partial } : p)
+      savePositions(next)
+      return next
+    })
+  }, [])
+
+  // デフォルト配置にリセット
+  const resetPositions = useCallback(() => {
+    const defaults = getDefaultPositions()
+    setPositions(defaults)
+    savePositions(defaults)
+    setSelectedId(null)
+  }, [])
 
   return (
     <main className="p-4">
@@ -143,7 +198,7 @@ export default function RecorderPlayPage() {
       </p>
 
       {/* アルトリコーダー切り替え */}
-      <div className="flex justify-center mb-4">
+      <div className="flex justify-center mb-3">
         <label className="flex items-center gap-2 cursor-pointer select-none text-sm">
           <input
             type="checkbox"
@@ -160,10 +215,39 @@ export default function RecorderPlayPage() {
         </p>
       )}
 
-      {/* 操作説明 */}
-      <p className="text-center text-xs text-gray-400 mb-4">
-        穴をタッチ（またはクリック）しながら押さえてください。複数同時に押さえられます。
-      </p>
+      {/* 穴の移動モード切り替え */}
+      <div className="flex justify-center items-center gap-4 mb-3">
+        <label className="flex items-center gap-2 cursor-pointer select-none text-sm">
+          <input
+            type="checkbox"
+            className="w-5 h-5 accent-amber-700"
+            checked={isMoveMode}
+            onChange={e => setIsMoveMode(e.target.checked)}
+          />
+          <span>✋ 穴を移動・リサイズする</span>
+        </label>
+        {/* リセットボタンは移動モード中のみ表示 */}
+        {isMoveMode && (
+          <button
+            className="text-xs text-amber-700 border border-amber-400 bg-amber-50 px-2 py-1 rounded hover:bg-amber-100"
+            onClick={resetPositions}
+          >
+            初期配置に戻す
+          </button>
+        )}
+      </div>
+
+      {/* 移動モードの操作説明 */}
+      {isMoveMode ? (
+        <p className="text-center text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-4 mx-auto max-w-sm">
+          穴をタップして選択（黄色の枠） → ハンドルでドラッグ・リサイズ。<br />
+          設定は自動で保存されます。
+        </p>
+      ) : (
+        <p className="text-center text-xs text-gray-400 mb-4">
+          穴をタッチ（またはクリック）しながら押さえてください。複数同時に押さえられます。
+        </p>
+      )}
 
       {/* 運指操作エリア */}
       <div className="overflow-x-auto pb-4">
@@ -171,31 +255,96 @@ export default function RecorderPlayPage() {
           コンテナは旧版の data_top/data_left の最大値に合わせたサイズ。
           穴を absolute で配置する。
         */}
-        <div className="relative mx-auto" style={{ width: "840px", height: "620px" }}>
-          {HOLES.map(hole => (
-            <div
-              key={hole.id}
-              className="absolute select-none touch-none cursor-pointer"
-              style={{
-                top:          hole.top,
-                left:         hole.left,
-                width:        hole.width,
-                height:       hole.height,
-                borderRadius: hole.borderRadius,
-                backgroundColor: holesDisplay[hole.id] === 1 ? "#1a1a1a" : "lightgray",
-                border: "3px solid #555",
-                transition: "background-color 0.05s",
+        <div
+          className="relative mx-auto"
+          style={{ width: "840px", height: "620px" }}
+          // コンテナ背景クリックで選択解除
+          onClick={e => {
+            if (e.target === e.currentTarget && isMoveMode) setSelectedId(null)
+          }}
+        >
+          {DEFAULT_HOLES.map(hole => {
+            const pos = positions[hole.id]
+            const isSelected = isMoveMode && selectedId === hole.id
+            return (
+              <div
+                key={hole.id}
+                ref={el => { holeRefs.current[hole.id] = el }}
+                className="absolute select-none touch-none"
+                style={{
+                  top:          pos.top,
+                  left:         pos.left,
+                  width:        pos.width,
+                  height:       pos.height,
+                  borderRadius: hole.borderRadius,
+                  backgroundColor: holesDisplay[hole.id] === 1 ? "#1a1a1a" : "lightgray",
+                  // 選択中は黄色のハイライト枠
+                  border:  isSelected ? "3px solid #f59e0b" : "3px solid #555",
+                  cursor:  isMoveMode ? "move" : "pointer",
+                  // 移動モードでは押下時の色変化トランジションを無効に
+                  transition: isMoveMode ? "" : "background-color 0.05s",
+                }}
+                title={hole.label}
+                onPointerDown={e => {
+                  if (isMoveMode) {
+                    // 移動モード: タップで選択するだけ（音を鳴らさない）
+                    setSelectedId(hole.id)
+                    return
+                  }
+                  // 演奏モード: pointer capture で指が穴外に出ても pointerup を受け取る
+                  e.currentTarget.setPointerCapture(e.pointerId)
+                  pressHole(hole.id)
+                }}
+                onPointerUp={() => { if (!isMoveMode) releaseHole(hole.id) }}
+                onPointerCancel={() => { if (!isMoveMode) releaseHole(hole.id) }}
+              />
+            )
+          })}
+
+          {/* Moveable: 選択中の穴にのみアタッチ（key でホール切り替え時に再マウント） */}
+          {isMoveMode && selectedId !== null && holeRefs.current[selectedId] && (
+            <Moveable
+              key={selectedId}
+              target={holeRefs.current[selectedId]}
+              draggable={true}
+              resizable={true}
+              keepRatio={false}
+              origin={false}
+              throttleDrag={0}
+              throttleResize={0}
+              renderDirections={["n", "nw", "ne", "s", "se", "sw", "e", "w"]}
+              // ── ドラッグ中: DOM を直接更新（React state は動かさない） ──
+              onDrag={({ target, left, top }) => {
+                target.style.left = `${left}px`
+                target.style.top  = `${top}px`
               }}
-              title={hole.label}
-              onPointerDown={e => {
-                // setPointerCapture で指が穴の外に出ても pointerup を受け取る
-                e.currentTarget.setPointerCapture(e.pointerId)
-                pressHole(hole.id)
+              // ── ドラッグ完了: state + localStorage に保存 ──
+              onDragEnd={({ lastEvent }) => {
+                if (lastEvent && selectedId !== null) {
+                  updatePosition(selectedId, { left: lastEvent.left, top: lastEvent.top })
+                }
               }}
-              onPointerUp={() => releaseHole(hole.id)}
-              onPointerCancel={() => releaseHole(hole.id)}
+              // ── リサイズ中: DOM を直接更新 ──
+              onResize={({ target, width, height, drag }) => {
+                target.style.width  = `${width}px`
+                target.style.height = `${height}px`
+                // リサイズの基点によって left/top も変わるため drag から取得
+                target.style.left   = `${drag.left}px`
+                target.style.top    = `${drag.top}px`
+              }}
+              // ── リサイズ完了: state + localStorage に保存 ──
+              onResizeEnd={({ lastEvent }) => {
+                if (lastEvent && selectedId !== null) {
+                  updatePosition(selectedId, {
+                    width:  lastEvent.width,
+                    height: lastEvent.height,
+                    left:   lastEvent.drag.left,
+                    top:    lastEvent.drag.top,
+                  })
+                }
+              }}
             />
-          ))}
+          )}
         </div>
       </div>
     </main>
