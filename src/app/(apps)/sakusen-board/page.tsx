@@ -211,8 +211,10 @@ export default function SakusenBoardPage() {
             position: "relative",
             width: "min(80vw, 800px)",
             height: "min(40vw, 400px)",
-            backgroundColor: "#9ACD32",
-            border: "5px solid white",
+            // オレンジ：赤・青どちらとも混同しないUD配色（野外視認性も高い）
+            backgroundColor: "#F59E0B",
+            // 外枠を濃い茶色にしてページ背景（白系）との同化を防ぐ
+            border: "5px solid #92400e",
           }}>
 
             {/* 左ゴール（赤チーム側・自陣は近く） */}
@@ -223,7 +225,8 @@ export default function SakusenBoardPage() {
               top: "calc(50% - min(10vw, 100px))",
               left: "min(-5vw, -50px)",
               backgroundColor: "#DC2626",
-              border: "5px solid white",
+              // ゴール枠も外枠と統一（白だとフィールド内ラインと混同しやすい）
+              border: "5px solid #92400e",
             }} />
 
             {/* 右ゴール（青チーム側・自陣は近く） */}
@@ -234,7 +237,7 @@ export default function SakusenBoardPage() {
               top: "calc(50% - min(10vw, 100px))",
               right: "min(-5vw, -50px)",
               backgroundColor: "#1D4ED8",
-              border: "5px solid white",
+              border: "5px solid #92400e",
             }} />
 
             {/* 左縦ライン */}
