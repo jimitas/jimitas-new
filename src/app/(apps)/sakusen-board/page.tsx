@@ -20,6 +20,7 @@
 
 import { useState, useRef } from "react";
 import Image from "next/image";
+import * as se from "@/lib/se";
 
 // ── 作戦名の選択肢 ────────────────────────────────────
 const STRATEGY_OPTIONS = [
@@ -79,6 +80,7 @@ export default function SakusenBoardPage() {
     // このポインターをこの要素に「捕捉」する。
     // 指が要素の外にはみ出しても onPointerMove が届くようになる。
     e.currentTarget.setPointerCapture(e.pointerId);
+    se.playSe(se.move1); // ピースをつかんだとき
     const cur = positions[id] ?? { x: 0, y: 0 };
     dragInfo.current = {
       id,
@@ -107,6 +109,7 @@ export default function SakusenBoardPage() {
 
   // ── ドラッグ終了 ────────────────────────────────────
   const handlePointerUp = () => {
+    if (dragInfo.current) se.playSe(se.move2); // ピースを置いたとき
     dragInfo.current = null;
     setDraggingId(null);
   };
@@ -190,7 +193,10 @@ export default function SakusenBoardPage() {
 
       {/* ── 作戦名セレクト + ヒント ─────────────────── */}
       <div className="flex flex-wrap items-center justify-center gap-3">
-        <select className="text-sm font-bold text-gray-800 border border-brand-400 rounded-lg px-3 py-1 bg-white cursor-pointer">
+        <select
+          className="text-sm font-bold text-gray-800 border border-brand-400 rounded-lg px-3 py-1 bg-white cursor-pointer"
+          onChange={() => se.playSe(se.piron)} // 作戦名を変えたとき
+        >
           {STRATEGY_OPTIONS.map((s, i) => (
             <option key={i} value={s}>{s}</option>
           ))}
@@ -308,7 +314,7 @@ export default function SakusenBoardPage() {
 
           {/* 回転ボタン: 赤=右90°・青=左90° に切り替え */}
           <button
-            onClick={() => setIsRotated(prev => !prev)}
+            onClick={() => { se.playSe(se.set); setIsRotated(prev => !prev); }} // 回転ボタン
             className="text-xs font-bold rounded border transition-all active:scale-95"
             style={{
               width: "min(8vw, 80px)",
