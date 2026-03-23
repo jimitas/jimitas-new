@@ -215,25 +215,25 @@ export default function SakusenBoardPage() {
             border: "5px solid white",
           }}>
 
-            {/* 左ゴール（青チーム側） */}
+            {/* 左ゴール（赤チーム側・自陣は近く） */}
             <div style={{
               position: "absolute",
               width: "min(5vw, 50px)",
               height: "min(20vw, 200px)",
               top: "calc(50% - min(10vw, 100px))",
               left: "min(-5vw, -50px)",
-              backgroundColor: "#1D4ED8",
+              backgroundColor: "#DC2626",
               border: "5px solid white",
             }} />
 
-            {/* 右ゴール（赤チーム側） */}
+            {/* 右ゴール（青チーム側・自陣は近く） */}
             <div style={{
               position: "absolute",
               width: "min(5vw, 50px)",
               height: "min(20vw, 200px)",
               top: "calc(50% - min(10vw, 100px))",
               right: "min(-5vw, -50px)",
-              backgroundColor: "#DC2626",
+              backgroundColor: "#1D4ED8",
               border: "5px solid white",
             }} />
 
