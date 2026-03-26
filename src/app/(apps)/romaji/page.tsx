@@ -14,8 +14,10 @@
 
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import * as se from "@/lib/se";
+import { useCoins } from "@/hooks/useCoins";
+import { CoinDisplay } from "@/components/parts/displays/CoinDisplay";
 
 // ── 問題データ ────────────────────────────────────────
 // id 1-36: Lv1かんたん / id 37-65: Lv2むずかしい
@@ -125,14 +127,12 @@ export default function RomajiPage() {
   const [capsFlag, setCapsFlag]     = useState(false);   // 大文字モード
   const [myAnswer, setMyAnswer]     = useState("");      // 入力中の回答
   const [currentIdx, setCurrentIdx] = useState<number | null>(null);
-  const [score, setScore]           = useState(0);
   const [isSeikai, setIsSeikai]     = useState(false);   // 正解演出フラグ
 
-  // ── スコアをlocalStorageから復元 ──────────────────
-  useEffect(() => {
-    const saved = parseInt(localStorage.getItem("romajiScore") ?? "0") || 0;
-    setScore(saved);
-  }, []);
+  // ── グローバルコインシステム ───────────────────────
+  const { coins, addCoins } = useCoins();
+  // 同じ問題で2回目以降の正解にはコインを与えない
+  const hasAnsweredRef = useRef(false);
 
   // ── 正解チェック（myAnswer が変わるたびに実行） ────
   useEffect(() => {
@@ -146,14 +146,13 @@ export default function RomajiPage() {
     if (answers.includes(normalize(myAnswer))) {
       setFlag(false);
       setIsSeikai(true);
-      setScore((prev) => {
-        const next = prev + 1;
-        localStorage.setItem("romajiScore", String(next));
-        return next;
-      });
+      if (!hasAnsweredRef.current) {
+        addCoins(1);
+        hasAnsweredRef.current = true;
+      }
       se.playSe(se.seikai1);
     }
-  }, [myAnswer, flag, currentIdx]);
+  }, [myAnswer, flag, currentIdx, addCoins]);
 
   // ── 問題を出す ──────────────────────────────────────
   const handleQuestion = useCallback(() => {
@@ -166,6 +165,7 @@ export default function RomajiPage() {
     setFlag(true);
     setMyAnswer("");
     setIsSeikai(false);
+    hasAnsweredRef.current = false; // 新しい問題なのでコイン付与をリセット
   }, [mode]);
 
   // ── 答えを見る ─────────────────────────────────────
@@ -216,7 +216,7 @@ export default function RomajiPage() {
   const vowelKeys   = capsFlag ? VOWEL_UPPER  : VOWEL_LOWER;
 
   return (
-    <div className="max-w-xl mx-auto px-3 py-5 select-none">
+    <div className="max-w-2xl mx-auto px-4 py-5 select-none">
 
       {/* タイトル */}
       <h1 className="text-2xl font-bold text-center mb-1 text-gray-800">
@@ -236,7 +236,7 @@ export default function RomajiPage() {
           <button
             key={lv}
             onClick={() => handleMode(lv)}
-            className={`text-xs px-3 py-2 rounded-lg font-bold transition-all active:scale-95 ${
+            className={`text-sm px-4 py-2.5 rounded-lg font-bold transition-all active:scale-95 ${
               mode === lv
                 ? "bg-brand-500 text-white shadow-md"
                 : "bg-white border-2 border-brand-200 text-brand-600 hover:bg-brand-50"
@@ -249,7 +249,7 @@ export default function RomajiPage() {
 
       {/* 問題表示ボックス */}
       <div
-        className={`text-center text-4xl font-bold rounded-xl py-5 mb-2 border-2 transition-colors ${
+        className={`text-center text-5xl font-bold rounded-xl py-6 mb-3 border-2 transition-colors ${
           isSeikai
             ? "bg-yellow-50 border-yellow-300 text-red-500"
             : "bg-yellow-100 border-yellow-300 text-gray-800"
@@ -263,7 +263,7 @@ export default function RomajiPage() {
       </div>
 
       {/* 入力表示ボックス */}
-      <div className="text-center text-2xl font-mono font-bold bg-white border-2 border-gray-300 rounded-xl py-3 mb-3 min-h-[3rem] tracking-widest text-gray-700">
+      <div className="text-center text-3xl font-mono font-bold bg-white border-2 border-gray-300 rounded-xl py-4 mb-4 min-h-[4rem] tracking-widest text-gray-700">
         {myAnswer || <span className="text-gray-300">─</span>}
       </div>
 
@@ -272,7 +272,7 @@ export default function RomajiPage() {
         {/* もんだい */}
         <button
           onClick={handleQuestion}
-          className="px-4 py-2 rounded-lg text-sm font-bold bg-warm-500 text-white hover:bg-warm-600 active:scale-95 transition-all shadow"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-warm-500 text-white hover:bg-warm-600 active:scale-95 transition-all shadow"
         >
           ▶ もんだい
         </button>
@@ -280,7 +280,7 @@ export default function RomajiPage() {
         <button
           onClick={handleShowAnswer}
           disabled={!flag}
-          className="px-4 py-2 rounded-lg text-sm font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           👁 答えを見る
         </button>
@@ -288,7 +288,7 @@ export default function RomajiPage() {
         <button
           onClick={handleDelete}
           disabled={!flag || myAnswer.length === 0}
-          className="px-4 py-2 rounded-lg text-sm font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           ← 1つ消す
         </button>
@@ -296,14 +296,14 @@ export default function RomajiPage() {
         <button
           onClick={handleClear}
           disabled={!flag || myAnswer.length === 0}
-          className="px-4 py-2 rounded-lg text-sm font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           🗑 全部消す
         </button>
         {/* 大文字切り替え */}
         <button
           onClick={handleCaps}
-          className={`px-4 py-2 rounded-lg text-sm font-bold active:scale-95 transition-all border-2 ${
+          className={`px-5 py-3 rounded-xl text-base font-bold active:scale-95 transition-all border-2 ${
             capsFlag
               ? "bg-purple-500 text-white border-purple-600"
               : "bg-white text-purple-600 border-purple-300 hover:bg-purple-50"
@@ -314,9 +314,9 @@ export default function RomajiPage() {
       </div>
 
       {/* キーボード */}
-      <div className="bg-gray-100 rounded-xl p-2 mb-4 space-y-1">
+      <div className="bg-gray-100 rounded-xl p-3 mb-4 space-y-1.5">
         {layout.map((row, ri) => (
-          <div key={ri} className="flex justify-center gap-1">
+          <div key={ri} className="flex justify-center gap-1.5">
             {row.map((letter) => {
               const isActive = activeKeys.has(letter);
               const isVowel  = vowelKeys.has(letter);
@@ -325,12 +325,12 @@ export default function RomajiPage() {
                   key={letter}
                   onClick={() => handleKey(letter)}
                   disabled={!isActive}
-                  className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg text-sm sm:text-base font-bold transition-all active:scale-90 ${
+                  className={`w-10 h-10 sm:w-12 sm:h-12 rounded-xl text-base sm:text-lg font-bold transition-all active:scale-90 ${
                     !isActive
                       ? "bg-gray-300 text-gray-400 cursor-not-allowed"
                       : isVowel
                       ? "bg-warm-400 text-white hover:bg-warm-500 shadow-sm"
-                      : "bg-accent-400 text-white hover:bg-accent-500 shadow-sm"
+                      : "bg-accent-500 text-white hover:bg-accent-600 shadow-sm"
                   }`}
                 >
                   {letter}
@@ -341,24 +341,8 @@ export default function RomajiPage() {
         ))}
       </div>
 
-      {/* スコア（コイン） */}
-      <div className="bg-gray-50 rounded-xl p-3">
-        <div className="flex items-center gap-2 flex-wrap">
-          <span className="text-sm font-medium text-gray-600">🪙</span>
-          <span className="text-lg font-bold text-warm-500">{score}</span>
-          <span className="text-xs text-gray-400">まい</span>
-          {score > 0 && (
-            <div className="flex flex-wrap gap-0.5 ml-1">
-              {Array.from({ length: Math.min(score, 30) }).map((_, i) => (
-                <span key={i} className="text-sm">🪙</span>
-              ))}
-              {score > 30 && (
-                <span className="text-xs text-gray-400">…</span>
-              )}
-            </div>
-          )}
-        </div>
-      </div>
+      {/* コイン（全体共通） */}
+      <CoinDisplay coins={coins} />
 
     </div>
   );
