@@ -214,6 +214,16 @@ export const apps: AppItem[] = [
     path: "/wari-hissan",
   },
   {
+    id: "shishagonyu",
+    title: "四捨五入の練習",
+    description: "位の数字を見ながら四捨五入の練習をしよう。テンキーで答えを入力。ヒントで判定する桁を確認できる",
+    grades: [4, 5],
+    subjects: ["算数"],
+    tags: ["数と計算", "四捨五入", "がい数", "テンキー", "コイン獲得"],
+    type: "app",
+    path: "/shishagonyu",
+  },
+  {
     id: "circle-area",
     title: "円の面積の求め方",
     description: "円を32分割するアニメーションで、面積の公式がなぜ成り立つか確かめよう",
