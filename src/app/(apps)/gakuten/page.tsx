@@ -19,6 +19,7 @@
 // ======================================================
 
 import { useState, useCallback, useEffect, useRef } from "react"
+import Image from "next/image"
 import { useSound } from "@/hooks/useSound"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
@@ -303,10 +304,11 @@ export default function GakutenPage() {
           <div className="flex justify-center mb-6">
             <div className="w-48 h-48 rounded-xl border-2 border-gray-200 dark:border-gray-600
                             flex items-center justify-center bg-gray-50 dark:bg-gray-700 overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
+              <Image
                 src={`/images/gakuten/ongaku${flashData.no}.png`}
                 alt={flashData.name}
+                width={160}
+                height={160}
                 className="max-w-full max-h-full object-contain p-2"
               />
             </div>
@@ -457,10 +459,11 @@ export default function GakutenPage() {
                           flex items-center justify-center p-0.5
                           active:translate-y-0.5 transition-all ${btnStyle}`}
                       >
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
+                        <Image
                           src={`/images/gakuten/ongaku${symbol.no}.png`}
                           alt={symbol.name}
+                          width={48}
+                          height={48}
                           className="max-w-full max-h-full object-contain"
                         />
                       </button>

@@ -25,6 +25,7 @@ import { PutText } from "@/components/parts/displays/PutText"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useCoins } from "@/hooks/useCoins"
 import { useGameTimer } from "@/hooks/useGameTimer"
+import { useKeyboardInput } from "@/hooks/useKeyboardInput"
 import { NUM_1, NUM_2 } from "@/lib/constants"
 
 const SELECT_ITEMS = ["～10", "10-□", "1□-□", "1□-□（くり下がり）"]
@@ -38,6 +39,7 @@ export default function HikuRenshuPage() {
   // ── 状態管理 ─────────────────────────────────────
   const [flag,        setFlag]        = useState<boolean>(false)  // 回答受付フラグ
   const [selectIndex, setSelectIndex] = useState<number>(0)       // 難易度
+  const [inputStr,    setInputStr]    = useState<string>("")      // キーボード入力バッファ
 
   // 問題値を ref で管理
   const leftRef   = useRef<number>(0)
@@ -78,11 +80,30 @@ export default function HikuRenshuPage() {
     },
   })
 
+  // ── キーボード入力（数字キーで入力バッファに蓄積・Enter で回答送信）
+  useKeyboardInput({
+    onDigit: (n) => {
+      if (!flag) return
+      setInputStr(prev => prev.length >= 2 ? prev : prev + n.toString())
+    },
+    onDelete: () => setInputStr(prev => prev.slice(0, -1)),
+    onClear:  () => setInputStr(""),
+    onEnter: () => {
+      const n = parseInt(inputStr, 10)
+      if (!isNaN(n)) {
+        setInputStr("")
+        checkAnswer(n)
+      }
+    },
+    enabled: flag,
+  })
+
   // ── 問題生成 ──────────────────────────────────────
   const giveQuestion = useCallback(() => {
     // isRunningRef.current で即時チェック（setTimeout 内からの呼び出し対策）
     if (!isRunningRef.current) return
     setFlag(true)
+    setInputStr("")  // 新しい問題が来たらバッファをクリア
 
     let left = 0, right = 0
 
@@ -220,6 +241,17 @@ export default function HikuRenshuPage() {
 
       {/* 問題文表示 */}
       <PutText el_text={el_text} />
+
+      {/* キーボード入力バッファ（入力中の数字を表示） */}
+      {inputStr && (
+        <div className="flex justify-center my-1">
+          <span className="text-2xl font-bold px-4 py-1 min-w-16 text-center
+                           bg-white dark:bg-gray-700
+                           border-2 border-accent-400 rounded-lg">
+            {inputStr}
+          </span>
+        </div>
+      )}
 
       {/* 数字ボタン 0〜10 */}
       <BtnNum ITEM={NUM_1} handleEvent={checkAnswer} />

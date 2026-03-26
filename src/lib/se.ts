@@ -17,6 +17,11 @@ import { Howl } from "howler"
 // ── ミュートチェック付き再生関数 ──────────────────────
 // se.xxx.play() の代わりにこれを使う。
 // ミュート中（jimitas_mute === "true"）は何もしない。
+//
+// NOTE: localStorage は SSR で使えないため typeof window チェックが必須。
+//       howler.js の Howl.mute(true) はグローバルミュートだが、
+//       このアプリでは localStorage ベースの per-play チェックを採用している。
+//       将来 Howler.volume(0) に切り替える場合は playSe の削除で対応できる。
 export function playSe(howl: Howl) {
   if (typeof window === "undefined") return
   if (localStorage.getItem("jimitas_mute") === "true") return

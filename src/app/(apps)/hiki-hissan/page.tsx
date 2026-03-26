@@ -28,6 +28,7 @@
 "use client"
 
 import { useRef, useEffect, useState } from "react"
+import Image from "next/image"
 import * as se from "@/lib/se"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { useHissanDnD } from "@/hooks/useHissanDnD"
@@ -643,11 +644,11 @@ export default function HikiHissanPage() {
           display: "flex", flexDirection: "column", justifyContent: "flex-end",
           alignSelf: "stretch", flexShrink: 0, padding: "0 10px",
         }}>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
+          <Image
             src="/images/gomibako.png"
             className="droppable-elem"
-            style={{ width: 50, height: 60 }}
+            width={50}
+            height={60}
             alt="ゴミ箱"
             draggable={false}
           />

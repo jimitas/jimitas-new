@@ -11,6 +11,11 @@
 // 【将来の予定】
 //   Supabase を使ってサーバー側に保存する。
 //   そのときはこのファイルだけ書き換えれば OK にしてある。
+//   ⚠️ Supabase 移行時の注意:
+//     - addCoins は非同期になる（await supabase.rpc(...)）
+//     - 呼び出し側のコールバックも async 対応が必要
+//     - useProblemCoins の problemId ベースの重複防止ロジックは
+//       DB 側で UNIQUE 制約で担保する設計に変えること
 // ======================================================
 
 "use client" // Next.js の App Router では、ブラウザAPIを使うファイルに必要な宣言

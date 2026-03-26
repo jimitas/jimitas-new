@@ -34,6 +34,7 @@ import { PutShiki } from "@/components/parts/displays/PutShiki"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useAnswerCheck } from "@/hooks/useAnswerCheck"
+import { useKeyboardInput } from "@/hooks/useKeyboardInput"
 import { NUM_1, NUM_2 } from "@/lib/constants"
 
 // ── 定数 ─────────────────────────────────────────────
@@ -193,6 +194,23 @@ export default function Tashizan1Page() {
     if (el_answer.current) el_answer.current.value = myAnswer.toString()
     checkAnswer(myAnswer, answerRef.current)
   }
+
+  // キーボード入力（数字キーで答え欄に入力・Enter で答え合わせ）
+  useKeyboardInput({
+    onDigit: (n) => {
+      if (!el_answer.current) return
+      if (el_answer.current.value.length >= 2) return  // 最大2桁（答えは 0〜20）
+      el_answer.current.value += n.toString()
+    },
+    onDelete: () => {
+      if (el_answer.current) el_answer.current.value = el_answer.current.value.slice(0, -1)
+    },
+    onClear: () => {
+      if (el_answer.current) el_answer.current.value = ""
+    },
+    onEnter: () => checkAnswerEvent(),
+    enabled: hasProblem,
+  })
 
   // 「こたえあわせ」ボタン：答え欄に入力した値で判定する
   const checkAnswerEvent = () => {

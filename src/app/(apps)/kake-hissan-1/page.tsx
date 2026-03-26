@@ -29,6 +29,7 @@
 "use client"
 
 import { useRef, useEffect, useState } from "react"
+import Image from "next/image"
 import * as se from "@/lib/se"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { useHissanDnD } from "@/hooks/useHissanDnD"
@@ -451,15 +452,14 @@ export default function KakeHissan1Page() {
 
         {/* ゴミ箱（筆算とお金の間・たし算と同じ位置）*/}
         {/* className は "droppable-elem" のみ → 数字をドロップで削除（硬貨は D&D 判定で弾く）*/}
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
+        <Image
           src="/images/gomibako.png"
           className="droppable-elem"
           alt="ゴミ箱"
           draggable={false}
+          width={50}
+          height={60}
           style={{
-            width: 50,
-            height: 60,
             position: "relative",
             left: 10,
             top: 150,

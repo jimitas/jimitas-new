@@ -54,7 +54,10 @@ export function useCategoryAudio(audioFiles: string[]) {
     return () => {
       howls.forEach(h => h.unload())
     }
-  // audioFiles の参照が変わったら再ロード（消費側でuseMemoを使って安定化）
+  // audioFiles の参照が変わったら再ロード。
+  // ⚠️ 重要: 呼び出し側では必ず useMemo で配列を安定化すること。
+  //    useMemo なしだと毎レンダーで新しい配列参照が生まれ、
+  //    Howl の破棄→再ロードが無限ループする。
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioFiles])
 

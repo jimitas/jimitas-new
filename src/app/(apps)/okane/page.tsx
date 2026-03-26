@@ -537,11 +537,13 @@ export default function OkanePage() {
                   setActiveCoins(next)
                 }}
               />
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/images/${coin.id}.png`} alt={coin.label}
-                style={coin.isBill
-                  ? { width: "60px", height: "30px", objectFit: "contain" }
-                  : { width: "36px", height: "36px", objectFit: "contain" }} />
+              <Image
+                src={`/images/${coin.id}.png`}
+                alt={coin.label}
+                width={coin.isBill ? 60 : 36}
+                height={coin.isBill ? 30 : 36}
+                style={{ objectFit: "contain" }}
+              />
               <span className="text-xs text-gray-600 dark:text-gray-300">{coin.label}</span>
             </label>
           ))}
