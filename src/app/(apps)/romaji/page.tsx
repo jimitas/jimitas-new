@@ -82,7 +82,7 @@ const DATA = [
   { id: 58, word: "じゃがいも", ans_1: "zyagaimo", ans_2: "jagaimo",  ans_3: "",       ans_4: "" },
   { id: 59, word: "しんじゅ",   ans_1: "sinzyu",   ans_2: "sinju",    ans_3: "shinzyu", ans_4: "shinju" },
   { id: 60, word: "おかあさん", ans_1: "okâsan",   ans_2: "",         ans_3: "",       ans_4: "" },
-  { id: 61, word: "おにいさん", ans_1: "onîsan",   ans_2: "",         ans_3: "",       ans_4: "" },
+  { id: 61, word: "おにいさん", ans_1: "onîsan",   ans_2: "oniisan",  ans_3: "",       ans_4: "" },
   { id: 62, word: "ひこうき",   ans_1: "hikôki",   ans_2: "",         ans_3: "",       ans_4: "" },
   { id: 63, word: "ねっこ",     ans_1: "nekko",    ans_2: "",         ans_3: "",       ans_4: "" },
   { id: 64, word: "ざっし",     ans_1: "zassi",    ans_2: "zasshi",   ans_3: "",       ans_4: "" },
@@ -316,7 +316,7 @@ export default function RomajiPage() {
       {/* キーボード */}
       <div className="bg-gray-100 rounded-xl p-3 mb-4 space-y-1.5">
         {layout.map((row, ri) => (
-          <div key={ri} className="flex justify-center gap-1.5">
+          <div key={ri} className="flex justify-center gap-1.5 items-center">
             {row.map((letter) => {
               const isActive = activeKeys.has(letter);
               const isVowel  = vowelKeys.has(letter);
@@ -337,6 +337,12 @@ export default function RomajiPage() {
                 </button>
               );
             })}
+            {/* 長音段の右にラベル表示 */}
+            {ri === 3 && (
+              <span className="ml-1 text-xs text-gray-400 whitespace-nowrap leading-none">
+                ←のばす音
+              </span>
+            )}
           </div>
         ))}
       </div>
