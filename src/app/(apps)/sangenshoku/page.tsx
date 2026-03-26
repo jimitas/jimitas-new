@@ -19,6 +19,34 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import * as se from "@/lib/se";
 
+// ── ユーティリティ ───────────────────────────────────
+
+/**
+ * HEX文字列または rgb() 文字列を解析して {r, g, b} を返す。
+ * パース失敗時は null を返す。
+ * applyRgbInput / applyCmyInput の共通処理として使用。
+ */
+function parseColorInput(val: string): { r: number; g: number; b: number } | null {
+  const hexMatch = val.trim().match(/^#?([0-9A-Fa-f]{6})$/)
+  if (hexMatch) {
+    const hex = hexMatch[1]
+    return {
+      r: parseInt(hex.slice(0, 2), 16),
+      g: parseInt(hex.slice(2, 4), 16),
+      b: parseInt(hex.slice(4, 6), 16),
+    }
+  }
+  const rgbMatch = val.trim().match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i)
+  if (rgbMatch) {
+    return {
+      r: Math.max(0, Math.min(255, parseInt(rgbMatch[1]))),
+      g: Math.max(0, Math.min(255, parseInt(rgbMatch[2]))),
+      b: Math.max(0, Math.min(255, parseInt(rgbMatch[3]))),
+    }
+  }
+  return null
+}
+
 // ── 色計算（純粋関数）────────────────────────────────
 
 /** RGB値をそのまま返す（加法混色） */
@@ -235,55 +263,25 @@ export default function SangenshokuPage() {
 
   // ── 色番号を適用（RGB側）──────────────────────────
   const applyRgbInput = () => {
-    const val = rgbInput.trim();
-    const hexMatch = val.match(/^#?([0-9A-Fa-f]{6})$/);
-    if (hexMatch) {
-      const hex = hexMatch[1];
-      setRgb({
-        r: parseInt(hex.slice(0, 2), 16),
-        g: parseInt(hex.slice(2, 4), 16),
-        b: parseInt(hex.slice(4, 6), 16),
-      });
-      showToast(`RGB側に適用: #${hex.toUpperCase()}`);
-      return;
+    const parsed = parseColorInput(rgbInput)
+    if (parsed) {
+      setRgb(parsed)
+      showToast(`RGB側に適用: ${rgbInput.trim().startsWith("#") ? rgbInput.trim().toUpperCase() : "rgb(" + parsed.r + ", " + parsed.g + ", " + parsed.b + ")"}`)
+    } else {
+      showToast("形式エラー: #FF5733 または rgb(255, 87, 51)")
     }
-    const rgbMatch = val.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
-    if (rgbMatch) {
-      setRgb({
-        r: Math.max(0, Math.min(255, parseInt(rgbMatch[1]))),
-        g: Math.max(0, Math.min(255, parseInt(rgbMatch[2]))),
-        b: Math.max(0, Math.min(255, parseInt(rgbMatch[3]))),
-      });
-      showToast("RGB側に適用しました");
-      return;
-    }
-    showToast("形式エラー: #FF5733 または rgb(255, 87, 51)");
-  };
+  }
 
   // ── 色番号を適用（CMY側）──────────────────────────
   const applyCmyInput = () => {
-    const val = cmyInput.trim();
-    const hexMatch = val.match(/^#?([0-9A-Fa-f]{6})$/);
-    if (hexMatch) {
-      const hex = hexMatch[1];
-      const r = parseInt(hex.slice(0, 2), 16);
-      const g = parseInt(hex.slice(2, 4), 16);
-      const b = parseInt(hex.slice(4, 6), 16);
-      setCmy(rgbToCMY(r, g, b));
-      showToast(`CMY側に適用: #${hex.toUpperCase()}`);
-      return;
+    const parsed = parseColorInput(cmyInput)
+    if (parsed) {
+      setCmy(rgbToCMY(parsed.r, parsed.g, parsed.b))
+      showToast(`CMY側に適用: ${cmyInput.trim().startsWith("#") ? cmyInput.trim().toUpperCase() : "rgb(" + parsed.r + ", " + parsed.g + ", " + parsed.b + ")"}`)
+    } else {
+      showToast("形式エラー: #00FFFF または rgb(0, 255, 255)")
     }
-    const rgbMatch = val.match(/^rgb\s*\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)$/i);
-    if (rgbMatch) {
-      const r = Math.max(0, Math.min(255, parseInt(rgbMatch[1])));
-      const g = Math.max(0, Math.min(255, parseInt(rgbMatch[2])));
-      const b = Math.max(0, Math.min(255, parseInt(rgbMatch[3])));
-      setCmy(rgbToCMY(r, g, b));
-      showToast("CMY側に適用しました");
-      return;
-    }
-    showToast("形式エラー: #00FFFF または rgb(0, 255, 255)");
-  };
+  }
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">

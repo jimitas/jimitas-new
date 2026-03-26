@@ -182,6 +182,7 @@ export const apps: AppItem[] = [
     tags: ["計算", "筆算", "かけ算", "小数", "コイン獲得"],
     type: "app",
     path: "/kake-hissan2",
+    disabled: true,
   },
   {
     id: "warizan",
@@ -192,6 +193,7 @@ export const apps: AppItem[] = [
     tags: ["わり算", "概念理解"],
     type: "app",
     path: "/warizan",
+    disabled: true,
   },
   {
     id: "warizan2",
@@ -202,6 +204,7 @@ export const apps: AppItem[] = [
     tags: ["わり算", "概念理解"],
     type: "app",
     path: "/warizan2",
+    disabled: true,
   },
   {
     id: "wari-hissan",
@@ -212,6 +215,7 @@ export const apps: AppItem[] = [
     tags: ["計算", "筆算", "わり算", "難易度選択", "コイン獲得"],
     type: "app",
     path: "/wari-hissan",
+    disabled: true,
   },
   {
     id: "shishagonyu",
@@ -232,6 +236,7 @@ export const apps: AppItem[] = [
     tags: ["図形", "面積", "アニメーション"],
     type: "app",
     path: "/circle-area",
+    disabled: true,
   },
 
   // ============================================================
@@ -246,6 +251,7 @@ export const apps: AppItem[] = [
     tags: ["プリント", "教材作成"],
     type: "print",
     path: "/jimipri",
+    disabled: true,
   },
   {
     id: "kuku-hyo",
@@ -256,6 +262,7 @@ export const apps: AppItem[] = [
     tags: ["かけ算", "九九", "プリント"],
     type: "print",
     path: "/kuku-hyo",
+    disabled: true,
   },
 
   // ============================================================
@@ -270,6 +277,7 @@ export const apps: AppItem[] = [
     tags: ["文字", "カタカナ"],
     type: "app",
     path: "/katakana",
+    disabled: true,
   },
   {
     id: "romaji",
@@ -290,6 +298,7 @@ export const apps: AppItem[] = [
     tags: ["漢字", "プリント", "教材作成"],
     type: "print",
     path: "/kanpuri",
+    disabled: true,
   },
 
   // ============================================================
@@ -398,6 +407,7 @@ export const apps: AppItem[] = [
     tags: ["音", "周波数"],
     type: "app",
     path: "/oto-dashiyo",
+    disabled: true,
   },
   {
     id: "waaon",
@@ -408,6 +418,7 @@ export const apps: AppItem[] = [
     tags: ["和音", "音"],
     type: "app",
     path: "/waaon",
+    disabled: true,
   },
   {
     id: "fushi-dukuri",
@@ -418,6 +429,7 @@ export const apps: AppItem[] = [
     tags: ["創作", "旋律"],
     type: "app",
     path: "/fushi-dukuri",
+    disabled: true,
   },
   {
     id: "metronome",
@@ -428,6 +440,7 @@ export const apps: AppItem[] = [
     tags: ["メトロノーム", "授業支援"],
     type: "tool",
     path: "/metronome",
+    disabled: true,
   },
 
   // ============================================================
@@ -442,6 +455,7 @@ export const apps: AppItem[] = [
     tags: ["都道府県", "日本地図", "クイズ"],
     type: "app",
     path: "/todo-prefecture",
+    disabled: true,
   },
   {
     id: "nihon-chizu",
@@ -452,6 +466,7 @@ export const apps: AppItem[] = [
     tags: ["日本地図", "地方区分"],
     type: "app",
     path: "/nihon-chizu",
+    disabled: true,
   },
 
   // ============================================================
@@ -466,6 +481,7 @@ export const apps: AppItem[] = [
     tags: ["お絵描き", "色塗り"],
     type: "app",
     path: "/masu-nuri",
+    disabled: true,
   },
   {
     id: "sangenshoku",
@@ -514,6 +530,7 @@ export const apps: AppItem[] = [
     tags: ["タイマー", "先生向け"],
     type: "tool",
     path: "/classroom-timer",
+    disabled: true,
   },
   {
     id: "sakusen-board",

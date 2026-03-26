@@ -79,9 +79,9 @@ export const useDragDrop = (onDropCallback?: () => void) => {
     const touch = e.changedTouches[0]
     draggedElem.style.position = "fixed"
     draggedElem.style.top =
-      touch.pageY - window.pageYOffset - draggedElem.offsetHeight / 2 + "px"
+      touch.pageY - window.scrollY - draggedElem.offsetHeight / 2 + "px"
     draggedElem.style.left =
-      touch.pageX - window.pageXOffset - draggedElem.offsetWidth / 2 + "px"
+      touch.pageX - window.scrollX - draggedElem.offsetWidth / 2 + "px"
   }, [])
 
   // タッチ終了：指を離した位置にある droppable-elem に要素を移動させる
@@ -96,8 +96,8 @@ export const useDragDrop = (onDropCallback?: () => void) => {
 
     const touch = e.changedTouches[0]
     const newParentElem = document.elementFromPoint(
-      touch.pageX - window.pageXOffset,
-      touch.pageY - window.pageYOffset
+      touch.pageX - window.scrollX,
+      touch.pageY - window.scrollY
     ) as HTMLElement | null
 
     if (newParentElem && newParentElem.className.match(/droppable-elem/)) {

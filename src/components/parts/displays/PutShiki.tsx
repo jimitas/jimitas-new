@@ -9,7 +9,6 @@
 "use client"
 
 import { RefObject } from "react"
-import styles from "@/components/parts/displays/PutShiki.module.css"
 
 interface PutShikiProps {
   /** たされる数の入力欄（自動入力・手動入力兼用） */
@@ -24,37 +23,47 @@ interface PutShikiProps {
 
 export function PutShiki({ el_left_input, el_right_input, el_answer, kigo }: PutShikiProps) {
   return (
-    <div className={styles.place}>
+    <div className="flex justify-center items-center">
       {/* たされる数 */}
       <input
         ref={el_left_input}
-        className={styles.input}
         type="number"
         min="0"
         max="20"
         step="1"
+        className="h-[max(3vw,30px)] w-[max(4vw,42px)] text-[max(2vw,20px)]
+                   text-center font-bold m-[5px] px-[5px]
+                   text-brand-700 border-2 border-brand-600 bg-white rounded-[10%] cursor-pointer"
       />
       {/* 演算子（＋） */}
-      <span className={styles.kigo}>{kigo}</span>
+      <span className="h-[max(3vw,30px)] text-[max(2vw,20px)] font-bold px-1">
+        {kigo}
+      </span>
       {/* たす数 */}
       <input
         ref={el_right_input}
-        className={styles.input}
         type="number"
         min="0"
         max="20"
         step="1"
+        className="h-[max(3vw,30px)] w-[max(4vw,42px)] text-[max(2vw,20px)]
+                   text-center font-bold m-[5px] px-[5px]
+                   text-brand-700 border-2 border-brand-600 bg-white rounded-[10%] cursor-pointer"
       />
       {/* ＝ */}
-      <span className={styles.kigo}>＝</span>
+      <span className="h-[max(3vw,30px)] text-[max(2vw,20px)] font-bold px-1">
+        ＝
+      </span>
       {/* 答え */}
       <input
         ref={el_answer}
-        className={styles.input}
         type="number"
         min="0"
         max="40"
         step="1"
+        className="h-[max(3vw,30px)] w-[max(4vw,42px)] text-[max(2vw,20px)]
+                   text-center font-bold m-[5px] px-[5px]
+                   text-brand-700 border-2 border-brand-600 bg-white rounded-[10%] cursor-pointer"
       />
     </div>
   )

@@ -47,4 +47,7 @@ export type AppItem = {
 
   /** アプリページのパス（例："/tashizan"）*/
   path: string
+
+  /** true のとき、ポータルに表示しない（未実装・開発中アプリ）*/
+  disabled?: boolean
 }

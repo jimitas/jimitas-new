@@ -57,7 +57,7 @@ const INIT_TEXT: Record<Mode, string> = {
 
 // ── コンポーネント ───────────────────────────────────
 
-export default function KazuBlockPage() {
+export default function SuuzuBlockPage() {
   // ── 状態管理 ────────────────────────────────────────
   const el_text = useRef<HTMLDivElement>(null)
 
@@ -219,10 +219,16 @@ export default function KazuBlockPage() {
     if (parseInt(ans, 10) === correct) {
       resetCoins()
       se.playSe(se.seikai1)
-      alert("せいかい！　コインをリセットしました。")
+      if (el_text.current) {
+        el_text.current.innerHTML = "せいかい！　コインをリセットしました。"
+        setTimeout(() => { if (el_text.current) el_text.current.innerHTML = INIT_TEXT[mode] }, 2000)
+      }
     } else {
       se.playSe(se.alertSound)
-      alert(`ちがいます。こたえは　${correct}　でした。`)
+      if (el_text.current) {
+        el_text.current.innerHTML = `ちがいます。こたえは　${correct}　でした。`
+        setTimeout(() => { if (el_text.current) el_text.current.innerHTML = INIT_TEXT[mode] }, 2000)
+      }
     }
   }
 

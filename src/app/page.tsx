@@ -123,8 +123,8 @@ export default function HomePage() {
         ヘッダーの学年ナビのアンカーリンクが機能する。
       */}
       {SECTIONS.map((section) => {
-        // フィルタ後のアプリ一覧
-        const filtered = apps.filter(section.filter)
+        // フィルタ後のアプリ一覧（disabled なアプリは除外）
+        const filtered = apps.filter(a => !a.disabled && section.filter(a))
         // order が指定されている場合はその順に並べ替える
         // order に含まれないアプリは末尾に追加される
         const sorted = section.order

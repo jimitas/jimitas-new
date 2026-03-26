@@ -63,6 +63,7 @@ export default function HikiHissanPage() {
   const box3Ref   = useRef<HTMLInputElement>(null)   // 減数入力
   const box5Ref   = useRef<HTMLInputElement>(null)   // 答え入力
   const seikaiRef = useRef<HTMLSpanElement>(null)    // せいかい！表示
+  const msgRef    = useRef<HTMLParagraphElement>(null) // バリデーションエラー表示
 
   // ── 問題データ（ref で保持 ─ レンダー不要） ────────
   const higensuRef  = useRef(456)
@@ -278,7 +279,11 @@ export default function HikiHissanPage() {
     // バリデーション1: 範囲チェック（たし算と共通）
     if (h > 999 || k > 999 || h < 0 || k < 0) {
       se.playSe(se.alertSound)
-      alert("数字は1～999までにしてください。")
+      if (msgRef.current) {
+        msgRef.current.textContent = "数字は 1〜999 にしてください。"
+        msgRef.current.style.display = ""
+        setTimeout(() => { if (msgRef.current) msgRef.current.style.display = "none" }, 2000)
+      }
       box1Ref.current!.value = ""
       box3Ref.current!.value = ""
       return
@@ -286,7 +291,11 @@ export default function HikiHissanPage() {
     // バリデーション2: ひき算固有（被減数 >= 減数）
     if (h < k) {
       se.playSe(se.alertSound)
-      alert("引かれる数は，引く数よりも大きくしてください。")
+      if (msgRef.current) {
+        msgRef.current.textContent = "ひかれるかずは　ひくかずより　おおきくしてください。"
+        msgRef.current.style.display = ""
+        setTimeout(() => { if (msgRef.current) msgRef.current.style.display = "none" }, 2000)
+      }
       box1Ref.current!.value = ""
       box3Ref.current!.value = ""
       return
@@ -545,6 +554,11 @@ export default function HikiHissanPage() {
           こたえ
         </button>
       </div>
+
+      {/* バリデーションエラー表示 */}
+      <p ref={msgRef} style={{ display: "none" }}
+         className="text-center text-sm font-bold text-red-600 bg-red-50 rounded-lg py-1 px-3">
+      </p>
 
       {/* 式の入力欄 */}
       <div className="flex flex-wrap items-center gap-2">
