@@ -86,13 +86,13 @@ const SECTIONS: SectionDef[] = [
   { id: "grade-5", title: "５年生", filter: (app) => app.grades.includes(5 as Grade) && app.type !== "print" },
   { id: "grade-6", title: "６年生", filter: (app) => app.grades.includes(6 as Grade) && app.type !== "print" },
 
-  // 音楽・体育・その他：教科系アプリ＋先生向けツールをまとめる
+  // 音楽・体育・その他：教科系アプリ＋先生向けツール＋その他をまとめる
   {
     id: "tools",
     title: "🎵 音楽・体育・その他",
     filter: (app) =>
       app.subjects.some((s) =>
-        ["音楽", "体育", "図工", "英語", "社会", "授業支援"].includes(s)
+        ["音楽", "体育", "図工", "英語", "社会", "授業支援", "その他"].includes(s)
       ) || app.grades.includes("先生向け"),
   },
 
