@@ -164,7 +164,7 @@ function ColorSlider({ label, value, min, max, color, onChange }: SliderProps) {
         max={max}
         value={value}
         onChange={(e) => onChange(Number(e.target.value))}
-        className="flex-1 h-2 rounded-lg appearance-none cursor-pointer"
+        className="flex-1 cursor-pointer"
         style={{ accentColor: color }}
       />
       <span className="text-xs font-mono w-8 text-right text-gray-600">
