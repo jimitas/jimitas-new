@@ -18,7 +18,7 @@
 
 "use client";
 
-import { useRef, useState, useEffect, useCallback } from "react";
+import { useRef, useState, useEffect, useCallback, useLayoutEffect } from "react";
 
 // ── IFS変換の定義 ─────────────────────────────────────
 // 各変換: 新座標 = [[a,b],[c,d]] * [x,y] + [e,f]
@@ -53,6 +53,8 @@ export default function BarnsleyFernPage() {
 
   // アニメーション制御用 ref（closure で最新値を参照するため）
   const animationIdRef  = useRef<number | null>(null);
+  // animate の最新版を保持（自己参照による「宣言前アクセス」エラー回避）
+  const animateRef      = useRef<() => void>(() => {});
   const isRunningRef    = useRef(false);
   const speedRef        = useRef(100);
   const themeRef        = useRef<ThemeKey>("classic");
@@ -157,8 +159,11 @@ export default function BarnsleyFernPage() {
       setPointCount(pointCountRef.current);
     }
 
-    animationIdRef.current = requestAnimationFrame(animate);
+    animationIdRef.current = requestAnimationFrame(animateRef.current);
   }, [getNextPoint, drawPoint]);
+
+  // レンダーのたびに animateRef を最新の animate に更新
+  useLayoutEffect(() => { animateRef.current = animate; });
 
   // ── 開始 ─────────────────────────────────────────
   const handleStart = useCallback(() => {
