@@ -23,6 +23,8 @@ import Image from "next/image"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
+import { NumPad } from "@/components/parts/buttons/NumPad"
+import { useKeyboardInput } from "@/hooks/useKeyboardInput"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -71,6 +73,8 @@ function createCoinImg(id: string, isBill: boolean): HTMLImageElement {
 export default function OkanePage() {
   const [mode, setMode]           = useState<Mode>("set")
   const [activeCoins, setActiveCoins] = useState<boolean[]>([...DEFAULT_CHECKED])
+  // もんだいモードで問題が出ているか（NumPad・キーボード入力の enabled フラグ）
+  const [hasMondaiProblem, setHasMondaiProblem] = useState<boolean>(false)
 
   const { coins, addCoins } = useCoins()
 
@@ -343,6 +347,7 @@ export default function OkanePage() {
     narabeyouAns.current = 0
     mondaiAns.current    = 0
     hasAnswered.current  = false
+    setHasMondaiProblem(false)
     if (el_kazu.current)   { el_kazu.current.value   = ""; el_kazu.current.style.color = "" }
     if (el_answer.current) { el_answer.current.value = ""; el_answer.current.style.backgroundColor = "" }
     if (el_text.current) {
@@ -436,6 +441,7 @@ export default function OkanePage() {
     clearTable()
     refillWallet()
     hasAnswered.current = false
+    setHasMondaiProblem(true)
     if (el_answer.current) { el_answer.current.value = ""; el_answer.current.style.backgroundColor = "" }
     if (el_text.current)   el_text.current.innerHTML = "ごうけいは　いくら？"
 
@@ -451,6 +457,28 @@ export default function OkanePage() {
     // 生成した金額を分解してテーブルに配置する（旧コードの OkaneSet と同じ）
     setAmountToTable(amount)
   }
+
+  // もんだいモード用テンキー入力ハンドラー（NumPad・キーボード共通）
+  const handleMondaiDigit  = (n: number) => {
+    if (!el_answer.current) return
+    if (el_answer.current.value.length >= 5) return  // 最大5桁（99999円）
+    el_answer.current.value += n.toString()
+  }
+  const handleMondaiDelete = () => {
+    if (el_answer.current) el_answer.current.value = el_answer.current.value.slice(0, -1)
+  }
+  const handleMondaiClear  = () => {
+    if (el_answer.current) el_answer.current.value = ""
+  }
+
+  // キーボード入力（数字キー → el_answer に蓄積、Enter → 答え合わせ）
+  useKeyboardInput({
+    onDigit:  handleMondaiDigit,
+    onDelete: handleMondaiDelete,
+    onClear:  handleMondaiClear,
+    onEnter:  () => handleMondaiCheck(),
+    enabled:  hasMondaiProblem,
+  })
 
   const handleMondaiCheck = () => {
     const myAnswer = parseInt(el_answer.current?.value ?? "")
@@ -599,6 +627,17 @@ export default function OkanePage() {
         </div>
 
       </div>
+
+      {/* もんだいモード：NumPad（問題が出ているときのみ表示） */}
+      {mode === "mondai" && hasMondaiProblem && (
+        <div className="flex justify-center mb-3">
+          <NumPad
+            onDigit={handleMondaiDigit}
+            onDelete={handleMondaiDelete}
+            onClear={handleMondaiClear}
+          />
+        </div>
+      )}
 
       {/* ③ お金を並べるエリア（セル幅をドラッグで変更できる） */}
       <div id="okane-table-wrapper" className="w-full mb-3">

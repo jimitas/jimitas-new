@@ -20,7 +20,7 @@
 
 "use client"
 
-import { useState, useRef, useCallback } from "react"
+import { useState, useRef, useEffect, useCallback } from "react"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
 import { useKeyboardInput } from "@/hooks/useKeyboardInput"
@@ -67,6 +67,11 @@ export default function ShashagonyuPage() {
 
   // ── コイン ────────────────────────────────────────────
   const { coins, addCoins } = useCoins()
+
+  // 初期メッセージ
+  useEffect(() => {
+    if (msgRef.current) msgRef.current.textContent = "問題を出すボタンを押してね"
+  }, [])
 
   // ── 全マークをリセット ────────────────────────────────
   const clearAllMarks = useCallback(() => {
@@ -342,7 +347,7 @@ export default function ShashagonyuPage() {
       </div>
 
       {/* ③ 問題文（ボタン群とテーブルの間） ─────────── */}
-      <PutText el_text={msgRef} text="問題を出すボタンを押してね" />
+      <PutText el_text={msgRef} />
 
       {/* ④ 位取りテーブル ──────────────────────────── */}
       <div className="overflow-x-auto">
