@@ -151,9 +151,9 @@ type SliderProps = {
 
 function ColorSlider({ label, value, min, max, color, onChange }: SliderProps) {
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-3">
       <span
-        className="text-xs font-medium w-32 shrink-0"
+        className="text-sm font-medium w-36 shrink-0"
         style={{ color }}
       >
         {label}
@@ -167,7 +167,7 @@ function ColorSlider({ label, value, min, max, color, onChange }: SliderProps) {
         className="flex-1 cursor-pointer"
         style={{ accentColor: color }}
       />
-      <span className="text-xs font-mono w-8 text-right text-gray-600">
+      <span className="text-sm font-mono w-9 text-right text-gray-600">
         {value}
       </span>
     </div>
@@ -179,13 +179,16 @@ function ColorInfo({ r, g, b }: { r: number; g: number; b: number }) {
   const hex = rgbToHex(r, g, b);
   const cmy = rgbToCMY(r, g, b);
   return (
-    <div className="text-xs font-mono text-gray-500 space-y-0.5">
+    <div className="text-sm font-mono text-gray-500 space-y-1">
       <div>HEX: {hex}</div>
       <div>RGB: rgb({r}, {g}, {b})</div>
       <div>CMY: C:{cmy.c}% M:{cmy.m}% Y:{cmy.y}%</div>
     </div>
   );
 }
+
+// ── 表示モードの型 ────────────────────────────────────
+type ViewMode = "both" | "rgb" | "cmy";
 
 // ── ページ本体 ────────────────────────────────────────
 export default function SangenshokuPage() {
@@ -195,6 +198,8 @@ export default function SangenshokuPage() {
   const [cmy, setCmy] = useState({ c: 0, m: 0, y: 0 });
   // 絵の具モード
   const [isPaintMode, setIsPaintMode] = useState(false);
+  // 表示モード（両方・光だけ・色だけ）
+  const [viewMode, setViewMode] = useState<ViewMode>("both");
 
   // 色番号入力フィールドの値
   const [rgbInput, setRgbInput] = useState("#000000");
@@ -281,38 +286,66 @@ export default function SangenshokuPage() {
   };
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-4xl mx-auto px-4 py-8">
 
       {/* タイトル */}
       <h1 className="text-2xl font-bold text-center mb-1 text-gray-800">
         三原色学習
       </h1>
-      <p className="text-sm text-center text-gray-500 mb-6">
+      <p className="text-sm text-center text-gray-500 mb-5">
         スライダーを動かして、光と色・絵の具の混色を比べてみよう
       </p>
 
-      {/* 2パネル */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      {/* 表示モード切替ボタン */}
+      <div className="flex justify-center gap-2 mb-6">
+        {(
+          [
+            ["both", "🔦🎨 両方"],
+            ["rgb",  "🔦 光の三原色だけ"],
+            ["cmy",  "🎨 色の三原色だけ"],
+          ] as [ViewMode, string][]
+        ).map(([mode, label]) => (
+          <button
+            key={mode}
+            onClick={() => { se.playSe(se.set); setViewMode(mode); }}
+            className={`text-sm px-4 py-2 rounded-xl font-bold border transition-colors ${
+              viewMode === mode
+                ? "bg-brand-500 text-white border-brand-500 shadow"
+                : "bg-white text-gray-600 border-gray-300 hover:bg-gray-50"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+
+      {/* パネル（表示モードに応じてレイアウト変化） */}
+      <div className={`grid gap-5 mb-6 ${
+        viewMode === "both"
+          ? "grid-cols-1 md:grid-cols-2"
+          : "grid-cols-1 max-w-lg mx-auto"
+      }`}>
 
         {/* ── 左パネル: 光の三原色 RGB ── */}
-        <div className="bg-gray-900 rounded-xl p-4 text-white">
-          <h2 className="text-base font-bold mb-3 text-center">
+        {viewMode !== "cmy" && (
+        <div className="bg-gray-900 rounded-xl p-5 text-white">
+          <h2 className="text-lg font-bold mb-4 text-center">
             🔦 光の三原色（RGB）
           </h2>
 
           {/* 参考画像 */}
-          <div className="flex justify-center mb-3">
+          <div className="flex justify-center mb-4">
             <Image
               src="/images/sangenshoku/hikari.jpg"
               alt="光の三原色のイメージ"
-              width={240}
-              height={140}
+              width={260}
+              height={160}
               className="rounded-lg object-cover"
             />
           </div>
 
           {/* スライダー */}
-          <div className="space-y-2 mb-3">
+          <div className="space-y-3 mb-4">
             <ColorSlider
               label="Red（赤）"
               value={rgb.r} min={0} max={255}
@@ -335,42 +368,44 @@ export default function SangenshokuPage() {
 
           {/* 混色結果バー */}
           <div
-            className="w-full h-12 rounded-lg mb-2 border border-white/20"
+            className="w-full h-16 rounded-xl mb-3 border border-white/20"
             style={{ backgroundColor: `rgb(${rgbResult.r},${rgbResult.g},${rgbResult.b})` }}
           />
 
           {/* 色情報 */}
-          <div className="mb-3">
+          <div className="mb-4">
             <ColorInfo r={rgbResult.r} g={rgbResult.g} b={rgbResult.b} />
           </div>
 
           {/* 色番号入力 */}
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             <input
               type="text"
               value={rgbInput}
               onChange={(e) => setRgbInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && applyRgbInput()}
               placeholder="#RRGGBB"
-              className="flex-1 text-xs font-mono bg-white/10 border border-white/20 rounded-lg px-2 py-1.5 text-white placeholder-white/40 focus:outline-none focus:border-white/50"
+              className="flex-1 text-sm font-mono bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:border-white/50"
             />
             <button
               onClick={applyRgbInput}
-              className="text-xs px-3 py-1.5 rounded-lg bg-brand-500 hover:bg-brand-600 font-bold transition-colors"
+              className="text-sm px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 font-bold transition-colors"
             >
               適用
             </button>
           </div>
         </div>
+        )}
 
         {/* ── 右パネル: 色/絵の具の三原色 CMY ── */}
-        <div className="bg-gray-100 rounded-xl p-4">
+        {viewMode !== "rgb" && (
+        <div className="bg-gray-100 rounded-xl p-5">
           {/* タイトル + 絵の具モードチェック */}
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-base font-bold text-gray-800">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-bold text-gray-800">
               {isPaintMode ? "🎨 絵の具の三原色" : "🖨️ 色の三原色（CMY）"}
             </h2>
-            <label className="flex items-center gap-1.5 cursor-pointer select-none">
+            <label className="flex items-center gap-2 cursor-pointer select-none">
               <input
                 type="checkbox"
                 checked={isPaintMode}
@@ -381,12 +416,12 @@ export default function SangenshokuPage() {
                 }}
                 className="w-4 h-4 accent-brand-500"
               />
-              <span className="text-xs text-gray-600 font-medium">絵の具モード</span>
+              <span className="text-sm text-gray-600 font-medium">絵の具モード</span>
             </label>
           </div>
 
           {/* ビジュアル表示 */}
-          <div className="flex justify-center mb-3">
+          <div className="flex justify-center mb-4">
             {isPaintMode ? (
               /* 絵の具モード: 3つの円が重なる */
               <div
@@ -423,15 +458,15 @@ export default function SangenshokuPage() {
               <Image
                 src="/images/sangenshoku/iro.jpg"
                 alt="色の三原色のイメージ"
-                width={240}
-                height={140}
+                width={260}
+                height={160}
                 className="rounded-lg object-cover"
               />
             )}
           </div>
 
           {/* スライダー */}
-          <div className="space-y-2 mb-3">
+          <div className="space-y-3 mb-4">
             {isPaintMode ? (
               <>
                 <ColorSlider
@@ -479,39 +514,40 @@ export default function SangenshokuPage() {
 
           {/* 混色結果バー */}
           <div
-            className="w-full h-12 rounded-lg mb-2 border border-gray-300"
+            className="w-full h-16 rounded-xl mb-3 border border-gray-300"
             style={{ backgroundColor: `rgb(${cmyResult.r},${cmyResult.g},${cmyResult.b})` }}
           />
 
           {/* 色情報 */}
-          <div className="mb-3">
+          <div className="mb-4">
             <ColorInfo r={cmyResult.r} g={cmyResult.g} b={cmyResult.b} />
           </div>
 
           {/* 色番号入力 */}
-          <div className="flex gap-1">
+          <div className="flex gap-2">
             <input
               type="text"
               value={cmyInput}
               onChange={(e) => setCmyInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && applyCmyInput()}
               placeholder="#RRGGBB"
-              className="flex-1 text-xs font-mono bg-white border border-gray-300 rounded-lg px-2 py-1.5 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-brand-400"
+              className="flex-1 text-sm font-mono bg-white border border-gray-300 rounded-lg px-3 py-2 text-gray-700 placeholder-gray-400 focus:outline-none focus:border-brand-400"
             />
             <button
               onClick={applyCmyInput}
-              className="text-xs px-3 py-1.5 rounded-lg bg-brand-500 text-white hover:bg-brand-600 font-bold transition-colors"
+              className="text-sm px-4 py-2 rounded-lg bg-brand-500 text-white hover:bg-brand-600 font-bold transition-colors"
             >
               適用
             </button>
           </div>
         </div>
+        )}
       </div>
 
       {/* 解説ボタン */}
-      <div className="bg-gray-50 rounded-xl p-4">
-        <p className="text-sm font-medium text-gray-600 mb-3">💡 解説を読む</p>
-        <div className="flex flex-wrap gap-2">
+      <div className="bg-gray-50 rounded-xl p-5">
+        <p className="text-sm font-medium text-gray-600 mb-4">💡 解説を読む</p>
+        <div className="flex flex-wrap gap-3">
           {(
             [
               ["rgb",    "光の三原色とは？"],
@@ -524,7 +560,7 @@ export default function SangenshokuPage() {
             <button
               key={key}
               onClick={() => { se.playSe(se.seikai1); setExplanation(key); }}
-              className="text-xs px-3 py-2 rounded-lg bg-white border border-accent-200 text-accent-600 hover:bg-accent-50 font-medium transition-colors active:scale-95"
+              className="text-sm px-4 py-2.5 rounded-xl bg-white border border-accent-200 text-accent-600 hover:bg-accent-50 font-medium transition-colors active:scale-95"
             >
               {label}
             </button>
