@@ -152,7 +152,12 @@ export default function Tashizan1Page() {
     // 範囲チェック（0〜20 のみ受け付ける）
     if (lv > 20 || rv > 20 || lv < 0 || rv < 0) {
       se.playSe(se.alertSound)
-      alert("すうじは　0～20")
+      if (el_text.current) {
+        el_text.current.innerHTML = "すうじは　0〜20"
+        setTimeout(() => {
+          if (el_text.current) el_text.current.innerHTML = "もんだい　または　セット"
+        }, 1000)
+      }
       if (el_left_input.current)  el_left_input.current.value  = ""
       if (el_right_input.current) el_right_input.current.value = ""
       return
@@ -192,8 +197,10 @@ export default function Tashizan1Page() {
   // 「こたえあわせ」ボタン：答え欄に入力した値で判定する
   const checkAnswerEvent = () => {
     if (!hasProblem) return
-    const myAnswer = parseInt(el_answer.current?.value ?? "")
-    if (myAnswer) {
+    const val = el_answer.current?.value ?? ""
+    const myAnswer = parseInt(val, 10)
+    // val が空 または 数値でない場合はガイドメッセージを表示
+    if (val !== "" && !isNaN(myAnswer)) {
       handleCheckAnswer(myAnswer)
     } else {
       se.playSe(se.alertSound)

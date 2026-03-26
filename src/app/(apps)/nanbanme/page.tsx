@@ -127,6 +127,8 @@ export default function NanbanmePage() {
       el_text.current.innerHTML =
         `${dir === 1 ? "ひだり" : "みぎ"}から　` +
         `${dir === 1 ? num : 11 - num}　ばんめのどうぶつは？`
+      // 不正解後の復元用にテキストを保存しておく
+      el_text.current.dataset.q1text = el_text.current.innerHTML
     }
   }, [order])
 

@@ -153,7 +153,12 @@ export default function Hikizan1Page() {
     // 範囲チェック（ひかれる数 ≥ ひく数・0〜20 のみ受け付ける）
     if (lv > 20 || rv > lv || lv < 0 || rv < 0) {
       se.playSe(se.alertSound)
-      alert("すうじは　0～20。ひかれるかず ≧ ひくかず")
+      if (el_text.current) {
+        el_text.current.innerHTML = "すうじは　0〜20。ひかれるかず ≧ ひくかず"
+        setTimeout(() => {
+          if (el_text.current) el_text.current.innerHTML = "もんだい　または　セット"
+        }, 1000)
+      }
       if (el_left_input.current)  el_left_input.current.value  = ""
       if (el_right_input.current) el_right_input.current.value = ""
       return

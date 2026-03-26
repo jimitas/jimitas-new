@@ -69,7 +69,7 @@ export default function HikuRenshuPage() {
       setFlag(false)
       se.playSe(se.seikai1)
       if (el_text.current) {
-        el_text.current.style.backgroundColor = "lightgray"
+        el_text.current.style.backgroundColor = "#e5e7eb"
         el_text.current.innerHTML =
           earnedCoins > 0
             ? `おわり！　🪙 ${earnedCoins}まい　ゲット！（スタートでもういちどチャレンジ）`
@@ -125,7 +125,7 @@ export default function HikuRenshuPage() {
   const handleStart = useCallback(() => {
     if (isRunning) return
     if (el_text.current) {
-      el_text.current.style.backgroundColor = "antiquewhite"
+      el_text.current.style.backgroundColor = "#fff7ed"
       el_text.current.innerHTML = "よーい"
     }
     start()
@@ -140,7 +140,7 @@ export default function HikuRenshuPage() {
   // 難易度変更時に表示をリセット
   useEffect(() => {
     if (el_text.current) {
-      el_text.current.style.backgroundColor = "lightgray"
+      el_text.current.style.backgroundColor = "#e5e7eb"
       el_text.current.innerHTML = "スタートをおしてね"
     }
     reset()
