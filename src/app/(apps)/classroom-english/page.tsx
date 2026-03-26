@@ -21,17 +21,7 @@ import { useSound } from "@/hooks/useSound"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { CLASSROOM_ENGLISH, ALL_CREN_PHRASES, type CrenPhrase } from "@/data/classroomEnglish"
-
-// ── ユーティリティ ────────────────────────────────────
-
-function shuffled<T>(arr: T[]): T[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
+import { shuffled } from "@/lib/utils"
 
 function makeChoices(correct: CrenPhrase, pool: CrenPhrase[]): CrenPhrase[] {
   const others = shuffled(pool.filter(p => p.audioIndex !== correct.audioIndex)).slice(0, 3)

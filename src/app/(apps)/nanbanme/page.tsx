@@ -18,6 +18,7 @@
 import { useState, useRef, useEffect, useCallback } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
+import { shuffled } from "@/lib/utils"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnShuffle } from "@/components/parts/buttons/BtnShuffle"
@@ -34,25 +35,13 @@ const ANIMALS = ["dog", "cat", "monkey", "frog", "usagi", "niwatori", "ika", "ta
 const DIRS    = ["ひだり", "みぎ"]
 const NUMS    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
-// ── ヘルパー ──────────────────────────────────────────
-
-// 配列をランダムにシャッフルして返す（Fisher-Yates）
-function shuffleArray(arr: number[]): number[] {
-  const a = [...arr]
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[a[i], a[j]] = [a[j], a[i]]
-  }
-  return a
-}
-
 // ── コンポーネント ───────────────────────────────────
 
 export default function NanbanmePage() {
   // ── 状態管理 ─────────────────────────────────────
 
   // 動物の並び順（ANIMALS 配列のインデックスをシャッフルした配列）
-  const [order, setOrder] = useState<number[]>(() => shuffleArray([0,1,2,3,4,5,6,7,8,9]))
+  const [order, setOrder] = useState<number[]>(() => shuffled([0,1,2,3,4,5,6,7,8,9]))
 
   // 現在のモード（0=初期, 1=もんだい1, 2=もんだい2）
   const [mode, setMode] = useState<0 | 1 | 2>(0)
@@ -194,7 +183,7 @@ export default function NanbanmePage() {
 
   const handleShuffle = useCallback(() => {
     se.playSe(se.seikai1)
-    setOrder(shuffleArray([0,1,2,3,4,5,6,7,8,9]))
+    setOrder(shuffled([0,1,2,3,4,5,6,7,8,9]))
     setMode(0)
     setFlag(false)
     setQ2Animal("")

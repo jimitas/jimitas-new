@@ -31,6 +31,7 @@
 import { useRef, useEffect, useState } from "react"
 import * as se from "@/lib/se"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
+import { useHissanDnD } from "@/hooks/useHissanDnD"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { OkaneGrid } from "@/components/parts/hissan/OkaneGrid"
 
@@ -72,48 +73,12 @@ export default function KakeHissan1Page() {
   const num2Ref = useRef(4)
   const ansRef  = useRef(92)
 
-  // ── タッチ: 開始（スクロール禁止） ────────────────
-  function touchStartEvent(event: TouchEvent) {
-    event.preventDefault()
-  }
-
-  // ── タッチ: 移動中（要素を指に追従） ──────────────
-  function touchMoveEvent(event: TouchEvent) {
-    event.preventDefault()
-    const elem  = event.target as HTMLElement
-    const touch = event.changedTouches[0]
-    elem.style.position = "fixed"
-    elem.style.zIndex   = "9999"
-    elem.style.top  = touch.pageY - window.pageYOffset - elem.offsetHeight / 2 + "px"
-    elem.style.left = touch.pageX - window.pageXOffset - elem.offsetWidth  / 2 + "px"
-  }
-
-  // ── タッチ終了: 数字パレット用 ────────────────────
-  function touchEndEvent(event: TouchEvent) {
-    event.preventDefault()
-    const elem  = event.target as HTMLElement
-    elem.style.position = ""
-    elem.style.zIndex   = ""
-    elem.style.top      = ""
-    elem.style.left     = ""
-
-    const touch     = event.changedTouches[0]
-    const newParent = document.elementFromPoint(
-      touch.pageX - window.pageXOffset,
-      touch.pageY - window.pageYOffset,
-    ) as HTMLElement | null
-
-    if (newParent?.className === "droppable-elem") {
-      newParent.appendChild(elem)
-      resizeDroppedNumber(elem, newParent)
-      const pal = numPalRef.current!
-      while (pal.firstChild) pal.removeChild(pal.firstChild)
-      numSet()
-      kotaeInput()
-      // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
-      se.playSe(newParent.tagName === "IMG" ? se.cancel : se.pi)
-    }
-  }
+  // ── 筆算 DnD フック（touchStart/Move/End の共通ロジック） ──
+  const { touchStartEvent, touchMoveEvent, touchEndEvent } = useHissanDnD({
+    numPalRef,
+    // 数字ドロップ後: サイズ調整 + パレット再生成 + こたえ更新
+    onDropDigit: (elem, target) => { resizeDroppedNumber(elem, target); numSet(); kotaeInput() },
+  })
 
   // ── ドロップ後に数字の大きさを調整 ───────────────
   // くり上がり行（row2、高さ 36px）は小さく、こたえ行（row3）は元サイズ

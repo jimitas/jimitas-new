@@ -18,6 +18,7 @@
 
 import { useState, useRef } from "react";
 import * as se from "@/lib/se";
+import { shuffled } from "@/lib/utils";
 import { useCoins } from "@/hooks/useCoins";
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay";
 import { ArrayDots } from "@/components/parts/displays/ArrayDots";
@@ -85,15 +86,6 @@ const MODES: { value: Mode; label: string; }[] = [
   { value: "random", label: "バラバラ" },
 ];
 
-// ── Fisher-Yates シャッフル ─────────────────────────────
-function shuffled(arr: number[]): number[] {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-      ;[a[i], a[j]] = [a[j], a[i]];
-  }
-  return a;
-}
 
 // ── モードに応じた問題順序を生成（0〜8: かける数インデックス） ──
 function generateOrder(mode: Mode): number[] {

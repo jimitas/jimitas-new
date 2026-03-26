@@ -26,6 +26,7 @@
 import { useRef, useEffect, useState } from "react"
 import * as se from "@/lib/se"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
+import { useHissanDnD } from "@/hooks/useHissanDnD"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 
 // ── 定数 ─────────────────────────────────────────────
@@ -72,74 +73,14 @@ export default function TashiHissanPage() {
   const waKeta    = useRef(0)
   const kuriagari = useRef(0)
 
-  // ── タッチ: 開始（スクロール禁止） ────────────────
-  function touchStartEvent(event: TouchEvent) {
-    event.preventDefault()
-  }
-
-  // ── タッチ: 移動中（要素を指に追従） ──────────────
-  function touchMoveEvent(event: TouchEvent) {
-    event.preventDefault()
-    const elem  = event.target as HTMLElement
-    const touch = event.changedTouches[0]
-    elem.style.position = "fixed"
-    elem.style.zIndex   = "9999"
-    elem.style.top  = touch.pageY - window.pageYOffset - elem.offsetHeight / 2 + "px"
-    elem.style.left = touch.pageX - window.pageXOffset - elem.offsetWidth  / 2 + "px"
-  }
-
-  // ── タッチ終了: 数字パレット用 ────────────────────
-  // ドロップ先が droppable-elem ならそこへ移動し、パレットをリフレッシュ
-  function touchEndEvent(event: TouchEvent) {
-    event.preventDefault()
-    const elem  = event.target as HTMLElement
-    elem.style.position = ""
-    elem.style.zIndex   = ""
-    elem.style.top      = ""
-    elem.style.left     = ""
-
-    const touch     = event.changedTouches[0]
-    const newParent = document.elementFromPoint(
-      touch.pageX - window.pageXOffset,
-      touch.pageY - window.pageYOffset,
-    ) as HTMLElement | null
-
-    if (newParent?.className === "droppable-elem") {
-      newParent.appendChild(elem)
-      // 数字パレットを一旦クリアして再生成（常に 0〜9 が使える状態を保つ）
-      const pal = numPalRef.current!
-      while (pal.firstChild) pal.removeChild(pal.firstChild)
-      numSet()
-      kotaeInput()
-      // ゴミ箱（img タグ）へドロップしたときは cancel 音、それ以外は pi 音
-      se.playSe(newParent.tagName === "IMG" ? se.cancel : se.pi)
-    }
-  }
-
-  // ── タッチ終了: 硬貨用 ────────────────────────────
-  // ドロップ先が droppable-elem-2 ならそこへ移動し、繰り上がりを確認
-  function touchEndEvent2(event: TouchEvent) {
-    event.preventDefault()
-    const elem  = event.target as HTMLElement
-    elem.style.position = ""
-    elem.style.zIndex   = ""
-    elem.style.top      = ""
-    elem.style.left     = ""
-    // Tailwind preflight が display をリセットするため明示指定
-    elem.style.display  = "inline-block"
-
-    const touch     = event.changedTouches[0]
-    const newParent = document.elementFromPoint(
-      touch.pageX - window.pageXOffset,
-      touch.pageY - window.pageYOffset,
-    ) as HTMLElement | null
-
-    if (newParent?.className === "droppable-elem-2") {
-      newParent.appendChild(elem)
-    }
-    se.playSe(se.pi)
-    imgKuriagari()
-  }
+  // ── 筆算 DnD フック（touchStart/Move/End の共通ロジック） ──
+  const { touchStartEvent, touchMoveEvent, touchEndEvent, touchEndEvent2 } = useHissanDnD({
+    numPalRef,
+    // 数字ドロップ後: パレット再生成 + こたえ更新
+    onDropDigit: () => { numSet(); kotaeInput() },
+    // 硬貨ドロップ後: くり上がり確認
+    onDropCoin: () => { imgKuriagari() },
+  })
 
   // ── くり上がり処理 ────────────────────────────────
   // row3 に同金種が 10 枚溜まったら自動で上位金種に変換して row0 へ

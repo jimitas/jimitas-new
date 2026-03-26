@@ -22,6 +22,7 @@ import { useState, useCallback, useEffect, useRef } from "react"
 import { useSound } from "@/hooks/useSound"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
+import { shuffled } from "@/lib/utils"
 
 // ── データ定義 ──────────────────────────────────────────
 // 40種の音楽記号（no は画像ファイル名に対応: ongaku{no}.png）
@@ -76,15 +77,9 @@ const DATA: MusicSymbol[] = [
 ]
 
 // ── ユーティリティ ───────────────────────────────────────
-// 0〜(n-1) のシャッフル済み配列を生成する（Fisher-Yates）
-function createShuffledOrder(n: number): number[] {
-  const arr = Array.from({ length: n }, (_, i) => i)
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[arr[i], arr[j]] = [arr[j], arr[i]]
-  }
-  return arr
-}
+// 0〜(n-1) のシャッフル済み配列を生成する（utils.ts の shuffled を使用）
+const createShuffledOrder = (n: number): number[] =>
+  shuffled(Array.from({ length: n }, (_, i) => i))
 
 // ── モード型 ─────────────────────────────────────────────
 type Mode = "top" | "flash" | "quiz"
