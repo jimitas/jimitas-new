@@ -16,6 +16,10 @@
 //   disabled - true のときグレーアウト・操作不可（省略可）
 // ======================================================
 
+"use client"
+
+import * as se from "@/lib/se"
+
 interface NumPadProps {
   onDigit: (n: number) => void
   onDelete: () => void
@@ -37,7 +41,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
       {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
         <button
           key={n}
-          onClick={() => onDigit(n)}
+          onClick={() => { se.playSe(se.pi); onDigit(n) }}
           className="flex-shrink-0 w-11 h-11
                      bg-gray-100 dark:bg-gray-700
                      text-gray-800 dark:text-gray-100
@@ -60,7 +64,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
 
       {/* ← バックスペース */}
       <button
-        onClick={onDelete}
+        onClick={() => { se.playSe(se.cancel); onDelete() }}
         title="1文字消す"
         className="flex-shrink-0 w-11 h-11
                    bg-orange-200 dark:bg-orange-900
@@ -80,7 +84,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
 
       {/* C クリア */}
       <button
-        onClick={onClear}
+        onClick={() => { se.playSe(se.reset); onClear() }}
         title="全部消す"
         className="flex-shrink-0 w-11 h-11
                    bg-red-300 dark:bg-red-900
