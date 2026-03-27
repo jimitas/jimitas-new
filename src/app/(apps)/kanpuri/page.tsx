@@ -22,9 +22,9 @@
 //   印刷時は scale(1) に戻す（globals.css の @media print で制御）。
 // ======================================================
 
-import { useState, useRef }    from "react"
-import * as se                 from "@/lib/se"
-import { shuffled }            from "@/lib/utils"
+import { useState, useRef, useEffect } from "react"
+import * as se                         from "@/lib/se"
+import { shuffled }                    from "@/lib/utils"
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -156,10 +156,21 @@ export default function KanpuriPage() {
     msgTimerRef.current = setTimeout(() => setMsg(""), 3000)
   }
 
+  // @page ルールを document.head に注入する。
+  // <style> タグを <body> 内に置くと Chrome が @page を無視するケースがあるため、
+  // useEffect で確実に <head> に追加する（このページにだけ適用される）。
+  useEffect(() => {
+    const el = document.createElement("style")
+    el.textContent = "@page { size: A4 landscape; margin: 0; }"
+    document.head.appendChild(el)
+    return () => { document.head.removeChild(el) }
+  }, [])
+
   // ── イベントハンドラー ──────────────────────────────
 
   // 学年を選択するとプリセット値を反映
   const handleGradeChange = (g: number) => {
+    se.playSe(se.pi)
     setGrade(g)
     setMondaisu(PRESET_MONDAISU[g - 1])
     setTitleIndex(PRESET_TITLE_INDEX[g - 1])
@@ -194,6 +205,7 @@ export default function KanpuriPage() {
       showMsg("テキストエリアに問題が入力されていません")
       return
     }
+    se.playSe(se.pi)
     const blob = new Blob([inputText], { type: "text/plain" })
     const a    = document.createElement("a")
     a.href     = URL.createObjectURL(blob)
@@ -223,6 +235,7 @@ export default function KanpuriPage() {
       return
     }
 
+    se.playSe(se.pi)
     const reader = new FileReader()
     reader.onload = (ev) => {
       try {
@@ -294,13 +307,6 @@ export default function KanpuriPage() {
 
   return (
     <>
-      {/*
-        @page は CSS のトップレベルルールのため、<style> タグでページ単位に注入する。
-        kanpuri 以外のページには影響しない。
-        margin: 0 にしないとブラウザのデフォルト余白でA4横がはみ出し2ページになる。
-      */}
-      <style>{`@page { size: A4 landscape; margin: 0; }`}</style>
-
     <div className="kanpuri-outer min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* ===== ページタイトル ===== */}
@@ -367,7 +373,7 @@ export default function KanpuriPage() {
               🔀 シャッフル
             </button>
             <button
-              onClick={() => window.print()}
+              onClick={() => { se.playSe(se.pi); window.print() }}
               className="px-4 py-2 rounded-lg bg-warm-500 hover:bg-warm-600 active:translate-y-0.5
                          text-white font-bold text-sm shadow transition-colors"
             >
@@ -439,7 +445,7 @@ export default function KanpuriPage() {
                 問題数
                 <select
                   value={mondaisu}
-                  onChange={e => setMondaisu(Number(e.target.value))}
+                  onChange={e => { se.playSe(se.pi); setMondaisu(Number(e.target.value)) }}
                   className="border border-gray-300 rounded px-1 py-0.5 text-sm
                              dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
@@ -452,7 +458,7 @@ export default function KanpuriPage() {
                 フォントサイズ
                 <select
                   value={fontSize}
-                  onChange={e => setFontSize(Number(e.target.value))}
+                  onChange={e => { se.playSe(se.pi); setFontSize(Number(e.target.value)) }}
                   className="border border-gray-300 rounded px-1 py-0.5 text-sm
                              dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
@@ -465,7 +471,7 @@ export default function KanpuriPage() {
                 段数
                 <select
                   value={dansu}
-                  onChange={e => setDansu(Number(e.target.value) as 1 | 2)}
+                  onChange={e => { se.playSe(se.pi); setDansu(Number(e.target.value) as 1 | 2) }}
                   className="border border-gray-300 rounded px-1 py-0.5 text-sm
                              dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
@@ -481,7 +487,7 @@ export default function KanpuriPage() {
                 表題
                 <select
                   value={titleIndex}
-                  onChange={e => setTitleIndex(Number(e.target.value))}
+                  onChange={e => { se.playSe(se.pi); setTitleIndex(Number(e.target.value)) }}
                   className="border border-gray-300 rounded px-1 py-0.5 text-sm
                              dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
@@ -509,7 +515,7 @@ export default function KanpuriPage() {
                 名前欄
                 <select
                   value={namaeIndex}
-                  onChange={e => setNamaeIndex(Number(e.target.value))}
+                  onChange={e => { se.playSe(se.pi); setNamaeIndex(Number(e.target.value)) }}
                   className="border border-gray-300 rounded px-1 py-0.5 text-sm
                              dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
@@ -524,7 +530,7 @@ export default function KanpuriPage() {
                 説明
                 <select
                   value={setumeiIndex}
-                  onChange={e => setSetumeiIndex(Number(e.target.value))}
+                  onChange={e => { se.playSe(se.pi); setSetumeiIndex(Number(e.target.value)) }}
                   className="border border-gray-300 rounded px-1 py-0.5 text-sm w-full max-w-md
                              dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
                 >
