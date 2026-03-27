@@ -158,3 +158,60 @@ input, textarea {
   background-color: #1f2937;
   border-color: #374151;
 }
+
+/* -------------------------------------------------------
+   印刷共通スタイル
+   window.print() を使うアプリのためにサイトのヘッダー・フッターを非表示にする。
+   ------------------------------------------------------- */
+@media print {
+  header, footer {
+    display: none !important;
+  }
+}
+
+/* -------------------------------------------------------
+   漢字テスト作成（kanpuri）- 印刷レイアウト
+   writing-mode: vertical-rl で A4 横向き縦書きプリントを実現する。
+   スクリーン表示: transform: scale(0.5) で 50% 縮小プレビュー
+   印刷時: transform: scale(1) でフルサイズ出力
+   ------------------------------------------------------- */
+
+/* プレビューのコンテナ（スクリーンのみ: スケール後のサイズに合わせてクリップ） */
+.kanpuri-print-wrapper {
+  position: relative;
+  width: calc(297mm * 0.5);
+  height: calc(210mm * 0.5);
+  overflow: hidden;
+}
+
+/* 印刷エリア本体 */
+.kanpuri-print-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  -ms-writing-mode: tb-rl;
+  writing-mode: vertical-rl;
+  width: 297mm;
+  height: 210mm;
+  transform-origin: 0 0;
+  transform: scale(0.5);
+  background: white;
+}
+
+/* 印刷時はスケールを戻し、コントロール要素を非表示 */
+@media print {
+  .kanpuri-no-print {
+    display: none !important;
+  }
+  .kanpuri-print-wrapper {
+    position: static !important;
+    width: 297mm !important;
+    height: 210mm !important;
+    overflow: visible !important;
+  }
+  .kanpuri-print-area {
+    position: static !important;
+    transform: scale(1) !important;
+    box-shadow: none !important;
+  }
+}
