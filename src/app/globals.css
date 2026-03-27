@@ -203,6 +203,16 @@ input, textarea {
   .kanpuri-no-print {
     display: none !important;
   }
+  /*
+    body に min-h-screen flex flex-col がついているため、
+    印刷時も body が 100vh 分の高さを持ち白紙2ページ目が出る。
+    :has() で kanpuri ページだけを対象に min-height をリセットし
+    overflow: hidden で1ページ目だけを印刷させる。
+  */
+  body:has(.kanpuri-print-area) {
+    min-height: 0 !important;
+    overflow: hidden !important;
+  }
   /* 外側ラッパーの余白・背景色を除去してA4ちょうどに収める */
   .kanpuri-outer {
     min-height: 0 !important;
