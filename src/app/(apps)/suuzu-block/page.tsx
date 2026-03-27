@@ -67,6 +67,9 @@ export default function SuuzuBlockPage() {
   const [autoCount, setAutoCount]     = useState<number>(0)
   const [countInArea, setCountInArea] = useState<number>(0)
   const [showToast, setShowToast]     = useState<boolean>(true)
+  // コインリセット確認ダイアログの状態
+  const [resetChallenge, setResetChallenge] = useState<{ num1: number; num2: number } | null>(null)
+  const resetInputRef = useRef<HTMLInputElement>(null)
 
   // 1問につき初回正解のみコイン付与するためのフラグ
   const hasAnsweredRef = useRef(false)
@@ -205,18 +208,25 @@ export default function SuuzuBlockPage() {
     }
   }
 
-  // コインリセット（掛け算問題に正解した場合のみリセット）
+  // コインリセットダイアログを開く（掛け算問題を出題する）
   const handleResetCoins = () => {
     se.playSe(se.set)
     const num1 = Math.floor(Math.random() * 90) + 10
     const num2 = Math.floor(Math.random() * 9) + 1
-    const correct = num1 * num2
-    const ans = prompt(
-      `コインをリセットするには　けいさんもんだいに　こたえてください。\n\n${num1} × ${num2} = ?`
-    )
-    if (ans === null) return
+    setResetChallenge({ num1, num2 })
+    // ダイアログが開いたら input にフォーカス
+    setTimeout(() => resetInputRef.current?.focus(), 50)
+  }
 
-    if (parseInt(ans, 10) === correct) {
+  // コインリセットダイアログの答え合わせ
+  const handleResetSubmit = () => {
+    if (!resetChallenge) return
+    const { num1, num2 } = resetChallenge
+    const correct = num1 * num2
+    const ans = parseInt(resetInputRef.current?.value ?? "", 10)
+    setResetChallenge(null)
+
+    if (ans === correct) {
       resetCoins()
       se.playSe(se.seikai1)
       if (el_text.current) {
@@ -310,6 +320,43 @@ export default function SuuzuBlockPage() {
                              text-white font-bold text-lg rounded-xl shadow-md transition-colors"
                 >
                   はじめる！
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ===== コインリセット確認ダイアログ ===== */}
+        {resetChallenge && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+            <div className="bg-white rounded-2xl shadow-2xl w-[90vw] max-w-sm mx-4 p-6 flex flex-col gap-4">
+              <h2 className="text-center text-lg font-bold text-gray-800">
+                コインをリセットするには<br />けいさんもんだいにこたえてね
+              </h2>
+              <p className="text-center text-2xl font-bold text-blue-600">
+                {resetChallenge.num1} × {resetChallenge.num2} = ?
+              </p>
+              <input
+                ref={resetInputRef}
+                type="number"
+                className="border-2 border-gray-300 rounded-xl px-4 py-2 text-center text-xl w-full
+                           focus:outline-none focus:border-blue-400"
+                onKeyDown={(e) => { if (e.key === "Enter") handleResetSubmit() }}
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setResetChallenge(null)}
+                  className="flex-1 py-2 rounded-xl border-2 border-gray-300 text-gray-600 font-bold
+                             hover:bg-gray-50 active:translate-y-0.5 transition-colors"
+                >
+                  キャンセル
+                </button>
+                <button
+                  onClick={handleResetSubmit}
+                  className="flex-1 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 active:translate-y-0.5
+                             text-white font-bold transition-colors"
+                >
+                  こたえる
                 </button>
               </div>
             </div>

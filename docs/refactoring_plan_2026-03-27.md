@@ -180,6 +180,42 @@
 | `60038f2` | Phase 2: 共通化 shuffled / useHissanDnD（10ファイル・2新規） |
 | `5d5d7d6` | Phase 3: コード品質修正（11ファイル・1削除） |
 | `2e94967` | Phase 4+5: next/image移行・技術的負債コメント追加（12ファイル） |
+| `a947d2e` | feat: おかねのけいさん NumPad + useKeyboardInput 追加（リファクタリング後・別チャット） |
+| `a6b9e7e` | feat: NumPad 効果音追加（リファクタリング後・別チャット） |
+| （次のコミット） | 第2回レビュー：confirm/prompt除去・makeChoices共通化 |
+
+---
+
+## 第2回レビュー（2026-03-27）
+
+### 背景
+リファクタリング翌日に別視点から再レビューを実施。競合チェック・技術的負債・パフォーマンス・再利用性を調査。
+
+### 調査結果
+
+| 項目 | 結果 |
+|------|------|
+| マージコンフリクトマーカー | **なし**（並行作業の競合なし） |
+| pageYOffset/pageXOffset 残存 | **なし**（移行完了） |
+| shuffled 統一漏れ | **なし** |
+| TypeScript `any` 型 | **なし** |
+| セキュリティ（XSS等） | **問題なし**（innerHTML に外部入力は流れていない） |
+
+### 実施した追加作業
+
+#### 作業1: confirm() / prompt() の除去
+- `gakuten/page.tsx`: `confirm("シャッフルしますか？")` を2箇所削除（ボタン明示のため不要）
+- `suuzu-block/page.tsx`: `prompt()` をインラインモーダルに置き換え（`resetChallenge` state + JSX）
+
+#### 作業2: makeChoices を utils.ts に共通化
+- `src/lib/utils.ts` に `makeChoices<T>(correct, pool, isSame)` を追加（ジェネリック設計）
+- `english-words/page.tsx`・`classroom-english/page.tsx` のローカル関数を削除し import に統一
+
+### 見送った作業（リスク高）
+
+#### 作業3: useAnswerCheck の全アプリ展開
+- 対象8本以上・各アプリのロジック差異が大きい・フック拡張のリスクが高い
+- **方針：新アプリを作るときに最初から useAnswerCheck を使う**
 
 ---
 

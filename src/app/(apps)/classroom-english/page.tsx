@@ -21,12 +21,7 @@ import { useSound } from "@/hooks/useSound"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { CLASSROOM_ENGLISH, ALL_CREN_PHRASES, type CrenPhrase } from "@/data/classroomEnglish"
-import { shuffled } from "@/lib/utils"
-
-function makeChoices(correct: CrenPhrase, pool: CrenPhrase[]): CrenPhrase[] {
-  const others = shuffled(pool.filter(p => p.audioIndex !== correct.audioIndex)).slice(0, 3)
-  return shuffled([correct, ...others])
-}
+import { shuffled, makeChoices } from "@/lib/utils"
 
 // ── クイズパターン定義 ────────────────────────────────
 
@@ -83,7 +78,7 @@ export default function ClassroomEnglishPage() {
     const order = shuffled(ALL_CREN_PHRASES)
     setQuizOrder(order)
     setQuizIndex(0)
-    setChoices(makeChoices(order[0], ALL_CREN_PHRASES))
+    setChoices(makeChoices(order[0], ALL_CREN_PHRASES, (a, b) => a.audioIndex === b.audioIndex))
     setSelected(null)
     setAudioPlayed(pattern === "ja-en") // 日→英語は音声不要なので最初からtrue
     resetProblem()
@@ -95,7 +90,7 @@ export default function ClassroomEnglishPage() {
   const nextQuestion = useCallback((nextIdx: number, order: CrenPhrase[]) => {
     resetProblem()
     setQuizIndex(nextIdx)
-    setChoices(makeChoices(order[nextIdx], ALL_CREN_PHRASES))
+    setChoices(makeChoices(order[nextIdx], ALL_CREN_PHRASES, (a, b) => a.audioIndex === b.audioIndex))
     setSelected(null)
     setAudioPlayed(quizPattern === "ja-en")
   }, [quizPattern, resetProblem])

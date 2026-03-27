@@ -162,7 +162,6 @@ export default function GakutenPage() {
   // ── フラッシュカード：シャッフル ─────────────────────
   function handleFlashShuffle() {
     play("/sounds/set.mp3", 0.4)
-    if (!confirm("順番をシャッフルしますか？")) return
     setFlashOrder(createShuffledOrder(DATA.length))
     setFlashIndex(0)
     setFlashRevealed(false)
@@ -198,7 +197,6 @@ export default function GakutenPage() {
   // ── クイズ：シャッフル ────────────────────────────────
   function handleQuizShuffle() {
     play("/sounds/set.mp3", 0.4)
-    if (!confirm("順番をシャッフルしますか？")) return
     resetProblem()
     setQuizOrder(createShuffledOrder(DATA.length))
     setQuizIndex(0)

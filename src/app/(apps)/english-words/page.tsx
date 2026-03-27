@@ -22,12 +22,7 @@ import { useSound } from "@/hooks/useSound"
 import { useProblemCoins } from "@/hooks/useProblemCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { ENGLISH_WORDS, type WordEntry, type WordCategory } from "@/data/englishWords"
-import { shuffled } from "@/lib/utils"
-
-function makeChoices(correct: WordEntry, pool: WordEntry[]): WordEntry[] {
-  const others = shuffled(pool.filter(w => w.audioFile !== correct.audioFile)).slice(0, 3)
-  return shuffled([correct, ...others])
-}
+import { shuffled, makeChoices } from "@/lib/utils"
 
 // ── クイズパターン定義 ────────────────────────────────
 
@@ -143,7 +138,7 @@ export default function EnglishWordsPage() {
     const order = shuffled(category.words)
     setQuizOrder(order)
     setQuizIndex(0)
-    setChoices(makeChoices(order[0], category.words))
+    setChoices(makeChoices(order[0], category.words, (a, b) => a.audioFile === b.audioFile))
     setSelected(null)
     setAudioPlayed(pattern === "image-word") // 絵→単語は音声不要なので最初からtrue
     resetProblem()
@@ -155,7 +150,7 @@ export default function EnglishWordsPage() {
   const nextQuestion = useCallback((nextIdx: number, order: WordEntry[]) => {
     resetProblem()
     setQuizIndex(nextIdx)
-    setChoices(makeChoices(order[nextIdx], category.words))
+    setChoices(makeChoices(order[nextIdx], category.words, (a, b) => a.audioFile === b.audioFile))
     setSelected(null)
     setAudioPlayed(quizPattern === "image-word")
   }, [category.words, quizPattern, resetProblem])
