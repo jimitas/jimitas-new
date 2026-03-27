@@ -293,7 +293,15 @@ export default function KanpuriPage() {
   // ── レンダリング ────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+    <>
+      {/*
+        @page は CSS のトップレベルルールのため、<style> タグでページ単位に注入する。
+        kanpuri 以外のページには影響しない。
+        margin: 0 にしないとブラウザのデフォルト余白でA4横がはみ出し2ページになる。
+      */}
+      <style>{`@page { size: A4 landscape; margin: 0; }`}</style>
+
+    <div className="kanpuri-outer min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* ===== ページタイトル ===== */}
       <header className="text-center pt-4 pb-2">
@@ -303,7 +311,7 @@ export default function KanpuriPage() {
       </header>
 
       {/* ===== メインコンテンツ（左右2カラム） ===== */}
-      <main className="flex gap-4 p-3 items-start">
+      <main className="kanpuri-main flex gap-4 p-3 items-start">
 
         {/* ========== 左パネル: コントロール（印刷時非表示） ========== */}
         <div className="kanpuri-no-print flex flex-col gap-3" style={{ width: "360px", flexShrink: 0 }}>
@@ -586,5 +594,6 @@ export default function KanpuriPage() {
         </div>
       </main>
     </div>
+    </>
   )
 }

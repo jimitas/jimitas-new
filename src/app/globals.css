@@ -203,11 +203,24 @@ input, textarea {
   .kanpuri-no-print {
     display: none !important;
   }
+  /* 外側ラッパーの余白・背景色を除去してA4ちょうどに収める */
+  .kanpuri-outer {
+    min-height: 0 !important;
+    background: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  .kanpuri-main {
+    padding: 0 !important;
+    margin: 0 !important;
+    gap: 0 !important;
+  }
   .kanpuri-print-wrapper {
     position: static !important;
     width: 297mm !important;
     height: 210mm !important;
     overflow: visible !important;
+    box-shadow: none !important;
   }
   .kanpuri-print-area {
     position: static !important;
