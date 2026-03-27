@@ -498,6 +498,16 @@ export const apps: AppItem[] = [
   // その他
   // ============================================================
   {
+    id: "classroom-timer",
+    title: "授業タイマー",
+    description: "教室で使いやすいタイマー・ストップウォッチ。残り30秒・10秒・5秒で効果音通知。キーボードショートカット対応",
+    grades: ["先生向け"],
+    subjects: ["その他"],
+    tags: ["タイマー", "ストップウォッチ", "先生向け", "授業支援"],
+    type: "tool",
+    path: "/classroom-timer",
+  },
+  {
     id: "barnsley-fern",
     title: "バーンズリーのシダ",
     description: "4つの変換式をランダムに繰り返すと、シダの葉の形が現れてくる不思議なフラクタル図形",
@@ -521,17 +531,6 @@ export const apps: AppItem[] = [
   // ============================================================
   // 先生向けツール
   // ============================================================
-  {
-    id: "classroom-timer",
-    title: "授業タイマー",
-    description: "教室で使いやすいタイマー・ストップウォッチ。効果音付き",
-    grades: ["先生向け"],
-    subjects: ["授業支援"],
-    tags: ["タイマー", "先生向け"],
-    type: "tool",
-    path: "/classroom-timer",
-    disabled: true,
-  },
   {
     id: "sakusen-board",
     title: "地味に助かる作戦ボード",
