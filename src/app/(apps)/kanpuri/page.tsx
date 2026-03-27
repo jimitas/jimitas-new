@@ -22,7 +22,7 @@
 //   印刷時は scale(1) に戻す（globals.css の @media print で制御）。
 // ======================================================
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef }            from "react"
 import * as se                         from "@/lib/se"
 import { shuffled }                    from "@/lib/utils"
 
@@ -155,16 +155,6 @@ export default function KanpuriPage() {
     if (msgTimerRef.current) clearTimeout(msgTimerRef.current)
     msgTimerRef.current = setTimeout(() => setMsg(""), 3000)
   }
-
-  // @page ルールを document.head に注入する。
-  // <style> タグを <body> 内に置くと Chrome が @page を無視するケースがあるため、
-  // useEffect で確実に <head> に追加する（このページにだけ適用される）。
-  useEffect(() => {
-    const el = document.createElement("style")
-    el.textContent = "@page { size: A4 landscape; margin: 0; }"
-    document.head.appendChild(el)
-    return () => { document.head.removeChild(el) }
-  }, [])
 
   // ── イベントハンドラー ──────────────────────────────
 

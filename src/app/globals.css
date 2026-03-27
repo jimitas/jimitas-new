@@ -173,8 +173,24 @@ input, textarea {
    漢字テスト作成（kanpuri）- 印刷レイアウト
    writing-mode: vertical-rl で A4 横向き縦書きプリントを実現する。
    スクリーン表示: transform: scale(0.5) で 50% 縮小プレビュー
-   印刷時: transform: scale(1) でフルサイズ出力
+   印刷時: position: fixed で body のフローから切り離してページを1枚に固定
+
+   【jimipri の手法を参考に】
+   jimipri では .page { position: fixed } を使い body フローから切り離すことで
+   body の min-h-screen が印刷ページ数に影響しないようにしている。
+   kanpuri でも同じ手法を採用する。
+
+   @page はここ（<head> から読み込まれる CSS ファイル）に書くことで
+   Chrome にも確実に適用される（<body> 内 <style> タグでは無視される場合がある）。
    ------------------------------------------------------- */
+
+/* A4 横向き・余白ゼロ（kanpuri の印刷時に適用）
+   ※ このファイルはグローバルに読み込まれるため全ページに影響するが、
+     現状 kanpuri 以外に印刷機能がないため許容する */
+@page {
+  size: A4 landscape;
+  margin: 0mm;
+}
 
 /* プレビューのコンテナ（スクリーンのみ: スケール後のサイズに合わせてクリップ） */
 .kanpuri-print-wrapper {
@@ -198,42 +214,22 @@ input, textarea {
   background: white;
 }
 
-/* 印刷時はスケールを戻し、コントロール要素を非表示 */
+/* 印刷時 */
 @media print {
   .kanpuri-no-print {
     display: none !important;
   }
   /*
-    body に min-h-screen flex flex-col がついているため、
-    印刷時も body が 100vh 分の高さを持ち白紙2ページ目が出る。
-    :has() で kanpuri ページだけを対象に min-height をリセットし
-    overflow: hidden で1ページ目だけを印刷させる。
+    position: fixed にすることで印刷エリアを document フローから切り離す。
+    body の min-h-screen がいくら大きくても fixed 要素は高さ計算に入らず
+    2ページ目（白紙）が出なくなる。これが jimipri で機能していた手法。
   */
-  body:has(.kanpuri-print-area) {
-    min-height: 0 !important;
-    overflow: hidden !important;
-  }
-  /* 外側ラッパーの余白・背景色を除去してA4ちょうどに収める */
-  .kanpuri-outer {
-    min-height: 0 !important;
-    background: white !important;
-    padding: 0 !important;
-    margin: 0 !important;
-  }
-  .kanpuri-main {
-    padding: 0 !important;
-    margin: 0 !important;
-    gap: 0 !important;
-  }
-  .kanpuri-print-wrapper {
-    position: static !important;
+  .kanpuri-print-area {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
     width: 297mm !important;
     height: 210mm !important;
-    overflow: visible !important;
-    box-shadow: none !important;
-  }
-  .kanpuri-print-area {
-    position: static !important;
     transform: scale(1) !important;
     box-shadow: none !important;
   }
