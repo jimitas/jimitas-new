@@ -235,8 +235,8 @@ export default function NanbanmePage() {
             <Image
               src={`/images/${ANIMALS[animalIdx]}.png`}
               alt={ANIMALS[animalIdx]}
-              width={52}
-              height={52}
+              width={80}
+              height={80}
               className="object-contain"
             />
           </button>

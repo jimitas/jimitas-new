@@ -21,10 +21,9 @@ export function PutImage({ children }: PutImageProps) {
   return (
     <div
       className="flex flex-wrap justify-center items-end gap-2
-                 mx-auto my-4 p-4 min-h-[80px]
+                 w-full my-4 p-4 min-h-[80px]
                  bg-blue-50 dark:bg-gray-800 rounded-xl
                  border-2 border-blue-200 dark:border-gray-600"
-      style={{ width: "max(44vw, 320px)" }}
     >
       {children}
     </div>
