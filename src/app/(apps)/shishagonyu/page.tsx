@@ -258,7 +258,7 @@ export default function ShashagonyuPage() {
 
   // ──────────────────────────────────────────────────────
   return (
-    <main className="max-w-4xl mx-auto px-4 py-6 space-y-4">
+    <main className="max-w-5xl mx-auto px-4 py-6 space-y-4">
 
       <h1 className="text-2xl font-bold text-center text-brand-700 dark:text-brand-300">
         四捨五入の練習

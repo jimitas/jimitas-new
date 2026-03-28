@@ -129,7 +129,7 @@ export default function KenbanEasyPage() {
   // ── JSX ──────────────────────────────────────────────
 
   return (
-    <main className="p-4 max-w-3xl mx-auto">
+    <main className="p-4 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-1">けんばんハーモニカ</h1>
       <p className="text-center text-sm text-gray-500 mb-8">
         おしている間だけ音がなるよ

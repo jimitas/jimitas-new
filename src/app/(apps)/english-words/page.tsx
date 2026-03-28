@@ -212,7 +212,7 @@ export default function EnglishWordsPage() {
   const currentQuizWord = quizOrder[quizIndex]
 
   return (
-    <main className="p-4 max-w-3xl mx-auto">
+    <main className="p-4 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-1">English Words</h1>
       <p className="text-center text-sm text-gray-500 mb-4">
         英語の単語を聞いて・見て覚えよう

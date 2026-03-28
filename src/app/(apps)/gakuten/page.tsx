@@ -241,7 +241,7 @@ export default function GakutenPage() {
   // ── レンダリング ───────────────────────────────────────
 
   return (
-    <div className="max-w-3xl mx-auto px-3 py-6 select-none">
+    <div className="max-w-5xl mx-auto px-3 py-6 select-none">
 
       {/* ===== 正解演出 ===== */}
       <div

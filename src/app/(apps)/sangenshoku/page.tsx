@@ -284,7 +284,7 @@ export default function SangenshokuPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    <div className="max-w-5xl mx-auto px-4 py-8">
 
       {/* タイトル */}
       <h1 className="text-2xl font-bold text-center mb-1 text-gray-800">

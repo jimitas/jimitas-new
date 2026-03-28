@@ -216,7 +216,7 @@ export default function RomajiPage() {
   const vowelKeys   = capsFlag ? VOWEL_UPPER  : VOWEL_LOWER;
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-5 select-none">
+    <div className="max-w-5xl mx-auto px-4 py-5 select-none">
 
       {/* タイトル */}
       <h1 className="text-2xl font-bold text-center mb-1 text-gray-800">

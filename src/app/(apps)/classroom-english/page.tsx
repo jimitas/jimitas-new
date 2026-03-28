@@ -151,7 +151,7 @@ export default function ClassroomEnglishPage() {
   const currentPhrase = quizOrder[quizIndex]
 
   return (
-    <main className="p-4 max-w-2xl mx-auto">
+    <main className="p-4 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-1">Classroom English</h1>
       <p className="text-center text-sm text-gray-500 mb-4">
         教室で使える英語表現を学ぼう

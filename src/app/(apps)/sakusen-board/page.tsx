@@ -189,7 +189,7 @@ export default function SakusenBoardPage() {
   );
 
   return (
-    <div className="max-w-4xl mx-auto px-2 py-4 space-y-3">
+    <div className="w-full px-2 py-4 space-y-3">
 
       {/* タイトル */}
       <h1 className="text-xl font-bold text-center text-gray-800">

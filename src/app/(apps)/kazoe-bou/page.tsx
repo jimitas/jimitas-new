@@ -540,7 +540,7 @@ export default function KazoeBouPage() {
   // ── 描画 ─────────────────────────────────────────
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-6">
+    <div className="max-w-5xl mx-auto px-4 py-6">
 
       {/* タイトル + モードトグル（中央揃え） */}
       <div className="flex items-center justify-center gap-2 mb-2">

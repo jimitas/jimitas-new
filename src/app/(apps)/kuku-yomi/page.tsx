@@ -185,7 +185,7 @@ export default function KukuYomiPage() {
   const inactiveBtnCls = "bg-white border border-brand-300 text-brand-600 hover:bg-brand-100";
 
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
       {/* タイトル */}
       <h1 className="text-xl font-bold text-center text-gray-800">

@@ -356,7 +356,7 @@ export default function TokeiPage() {
 
   // ── JSX ────────────────────────────────────────────────
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-4">
+    <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
 
       {/* タイトル */}
       <h1 className="text-xl font-bold text-center text-gray-800">
