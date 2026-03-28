@@ -271,13 +271,12 @@ export const apps: AppItem[] = [
   {
     id: "katakana",
     title: "カタカナのれんしゅう",
-    description: "カタカナの文字を練習しよう。ひらがなとの対応も確認できる",
+    description: "絵文字ヒントを見てカタカナ語を入力しよう。50音表のクリック入力で練習できる",
     grades: [1],
     subjects: ["国語"],
-    tags: ["文字", "カタカナ"],
+    tags: ["文字", "カタカナ", "コイン獲得"],
     type: "app",
     path: "/katakana",
-    disabled: true,
   },
   {
     id: "romaji",
