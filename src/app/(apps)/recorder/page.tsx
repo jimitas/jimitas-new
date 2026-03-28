@@ -109,7 +109,7 @@ const FINGERING: Record<number, number[]> = {
 function RecorderFingering({ holes }: { holes: number[] }) {
   // 穴のスタイル: 0=あける, 1=おさえる, 2=サミング
   const holeStyle = (state: number, small = false): React.CSSProperties => {
-    const size = small ? 22 : 34   // 大きめサイズ
+    const size = small ? 28 : 42   // 大きめサイズ
     const base: React.CSSProperties = {
       width: size,
       height: size,
@@ -125,10 +125,10 @@ function RecorderFingering({ holes }: { holes: number[] }) {
   }
 
   return (
-    <div className="flex flex-col items-center gap-2 py-4 px-5 bg-amber-50 border border-amber-200 rounded-xl select-none">
-      <p className="text-sm font-bold text-amber-800 mb-0.5">運指</p>
+    <div className="flex flex-col items-center gap-3 py-5 px-6 bg-amber-50 border border-amber-200 rounded-xl select-none">
+      <p className="text-base font-bold text-amber-800 mb-0.5">運指</p>
 
-      <div className="flex gap-4 items-end">
+      <div className="flex gap-5 items-end">
 
         {/* 左カラム: 親指（裏）*/}
         <div className="relative flex items-center justify-center">
@@ -137,12 +137,12 @@ function RecorderFingering({ holes }: { holes: number[] }) {
         </div>
 
         {/* 右カラム: 表側の穴（上=高音から下=低音） */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="flex gap-1.5">
+        <div className="flex flex-col items-center gap-3">
+          <div className="flex gap-2">
             <div style={holeStyle(holes[8], true)} />
             <div style={holeStyle(holes[9], true)} />
           </div>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <div style={holeStyle(holes[6], true)} />
             <div style={holeStyle(holes[7], true)} />
           </div>
@@ -195,14 +195,14 @@ export default function RecorderPage() {
   }, [stopSound])
 
   return (
-    <main className="p-4">
+    <main className="p-4 md:p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold text-center mb-1">リコーダー</h1>
       <p className="text-center text-sm text-gray-500 mb-4">
         けんばんをおして演奏しよう・運指をかくにんしてね
       </p>
 
       {/* 運指図・凡例・鍵盤を横並び */}
-      <div className="flex flex-col md:flex-row items-start gap-6">
+      <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
 
         {/* 左エリア: 運指図 + 凡例（幅固定・縮まない） */}
         <div className="flex flex-col items-center md:items-start gap-4 md:shrink-0">
@@ -229,15 +229,12 @@ export default function RecorderPage() {
           </div>
         </div>
 
-        {/* 右エリア: ピアノ鍵盤（flex-1 で横幅いっぱいに） */}
+        {/* 右エリア: ピアノ鍵盤
+            max-w-[768px] mx-auto: h-72(288px)×(16/6)=768px を上限にして
+            1鍵あたりの横幅が広くなりすぎないよう制限しつつ中央寄せ
+        */}
         <div className="flex-1 min-w-0">
-          {/*
-            鍵盤コンテナ: w-full で横幅いっぱい・relative で黒鍵の absolute 基準
-            白鍵16本 = flex-1 で均等展開
-            黒鍵: 白鍵1本 = 100/16 = 6.25%、黒鍵幅 ≈ 3.75%
-                  各黒鍵の left = (index+1)*6.25 - 1.875 %
-          */}
-          <div className="relative w-full h-48 md:h-72">
+          <div className="relative w-full max-w-[768px] mx-auto h-56 md:h-80">
 
             {/* 黒鍵（パーセント位置・z-20で白鍵より前面） */}
             {BK_KEYS.map((key, i) => {
@@ -258,7 +255,7 @@ export default function RecorderPage() {
                   onTouchStart={handlePressDown}
                   onTouchEnd={handlePressUp}
                 >
-                  <span className="font-bold text-[0.55rem] text-gray-100 leading-tight text-center">
+                  <span className="font-bold text-[0.65rem] text-gray-100 leading-tight text-center">
                     {key.note}
                   </span>
                 </div>
@@ -278,7 +275,7 @@ export default function RecorderPage() {
                   onTouchStart={handlePressDown}
                   onTouchEnd={handlePressUp}
                 >
-                  <span className="font-bold text-xs text-gray-700 leading-tight">
+                  <span className="font-bold text-sm text-gray-700 leading-tight">
                     {key.note}
                   </span>
                 </div>
