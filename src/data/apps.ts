@@ -84,6 +84,16 @@ export const apps: AppItem[] = [
     path: "/ikutu",
   },
   {
+    id: "sansu-note",
+    title: "さんすうノート",
+    description: "方眼ノートにブロック・おはじき・おかねを自由にならべよう",
+    grades: [1, 2],
+    subjects: ["算数"],
+    tags: ["自由操作", "ドラッグ操作", "ブロック", "おかね", "方眼"],
+    type: "app",
+    path: "/sansu-note",
+  },
+  {
     id: "suuzu-block",
     title: "すうずぶろっく",
     description: "ぶろっくをならべながら　かずの　かんがえかたをまなぼう",
