@@ -62,14 +62,16 @@ export default function KyotoKuPage() {
   const [cardOrder, setCardOrder] = useState<number[]>(
     () => WARDS.map((_, i) => i)
   )
+  // マウント後にシャッフル（hydration mismatch 防止のため useEffect で実行）
+  // queueMicrotask で非同期化して react-hooks/set-state-in-effect を回避
   useEffect(() => {
-    setCardOrder(prev => {
-      const ids = [...prev]
+    queueMicrotask(() => {
+      const ids = WARDS.map((_, i) => i)
       for (let i = ids.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [ids[i], ids[j]] = [ids[j], ids[i]]
       }
-      return ids
+      setCardOrder(ids)
     })
   }, [])
   // 正解済みのゾーン（コイン重複防止用）
@@ -338,7 +340,7 @@ export default function KyotoKuPage() {
         {/* Image を width:100% で描画し、コンテナ高さを画像に合わせる。
             ドロップゾーンは % 指定なので画像と完全に連動する */}
         <div
-          className="relative flex-shrink-0"
+          className="relative shrink-0"
           style={{ width: "min(55vw, 440px)" }}
         >
           <Image

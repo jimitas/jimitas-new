@@ -454,26 +454,14 @@ export const apps: AppItem[] = [
   // 社会
   // ============================================================
   {
-    id: "todo-prefecture",
-    title: "都道府県を覚えよう",
-    description: "日本地図上で都道府県をクリックして場所と名前を覚えよう",
-    grades: [4, 5, 6],
+    id: "nihon-todouhuken",
+    title: "日本の都道府県",
+    description: "47都道府県の名前と場所を地図にドラッグして覚えよう。地方ごとに色分け、即時判定",
+    grades: [4],
     subjects: ["社会"],
-    tags: ["都道府県", "日本地図", "クイズ"],
+    tags: ["都道府県", "日本地図", "ドラッグ操作", "コイン獲得"],
     type: "app",
-    path: "/todo-prefecture",
-    disabled: true,
-  },
-  {
-    id: "nihon-chizu",
-    title: "日本地図学習",
-    description: "地域・地方の区分を地図上で確認しながら学ぼう",
-    grades: [4, 5, 6],
-    subjects: ["社会"],
-    tags: ["日本地図", "地方区分"],
-    type: "app",
-    path: "/nihon-chizu",
-    disabled: true,
+    path: "/nihon-todouhuken",
   },
   {
     id: "kyoto-ku",
