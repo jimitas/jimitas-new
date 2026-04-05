@@ -30,17 +30,18 @@ import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 //   top%  = (ken_top + 2) / 50 * 100
 //   ※ +2 は section(+19) と maru(+17) の差分
 const WARDS = [
-  { id: 0,  kanji: "右京区",   kana: "うきょうく",     color: "#ef4444", left: 10, top: 45 },
-  { id: 1,  kanji: "左京区",   kana: "さきょうく",     color: "#f97316", left: 49, top: 30 },
-  { id: 2,  kanji: "北区",     kana: "きたく",         color: "#eab308", left: 30, top: 50 },
-  { id: 3,  kanji: "南区",     kana: "みなみく",       color: "#84cc16", left: 10, top: 90 },
-  { id: 4,  kanji: "東山区",   kana: "ひがしやまく",   color: "#22c55e", left: 73, top: 63 },
-  { id: 5,  kanji: "伏見区",   kana: "ふしみく",       color: "#06b6d4", left: 55, top: 90 },
-  { id: 6,  kanji: "西京区",   kana: "にしきょうく",   color: "#3b82f6", left: 0,  top: 65 },
-  { id: 7,  kanji: "山科区",   kana: "やましなく",     color: "#a855f7", left: 73, top: 74 },
-  { id: 8,  kanji: "上京区",   kana: "かみぎょうく",   color: "#8b5cf6", left: 73, top: 34 },
-  { id: 9,  kanji: "下京区",   kana: "しもぎょうく",   color: "#f472b6", left: 0,  top: 80 },
-  { id: 10, kanji: "中京区",   kana: "なかぎょうく",   color: "#92400e", left: 75, top: 50 },
+  // CUD（カラーユニバーサルデザイン）配色: 色覚タイプに依存せず区別しやすい
+  { id: 0,  kanji: "右京区",   kana: "うきょうく",     color: "#ff4b00", left: 10, top: 45 },
+  { id: 1,  kanji: "左京区",   kana: "さきょうく",     color: "#005aff", left: 49, top: 30 },
+  { id: 2,  kanji: "北区",     kana: "きたく",         color: "#fff100", left: 30, top: 50 },
+  { id: 3,  kanji: "南区",     kana: "みなみく",       color: "#ff8082", left: 10, top: 90 },
+  { id: 4,  kanji: "東山区",   kana: "ひがしやまく",   color: "#03af7a", left: 73, top: 63 },
+  { id: 5,  kanji: "伏見区",   kana: "ふしみく",       color: "#4dc4ff", left: 55, top: 90 },
+  { id: 6,  kanji: "西京区",   kana: "にしきょうく",   color: "#f6aa00", left: 0,  top: 65 },
+  { id: 7,  kanji: "山科区",   kana: "やましなく",     color: "#990099", left: 73, top: 74 },
+  { id: 8,  kanji: "上京区",   kana: "かみぎょうく",   color: "#804000", left: 73, top: 34 },
+  { id: 9,  kanji: "下京区",   kana: "しもぎょうく",   color: "#c8c800", left: 0,  top: 80 },
+  { id: 10, kanji: "中京区",   kana: "なかぎょうく",   color: "#ff87ab", left: 75, top: 50 },
 ] as const
 
 // ── コンポーネント ───────────────────────────────────────
