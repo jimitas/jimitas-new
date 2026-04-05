@@ -234,3 +234,17 @@ input, textarea {
     box-shadow: none !important;
   }
 }
+
+/* -------------------------------------------------------
+   かけ算の筆算② 斜線スタイル
+   小数末尾の 0 を消去する斜め線を表示する
+   ------------------------------------------------------- */
+.hissan2-diagonal {
+  background-image: linear-gradient(
+    to right top,
+    transparent calc(50% - 0.5px),
+    red 50%,
+    red calc(50% + 0.5px),
+    transparent calc(50% + 1px)
+  );
+}

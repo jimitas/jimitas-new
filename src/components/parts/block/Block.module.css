@@ -86,10 +86,10 @@
   flex-wrap: wrap;
 }
 
+/* lowerGrid は木箱内に収まるため min-width 不要（upperArea のみ制限） */
 .lowerGrid table {
   margin: 2px;
   margin-bottom: 5px;
-  min-width: 45%;
   border: 2px solid rgba(0, 0, 0, 0.3);
   background-color: rgba(255, 255, 255, 0.55);
 }

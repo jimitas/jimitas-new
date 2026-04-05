@@ -192,7 +192,6 @@ export const apps: AppItem[] = [
     tags: ["計算", "筆算", "かけ算", "小数", "コイン獲得"],
     type: "app",
     path: "/kake-hissan2",
-    disabled: true,
   },
   {
     id: "warizan",
@@ -475,6 +474,16 @@ export const apps: AppItem[] = [
     type: "app",
     path: "/nihon-chizu",
     disabled: true,
+  },
+  {
+    id: "kyoto-ku",
+    title: "京都市の11区",
+    description: "京都市の11区の場所と名前を地図で覚えよう。ドラッグ＆ドロップで配置",
+    grades: [3],
+    subjects: ["社会"],
+    tags: ["京都市", "11区", "地図", "ドラッグ操作", "コイン獲得"],
+    type: "app",
+    path: "/kyoto-ku",
   },
 
   // ============================================================
