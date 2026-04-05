@@ -19,7 +19,7 @@
 .tableWrap {
   display: flex;
   justify-content: center;
-  width: clamp(440px, 44vw, 1400px);
+  width: max(44vw, 440px);
   flex-wrap: wrap;
 }
 
@@ -45,12 +45,12 @@
 /* ── セル（Tailwind preflight 対策で !important） ── */
 /* 上限 120px（旧60px の2倍）で大画面でもゆったり表示 */
 .tableWrap td {
-  width: clamp(40px, 4vw, 120px) !important;
-  max-width: clamp(40px, 4vw, 120px) !important;
-  min-width: clamp(40px, 4vw, 120px) !important;
-  height: clamp(40px, 4vw, 120px) !important;
-  min-height: clamp(40px, 4vw, 120px) !important;
-  max-height: clamp(40px, 4vw, 120px) !important;
+  width: max(4vw, 40px) !important;
+  max-width: max(4vw, 40px) !important;
+  min-width: max(4vw, 40px) !important;
+  height: max(4vw, 40px) !important;
+  min-height: max(4vw, 40px) !important;
+  max-height: max(4vw, 40px) !important;
   border: 1px solid;
   border-collapse: collapse;
 }
@@ -58,12 +58,12 @@
 /* ── ブロック本体（丸い div） ──────────────── */
 /* 上限 100px（旧50px の2倍） */
 .tableWrap div {
-  width: clamp(32px, 3.2vw, 100px);
-  min-width: clamp(32px, 3.2vw, 100px);
-  max-width: clamp(32px, 3.2vw, 100px);
-  height: clamp(32px, 3.2vw, 100px);
-  min-height: clamp(32px, 3.2vw, 100px);
-  max-height: clamp(32px, 3.2vw, 100px);
+  width: max(3.2vw, 32px);
+  min-width: max(3.2vw, 32px);
+  max-width: max(3.2vw, 32px);
+  height: max(3.2vw, 32px);
+  min-height: max(3.2vw, 32px);
+  max-height: max(3.2vw, 32px);
   margin: auto;
   box-shadow: 2px 2px 2px 0 rgba(128, 128, 128, 0.8);
   border: 1px solid;
