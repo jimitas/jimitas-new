@@ -24,7 +24,7 @@
 
 "use client"
 
-import { useState, useRef, useCallback, useEffect } from "react"
+import { useState, useRef, useCallback, useEffect, useLayoutEffect } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
 
@@ -294,9 +294,11 @@ export default function SansuNotePage() {
   // ── グリッドスナップ ───────────────────────────────────
   const [snapEnabled, setSnapEnabled] = useState(false)
   const snapEnabledRef = useRef(snapEnabled)
-  snapEnabledRef.current = snapEnabled
   const gridSizeRef = useRef(gridSize)
-  gridSizeRef.current = gridSize
+  useLayoutEffect(() => {
+    snapEnabledRef.current = snapEnabled
+    gridSizeRef.current = gridSize
+  })
 
   // スナップ関数: 有効時は最寄りのグリッド線に吸着させる
   const snap = useCallback((val: number) => {
@@ -322,7 +324,7 @@ export default function SansuNotePage() {
   // ── 配置済みアイテム ───────────────────────────────────
   const [items, setItems] = useState<PlacedItem[]>([])
   const itemsRef = useRef(items)
-  itemsRef.current = items
+  useLayoutEffect(() => { itemsRef.current = items })
 
   // ── タップ配置カーソル（左上から順に整列して配置する）───
   // { x, y } = 次に配置する座標。タップのたびに右へ進み、端で折り返す
@@ -519,9 +521,11 @@ export default function SansuNotePage() {
   // ── Canvas 手書き描画ハンドラ ─────────────────────────
   const isDrawingRef = useRef(false)
   const penColorRef = useRef(penColor)
-  penColorRef.current = penColor
   const eraserModeRef = useRef(eraserMode)
-  eraserModeRef.current = eraserMode
+  useLayoutEffect(() => {
+    penColorRef.current = penColor
+    eraserModeRef.current = eraserMode
+  })
 
   const handleCanvasPointerDown = useCallback((e: React.PointerEvent<HTMLCanvasElement>) => {
     const canvas = canvasRef.current
@@ -658,7 +662,7 @@ export default function SansuNotePage() {
   // ※ 手書きモード中は Canvas が pointer-events: all で上に被るので
   //    そもそもアイテムには届かないが、念のためガードも入れる
   const drawingModeRef = useRef(drawingMode)
-  drawingModeRef.current = drawingMode
+  useLayoutEffect(() => { drawingModeRef.current = drawingMode })
 
   const handleItemPointerDown = useCallback((
     e: React.PointerEvent<HTMLDivElement>,

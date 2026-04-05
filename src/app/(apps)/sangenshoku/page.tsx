@@ -15,7 +15,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Image from "next/image";
 import * as se from "@/lib/se";
 
@@ -246,14 +246,18 @@ export default function SangenshokuPage() {
     ? calcPaint(cmy.m, cmy.c, cmy.y)
     : calcCMY(cmy.c, cmy.m, cmy.y);
 
-  // ── 入力フィールドをスライダー結果に同期 ──────────
-  useEffect(() => {
+  // ── 入力フィールドをスライダー結果に同期（レンダー中に前回値比較） ──
+  const [prevRgb, setPrevRgb] = useState({ r: rgbResult.r, g: rgbResult.g, b: rgbResult.b });
+  if (rgbResult.r !== prevRgb.r || rgbResult.g !== prevRgb.g || rgbResult.b !== prevRgb.b) {
+    setPrevRgb({ r: rgbResult.r, g: rgbResult.g, b: rgbResult.b });
     setRgbInput(rgbToHex(rgbResult.r, rgbResult.g, rgbResult.b));
-  }, [rgbResult.r, rgbResult.g, rgbResult.b]);
+  }
 
-  useEffect(() => {
+  const [prevCmy, setPrevCmy] = useState({ r: cmyResult.r, g: cmyResult.g, b: cmyResult.b });
+  if (cmyResult.r !== prevCmy.r || cmyResult.g !== prevCmy.g || cmyResult.b !== prevCmy.b) {
+    setPrevCmy({ r: cmyResult.r, g: cmyResult.g, b: cmyResult.b });
     setCmyInput(rgbToHex(cmyResult.r, cmyResult.g, cmyResult.b));
-  }, [cmyResult.r, cmyResult.g, cmyResult.b]);
+  }
 
   // ── トースト表示 ────────────────────────────────────
   const showToast = (msg: string) => {

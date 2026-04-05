@@ -18,7 +18,7 @@
 //   - スコア（正解数）をカウント
 // ======================================================
 
-import { useState, useCallback, useEffect, useRef } from "react"
+import { useState, useCallback, useRef } from "react"
 import Image from "next/image"
 import { useSound } from "@/hooks/useSound"
 import { useProblemCoins } from "@/hooks/useProblemCoins"

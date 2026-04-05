@@ -23,17 +23,18 @@ const FONT_VALUES = {
 }
 
 export default function FontToggle() {
-  const [font, setFont] = useState<"maru" | "gothic">("maru")
+  // localStorage から初期値を復元
+  const [font, setFont] = useState<"maru" | "gothic">(() => {
+    if (typeof window === "undefined") return "maru"
+    const saved = localStorage.getItem("jimitas_font")
+    return saved === "gothic" ? "gothic" : "maru"
+  })
   const { play } = useSound()
 
-  // マウント時：localStorage から設定を読んで body に直接反映
+  // font の変更を body のインラインスタイルに反映
   useEffect(() => {
-    const saved = localStorage.getItem("jimitas_font")
-    const f: "maru" | "gothic" = saved === "gothic" ? "gothic" : "maru"
-    setFont(f)
-    // body のインラインスタイルに直接セット（最優先で効く）
-    document.body.style.fontFamily = FONT_VALUES[f]
-  }, [])
+    document.body.style.fontFamily = FONT_VALUES[font]
+  }, [font])
 
   const toggle = () => {
     play(UI_SOUNDS.fontToggle)

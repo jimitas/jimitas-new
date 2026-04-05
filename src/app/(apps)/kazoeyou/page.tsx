@@ -40,7 +40,7 @@ const ANIMALS = ["apple", "banana", "cat", "monkey", "frog", "dog"]
 export default function KazoeyouPage() {
   // ── 状態管理 ─────────────────────────────────────
   const [flag, setFlag]         = useState<boolean>(false)  // 回答受付フラグ
-  const [maxValue, setMaxValue] = useState<number>(5)       // セレクトで選んだ上限値
+  const [, setMaxValue] = useState<number>(5)                // セレクトで選んだ上限値
   const [answer, setAnswer]     = useState<number>(0)       // 正解の枚数
   const [animalSrc, setAnimalSrc] = useState<string>("")    // 表示する動物ファイル名
   const [displayCount, setDisplayCount] = useState<number>(0) // 表示する枚数

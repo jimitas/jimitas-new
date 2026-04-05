@@ -58,7 +58,6 @@ export function useCategoryAudio(audioFiles: string[]) {
   // ⚠️ 重要: 呼び出し側では必ず useMemo で配列を安定化すること。
   //    useMemo なしだと毎レンダーで新しい配列参照が生まれ、
   //    Howl の破棄→再ロードが無限ループする。
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [audioFiles])
 
   // 指定インデックスの音声を再生（先頭から再生）

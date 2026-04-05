@@ -264,7 +264,7 @@ export default function ClassroomTimerPage() {
       const h = handlersRef.current
       if (e.code === "Space") {
         e.preventDefault()
-        phaseRef.current === "running" ? h.handlePause() : h.handleStart()
+        if (phaseRef.current === "running") { h.handlePause() } else { h.handleStart() }
       }
       if (e.code === "Escape") h.handleStop()
       if (e.key === "r" || e.key === "R") h.handleReset()

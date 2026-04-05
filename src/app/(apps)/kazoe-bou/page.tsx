@@ -403,7 +403,6 @@ export default function KazoeBouPage() {
   useEffect(() => {
     refillStock();
     showMsg(MODE_DESC[mode], 3000);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode, refillStock]);
 
   // ── DnD ──────────────────────────────────────────

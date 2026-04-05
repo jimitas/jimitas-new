@@ -16,7 +16,7 @@
 
 "use client"
 
-import { useState, useRef, useEffect, useCallback } from "react"
+import { useState, useRef, useCallback } from "react"
 import * as se from "@/lib/se"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"
 import { BtnStart } from "@/components/parts/buttons/BtnStart"
@@ -140,7 +140,7 @@ export default function HikuRenshuPage() {
     if (el_text.current) {
       el_text.current.innerHTML = `${left}　－　${right}　＝`
     }
-  }, [selectIndex])  // isRunningRef は ref なので deps に含めない
+  }, [selectIndex, isRunningRef])
 
   // ── ゲーム開始処理 ────────────────────────────────
   const handleStart = useCallback(() => {

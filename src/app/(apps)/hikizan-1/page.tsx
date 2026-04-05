@@ -21,7 +21,7 @@
 
 "use client"
 
-import { useState, useRef, useEffect } from "react"
+import { useState, useRef } from "react"
 import * as se from "@/lib/se"
 import { BlockArea } from "@/components/parts/block/BlockArea"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"

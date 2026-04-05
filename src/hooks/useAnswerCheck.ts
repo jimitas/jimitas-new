@@ -1,5 +1,6 @@
 "use client"
 
+/* eslint-disable react-hooks/immutability -- el_text・hasAnsweredRef は外部 ref で意図的に書き換える */
 import { useCallback } from "react"
 import * as se from "@/lib/se"
 
@@ -80,8 +81,6 @@ export function useAnswerCheck({
         }
       }
     },
-    // addCoins・getPrevText・el_text は安定しているが lint のため記載
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     [addCoins, hasAnsweredRef, getPrevText, el_text, correctText, onCorrect, onWrongRestore]
   )
 

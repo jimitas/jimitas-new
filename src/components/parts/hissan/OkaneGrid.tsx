@@ -169,7 +169,7 @@ export function OkaneGrid({
   // DnD useEffect（マウント時1回）の内部から最新コールバックを呼ぶための ref
   const actionsRef = useRef({
     initGrid: () => {},
-    postDrop: (_coin: HTMLImageElement, _cell: HTMLElement) => {},
+    postDrop: (_coin: HTMLImageElement, _cell: HTMLElement) => { void _coin; void _cell },
   })
 
   // actionsRef を最新の props/state で更新（useLayoutEffect で毎レンダー）
@@ -295,7 +295,7 @@ export function OkaneGrid({
   // ── initGrid 実行（問題変更時） ──────────────────
   useEffect(() => {
     actionsRef.current.initGrid()
-  }, [resetKey, num1, num2])  // eslint-disable-line react-hooks/exhaustive-deps
+  }, [resetKey, num1, num2])
 
   // ── DnD セットアップ（マウント時1回） ────────────
   useEffect(() => {

@@ -14,7 +14,7 @@
 
 "use client";
 
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useCallback, useRef } from "react";
 import * as se from "@/lib/se";
 import { useCoins } from "@/hooks/useCoins";
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay";
@@ -134,16 +134,16 @@ export default function RomajiPage() {
   // 同じ問題で2回目以降の正解にはコインを与えない
   const hasAnsweredRef = useRef(false);
 
-  // ── 正解チェック（myAnswer が変わるたびに実行） ────
-  useEffect(() => {
-    if (!flag || currentIdx === null || myAnswer === "") return;
+  // ── 正解チェック（イベントハンドラーから呼ぶ） ──────
+  const checkCorrect = useCallback((answer: string) => {
+    if (!flag || currentIdx === null || answer === "") return;
 
     const d = DATA[currentIdx];
     const answers = [d.ans_1, d.ans_2, d.ans_3, d.ans_4]
       .filter(Boolean)
       .map(normalize);
 
-    if (answers.includes(normalize(myAnswer))) {
+    if (answers.includes(normalize(answer))) {
       setFlag(false);
       setIsSeikai(true);
       if (!hasAnsweredRef.current) {
@@ -152,7 +152,7 @@ export default function RomajiPage() {
       }
       se.playSe(se.seikai1);
     }
-  }, [myAnswer, flag, currentIdx, addCoins]);
+  }, [flag, currentIdx, addCoins]);
 
   // ── 問題を出す ──────────────────────────────────────
   const handleQuestion = useCallback(() => {
@@ -175,14 +175,17 @@ export default function RomajiPage() {
     const d = DATA[currentIdx];
     const answers = [d.ans_1, d.ans_2, d.ans_3, d.ans_4].filter(Boolean).join(",");
     setMyAnswer(answers);
-  }, [flag, currentIdx]);
+    checkCorrect(answers);
+  }, [flag, currentIdx, checkCorrect]);
 
   // ── 1つ消す ───────────────────────────────────────
   const handleDelete = useCallback(() => {
     if (!flag || myAnswer.length === 0) return;
     se.playSe(se.move1);
-    setMyAnswer((prev) => prev.slice(0, -1));
-  }, [flag, myAnswer]);
+    const next = myAnswer.slice(0, -1);
+    setMyAnswer(next);
+    checkCorrect(next);
+  }, [flag, myAnswer, checkCorrect]);
 
   // ── 全部消す ──────────────────────────────────────
   const handleClear = useCallback(() => {
@@ -201,8 +204,10 @@ export default function RomajiPage() {
   const handleKey = useCallback((letter: string) => {
     if (!flag) return;
     se.playSe(se.pi);
-    setMyAnswer((prev) => prev + letter);
-  }, [flag]);
+    const next = myAnswer + letter;
+    setMyAnswer(next);
+    checkCorrect(next);
+  }, [flag, myAnswer, checkCorrect]);
 
   // ── モード変更 ────────────────────────────────────
   const handleMode = (m: 1 | 2 | 3) => {

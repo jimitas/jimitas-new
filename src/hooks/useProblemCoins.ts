@@ -24,7 +24,7 @@
 
 "use client"
 
-import { useRef } from "react"
+import { useRef, useLayoutEffect } from "react"
 import { useCoins } from "./useCoins"
 
 export function useProblemCoins() {
@@ -32,7 +32,7 @@ export function useProblemCoins() {
 
   // addCoins は毎レンダーで再生成されるため ref 経由で参照する
   const addCoinsRef = useRef(addCoins)
-  addCoinsRef.current = addCoins
+  useLayoutEffect(() => { addCoinsRef.current = addCoins })
 
   // 現在の問題で正解済みかどうか
   const isAnswered = useRef(false)

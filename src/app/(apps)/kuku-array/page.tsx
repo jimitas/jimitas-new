@@ -16,7 +16,6 @@
 
 import { Fragment, useState } from "react"
 import * as se from "@/lib/se"
-import { ArrayDots } from "@/components/parts/displays/ArrayDots"
 
 // ── ページ本体 ────────────────────────────────────────────
 export default function KukuArrayPage() {

@@ -17,15 +17,16 @@ import { Howler } from "howler"
 const STORAGE_KEY = "jimitas_mute"
 
 export function useMute() {
-  const [isMuted, setIsMuted] = useState(false)
+  // localStorage から初期値を復元
+  const [isMuted, setIsMuted] = useState(() => {
+    if (typeof window === "undefined") return false
+    return localStorage.getItem(STORAGE_KEY) === "true"
+  })
 
-  // マウント時に localStorage から設定を復元し、howler.js にも反映する
-  // Howler.mute(true) にすることで、.play() を直接呼ばれても音が出なくなる
+  // howler.js のミュート状態を同期
   useEffect(() => {
-    const muted = localStorage.getItem(STORAGE_KEY) === "true"
-    setIsMuted(muted)
-    Howler.mute(muted)
-  }, [])
+    Howler.mute(isMuted)
+  }, [isMuted])
 
   // ミュートを切り替えて localStorage と howler.js の両方に保存
   const toggleMute = () => {

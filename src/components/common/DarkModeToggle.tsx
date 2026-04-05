@@ -14,20 +14,16 @@
 
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useSound, UI_SOUNDS } from "@/hooks/useSound"
 
 export default function DarkModeToggle() {
-  // ダークモードかどうかを状態として持つ
-  const [isDark, setIsDark] = useState(false)
+  // ダークモードかどうかを状態として持つ（localStorage から初期値を復元）
+  const [isDark, setIsDark] = useState(() => {
+    if (typeof window === "undefined") return false
+    return localStorage.getItem("jimitas_dark") === "true"
+  })
   const { play } = useSound()
-
-  // ページ読み込み時に localStorage から設定を復元
-  // （テーマスクリプトが html に適用済みなので、状態と同期させる）
-  useEffect(() => {
-    const saved = localStorage.getItem("jimitas_dark")
-    setIsDark(saved === "true")
-  }, [])
 
   // ダークモードを切り替える
   const toggle = () => {

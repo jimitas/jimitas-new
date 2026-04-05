@@ -112,26 +112,25 @@ export default function RecorderPlayPage() {
   const [holesDisplay, setHolesDisplay] = useState<number[]>(new Array(11).fill(0))
   const currentSoundRef = useRef(0)  // 現在鳴らしている soundIndex
 
-  // 穴の位置・サイズ（デフォルトで初期化 → useEffect で localStorage から上書き）
-  const [positions, setPositions] = useState<SavedPos[]>(getDefaultPositions)
-  useEffect(() => {
+  // 穴の位置・サイズ（localStorage から復元、なければデフォルト）
+  const [positions, setPositions] = useState<SavedPos[]>(() => {
+    if (typeof window === "undefined") return getDefaultPositions()
     try {
       const saved = localStorage.getItem(LS_KEY)
       if (saved) {
         const parsed: SavedPos[] = JSON.parse(saved)
-        if (Array.isArray(parsed) && parsed.length === 11) setPositions(parsed)
+        if (Array.isArray(parsed) && parsed.length === 11) return parsed
       }
     } catch {}
-  }, [])
+    return getDefaultPositions()
+  })
 
   // 移動モード・選択中の穴
   const [isMoveMode, setIsMoveMode] = useState(false)
   const [selectedId, setSelectedId] = useState<number | null>(null)
+  // Moveable のターゲット要素（ref をレンダー中に読まないよう state で管理）
+  const [moveTarget, setMoveTarget] = useState<HTMLDivElement | null>(null)
 
-  // 移動モードを切ったとき選択を解除
-  useEffect(() => {
-    if (!isMoveMode) setSelectedId(null)
-  }, [isMoveMode])
 
   // 各穴の DOM ref（Moveable のターゲット指定用）
   const holeRefs = useRef<(HTMLDivElement | null)[]>(new Array(11).fill(null))
@@ -188,6 +187,7 @@ export default function RecorderPlayPage() {
     setPositions(defaults)
     savePositions(defaults)
     setSelectedId(null)
+    setMoveTarget(null)
   }, [])
 
   return (
@@ -222,7 +222,11 @@ export default function RecorderPlayPage() {
             type="checkbox"
             className="w-5 h-5 accent-amber-700"
             checked={isMoveMode}
-            onChange={e => setIsMoveMode(e.target.checked)}
+            onChange={e => {
+              const next = e.target.checked
+              setIsMoveMode(next)
+              if (!next) { setSelectedId(null); setMoveTarget(null) }
+            }}
           />
           <span>✋ 穴を移動・リサイズする</span>
         </label>
@@ -260,7 +264,7 @@ export default function RecorderPlayPage() {
           style={{ width: "840px", height: "620px" }}
           // コンテナ背景クリックで選択解除
           onClick={e => {
-            if (e.target === e.currentTarget && isMoveMode) setSelectedId(null)
+            if (e.target === e.currentTarget && isMoveMode) { setSelectedId(null); setMoveTarget(null) }
           }}
         >
           {DEFAULT_HOLES.map(hole => {
@@ -289,6 +293,7 @@ export default function RecorderPlayPage() {
                   if (isMoveMode) {
                     // 移動モード: タップで選択するだけ（音を鳴らさない）
                     setSelectedId(hole.id)
+                    setMoveTarget(holeRefs.current[hole.id])
                     return
                   }
                   // 演奏モード: pointer capture で指が穴外に出ても pointerup を受け取る
@@ -302,10 +307,10 @@ export default function RecorderPlayPage() {
           })}
 
           {/* Moveable: 選択中の穴にのみアタッチ（key でホール切り替え時に再マウント） */}
-          {isMoveMode && selectedId !== null && holeRefs.current[selectedId] && (
+          {isMoveMode && selectedId !== null && moveTarget && (
             <Moveable
               key={selectedId}
-              target={holeRefs.current[selectedId]}
+              target={moveTarget}
               draggable={true}
               resizable={true}
               keepRatio={false}
