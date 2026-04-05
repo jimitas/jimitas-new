@@ -245,16 +245,14 @@ export default function SuuzuBlockPage() {
   // ── レンダリング ────────────────────────────────────
 
   return (
-    <div className="min-h-screen flex flex-col bg-white dark:bg-gray-900">
+    <div className="max-w-5xl mx-auto px-4 py-6">
 
       {/* ===== ページタイトル ===== */}
-      <header className="text-center mt-4 md:mt-6">
-        <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100">
-          ぶろっく
-        </h1>
-      </header>
+      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-4">
+        🧱 ぶろっく
+      </h1>
 
-      <main className="flex-grow mt-4">
+      <main>
 
         {/* ===== 起動時トースト（使い方説明） ===== */}
         {showToast && (

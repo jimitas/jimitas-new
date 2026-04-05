@@ -13,16 +13,21 @@
    ====================================================== */
 
 /* ── テーブル全体コンテナ ──────────────────── */
+/* max-w-5xl (1024px) の親で使われるため、vw ではなく
+   十分な固定上限で確保する。
+   テーブル1つ = 5列×max60px + border ≈ 310px、2つで ≈ 630px < 700px */
 .tableWrap {
   display: flex;
   justify-content: center;
-  width: max(44vw, 440px);
+  width: clamp(440px, 70%, 700px);
   flex-wrap: wrap;
 }
 
+/* min-width: 45% で1行に最大2テーブルまでに制限し、常に2×2を維持 */
 .tableWrap table {
   margin: 2px;
   margin-bottom: 5px;
+  min-width: 45%;
 }
 
 /* 左上テーブル（オレンジ枠） */
@@ -38,25 +43,27 @@
 }
 
 /* ── セル（Tailwind preflight 対策で !important） ── */
+/* Block.module.css と同じ基準値（最小40px）に統一、上限60pxで肥大化防止 */
 .tableWrap td {
-  width: max(4vw, 35px) !important;
-  max-width: max(4vw, 35px) !important;
-  min-width: max(4vw, 35px) !important;
-  height: max(4vw, 35px) !important;
-  min-height: max(4vw, 35px) !important;
-  max-height: max(4vw, 35px) !important;
+  width: clamp(40px, 4vw, 60px) !important;
+  max-width: clamp(40px, 4vw, 60px) !important;
+  min-width: clamp(40px, 4vw, 60px) !important;
+  height: clamp(40px, 4vw, 60px) !important;
+  min-height: clamp(40px, 4vw, 60px) !important;
+  max-height: clamp(40px, 4vw, 60px) !important;
   border: 1px solid;
   border-collapse: collapse;
 }
 
 /* ── ブロック本体（丸い div） ──────────────── */
+/* Block.module.css と同じ基準値（最小32px）に統一、上限50pxで肥大化防止 */
 .tableWrap div {
-  width: max(3.2vw, 31px);
-  min-width: max(3.2vw, 31px);
-  max-width: max(3.2vw, 31px);
-  height: max(3.2vw, 31px);
-  min-height: max(3.2vw, 31px);
-  max-height: max(3.2vw, 31px);
+  width: clamp(32px, 3.2vw, 50px);
+  min-width: clamp(32px, 3.2vw, 50px);
+  max-width: clamp(32px, 3.2vw, 50px);
+  height: clamp(32px, 3.2vw, 50px);
+  min-height: clamp(32px, 3.2vw, 50px);
+  max-height: clamp(32px, 3.2vw, 50px);
   margin: auto;
   box-shadow: 2px 2px 2px 0 rgba(128, 128, 128, 0.8);
   border: 1px solid;
