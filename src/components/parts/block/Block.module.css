@@ -12,14 +12,26 @@
    ====================================================== */
 
 /* ==============================
+   ラッパー（DnDイベント親）
+   ============================== */
+/* 幅の基準をここで一括管理する。
+   子要素（upperArea / separator / woodBox）は 100% で受け取る。
+   +32px は woodBox の border(4px×2) + padding(12px×2) 分。 */
+.blockWrapper {
+  width: calc(clamp(440px, 70%, 700px) + 32px);
+}
+
+/* blockWrapper 直下では 70% を二重に掛けない（100% で受ける） */
+
+/* ==============================
    上エリア：ならべるところ
    ============================== */
-/* 70% = 親(max-w-5xl)の幅基準で伸縮、上限 700px で 2列維持 */
+/* blockWrapper の幅を 100% 引き継ぐ */
 .upperArea {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  width: calc(clamp(440px, 70%, 700px) + 32px);
+  width: 100%;
   margin-bottom: 6px;
 }
 
@@ -46,7 +58,7 @@
    仕切りラベル
    ============================== */
 .separator {
-  width: calc(clamp(440px, 70%, 700px) + 32px);
+  width: 100%;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -69,7 +81,7 @@
    ============================== */
 .woodBox {
   box-sizing: content-box;
-  width: clamp(440px, 70%, 700px);
+  width: calc(100% - 32px);
   background: linear-gradient(160deg, #d4956a 0%, #b07040 55%, #c88050 100%);
   border: 4px solid #7a4a1e;
   border-radius: 8px;
@@ -86,10 +98,11 @@
   flex-wrap: wrap;
 }
 
-/* lowerGrid は木箱内に収まるため min-width 不要（upperArea のみ制限） */
+/* min-width: 45% で木箱内でも2テーブル横並びを維持 */
 .lowerGrid table {
   margin: 2px;
   margin-bottom: 5px;
+  min-width: 45%;
   border: 2px solid rgba(0, 0, 0, 0.3);
   background-color: rgba(255, 255, 255, 0.55);
 }

@@ -176,6 +176,7 @@ export function Block(props: BlockProps) {
 
       {/* ブロックエリア全体（React のDnDイベントも親に設定する） */}
       <div
+        className={styles.blockWrapper}
         onDragStart={(e) => dragStart(e.nativeEvent)}
         onDragOver={(e) => dragOver(e.nativeEvent)}
         onDrop={(e) => dropEnd(e.nativeEvent)}

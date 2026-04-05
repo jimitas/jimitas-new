@@ -76,21 +76,17 @@ export default function Hikizan1Page() {
     onWrongRestore: () => setHasProblem(true),
   })
 
-  // ── 難易度変更時の初期化 ──────────────────────────
-  useEffect(() => {
+  // ── イベントハンドラー ────────────────────────────
+
+  // 難易度を選択する（選択時に状態を初期化する）
+  const changeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    se.playSe(se.reset)
+    setSelectIndex(e.target.selectedIndex)
     setHasProblem(false)
     setLeftValue(0)
     if (el_left_input.current)  el_left_input.current.value  = ""
     if (el_right_input.current) el_right_input.current.value = ""
     if (el_text.current)        el_text.current.innerHTML    = "もんだい　または　セット"
-  }, [selectIndex])
-
-  // ── イベントハンドラー ────────────────────────────
-
-  // 難易度を選択する
-  const changeSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    se.playSe(se.reset)
-    setSelectIndex(e.target.selectedIndex)
   }
 
   // 「もんだい」ボタン：難易度に応じてランダムな問題を生成する

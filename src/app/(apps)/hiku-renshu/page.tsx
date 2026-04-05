@@ -152,20 +152,16 @@ export default function HikuRenshuPage() {
     start()
   }, [isRunning, start])
 
-  // ── 難易度変更 ────────────────────────────────────
+  // ── 難易度変更（選択時に表示もリセットする） ──────
   const changeSelect = useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
     stop()
     setSelectIndex(e.target.selectedIndex)
-  }, [stop])
-
-  // 難易度変更時に表示をリセット
-  useEffect(() => {
     if (el_text.current) {
       el_text.current.style.backgroundColor = "#e5e7eb"
       el_text.current.innerHTML = "スタートをおしてね"
     }
     reset()
-  }, [selectIndex, reset])
+  }, [stop, reset])
 
   // ── 回答チェック ──────────────────────────────────
   const checkAnswer = (myAnswer: number) => {
