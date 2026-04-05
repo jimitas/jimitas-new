@@ -7,31 +7,19 @@
    特に table/td の min-height は Tailwind preflight が
    打ち消してしまうため、ここで明示的に指定する。
 
-   親コンテナ: max-w-5xl (1024px) 内で使用される前提。
+   幅は vw（ビューポート基準）で指定し、親要素の幅に依存しない。
    BlockArea.module.css と同じ基準値で統一。
    ====================================================== */
 
 /* ==============================
-   ラッパー（DnDイベント親）
-   ============================== */
-/* 幅の基準をここで一括管理する。
-   子要素（upperArea / separator / woodBox）は 100% で受け取る。
-   +32px は woodBox の border(4px×2) + padding(12px×2) 分。 */
-.blockWrapper {
-  width: calc(clamp(440px, 70%, 700px) + 32px);
-}
-
-/* blockWrapper 直下では 70% を二重に掛けない（100% で受ける） */
-
-/* ==============================
    上エリア：ならべるところ
    ============================== */
-/* blockWrapper の幅を 100% 引き継ぐ */
+/* 44vw でビューポートに比例、上限 1400px で大画面での肥大化を防止 */
 .upperArea {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  width: 100%;
+  width: calc(clamp(440px, 44vw, 1400px) + 32px);
   margin-bottom: 6px;
 }
 
@@ -58,7 +46,7 @@
    仕切りラベル
    ============================== */
 .separator {
-  width: 100%;
+  width: calc(clamp(440px, 44vw, 1400px) + 32px);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -81,7 +69,7 @@
    ============================== */
 .woodBox {
   box-sizing: content-box;
-  width: calc(100% - 32px);
+  width: clamp(440px, 44vw, 1400px);
   background: linear-gradient(160deg, #d4956a 0%, #b07040 55%, #c88050 100%);
   border: 4px solid #7a4a1e;
   border-radius: 8px;
@@ -109,34 +97,32 @@
 
 /* ==============================
    共通：td のサイズ
-
-   BlockArea.module.css と同じ基準値。
-   セル上限 60px: テーブル1つ = 5×60 + border ≈ 310px、2つで ≈ 630px < 700px
+   上限 120px（旧60px の2倍）で大画面でもゆったり表示
    ============================== */
 .upperArea td,
 .lowerGrid td {
-  width: clamp(40px, 4vw, 60px);
-  min-width: clamp(40px, 4vw, 60px);
-  max-width: clamp(40px, 4vw, 60px);
-  height: clamp(40px, 4vw, 60px) !important;
-  min-height: clamp(40px, 4vw, 60px) !important;
-  max-height: clamp(40px, 4vw, 60px) !important;
+  width: clamp(40px, 4vw, 120px);
+  min-width: clamp(40px, 4vw, 120px);
+  max-width: clamp(40px, 4vw, 120px);
+  height: clamp(40px, 4vw, 120px) !important;
+  min-height: clamp(40px, 4vw, 120px) !important;
+  max-height: clamp(40px, 4vw, 120px) !important;
   border: 1px solid rgba(0, 0, 0, 0.3);
   border-collapse: collapse;
 }
 
 /* ==============================
    共通：ブロック（丸い色付き div）
-   BlockArea.module.css と同じ基準値。
+   上限 100px（旧50px の2倍）
    ============================== */
 .upperArea div,
 .lowerGrid div {
-  width: clamp(32px, 3.2vw, 50px);
-  min-width: clamp(32px, 3.2vw, 50px);
-  max-width: clamp(32px, 3.2vw, 50px);
-  height: clamp(32px, 3.2vw, 50px);
-  min-height: clamp(32px, 3.2vw, 50px);
-  max-height: clamp(32px, 3.2vw, 50px);
+  width: clamp(32px, 3.2vw, 100px);
+  min-width: clamp(32px, 3.2vw, 100px);
+  max-width: clamp(32px, 3.2vw, 100px);
+  height: clamp(32px, 3.2vw, 100px);
+  min-height: clamp(32px, 3.2vw, 100px);
+  max-height: clamp(32px, 3.2vw, 100px);
   margin: auto;
   box-shadow: 2px 2px 2px 0 rgba(128, 128, 128, 0.8);
   border: 1px solid;
