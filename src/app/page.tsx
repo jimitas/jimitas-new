@@ -45,48 +45,67 @@ type SectionDef = {
   order?: string[]
 }
 
+// 学年セクションに表示する教科（算数＋国語のみ）
+const GRADE_SUBJECTS = ["算数", "国語"]
+
 const SECTIONS: SectionDef[] = [
   // 学年別（1〜6年）
-  // type !== "print" で教材作成系アプリを学年セクションから除外する
-  // （教材作成アプリは下の「📄 教材作成」セクションにのみ表示する）
+  // 算数・国語のみ表示し、print は「📄 教材作成」セクションに分離する
   {
     id: "grade-1",
     title: "１ねんせい",
-    filter: (app) => app.grades.includes(1 as Grade) && app.type !== "print",
+    filter: (app) => app.grades.includes(1 as Grade) && app.type !== "print"
+      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
     order: [
       "suuzu-block", "kazoeyou", "ikutu",
       "tashizan-1", "tasu-renshu", "nanbanme",
       "hikizan-1", "hiku-renshu", "tokei",
       "kazoe-bou", "okane", "katakana",
-      "masu-nuri", "kenban", "classroom-english",
+      "sansu-note",
     ],
   },
   {
     id: "grade-2",
     title: "２年生",
-    filter: (app) => app.grades.includes(2 as Grade) && app.type !== "print",
+    filter: (app) => app.grades.includes(2 as Grade) && app.type !== "print"
+      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
     order: [
       "tokei", "kazoe-bou", "okane",
       "tashi-hissan", "hiki-hissan", "kuku-array",
-      "kuku-yomi", "kenban", "classroom-english",
+      "kuku-yomi", "sansu-note",
     ],
   },
   {
     id: "grade-3",
     title: "３年生",
-    filter: (app) => app.grades.includes(3 as Grade) && app.type !== "print",
+    filter: (app) => app.grades.includes(3 as Grade) && app.type !== "print"
+      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
     order: [
-      "tashi-hissan", "hiki-hissan", "warizan",
-      "warizan2", "romaji", "kake-hissan-1",
-      "kake-hissan2", "recorder", "mokkin",
-      "tekkin", "classroom-english", "gakuten",
+      "tashi-hissan", "hiki-hissan", "kuku-array",
+      "kuku-yomi", "kake-hissan-1", "warizan",
+      "warizan2", "kake-hissan2", "romaji",
     ],
   },
-  { id: "grade-4", title: "４年生", filter: (app) => app.grades.includes(4 as Grade) && app.type !== "print" },
-  { id: "grade-5", title: "５年生", filter: (app) => app.grades.includes(5 as Grade) && app.type !== "print" },
-  { id: "grade-6", title: "６年生", filter: (app) => app.grades.includes(6 as Grade) && app.type !== "print" },
+  {
+    id: "grade-4",
+    title: "４年生",
+    filter: (app) => app.grades.includes(4 as Grade) && app.type !== "print"
+      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+  },
+  {
+    id: "grade-5",
+    title: "５年生",
+    filter: (app) => app.grades.includes(5 as Grade) && app.type !== "print"
+      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+  },
+  {
+    id: "grade-6",
+    title: "６年生",
+    filter: (app) => app.grades.includes(6 as Grade) && app.type !== "print"
+      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+  },
 
-  // 音楽・体育・その他：教科系アプリ＋先生向けツール＋その他をまとめる
+  // 音楽・体育・その他：算数・国語以外の教科＋先生向けツール＋その他をまとめる
   {
     id: "tools",
     title: "🎵 音楽・体育・その他",
