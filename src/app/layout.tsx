@@ -12,6 +12,7 @@
 
 import type { Metadata, Viewport } from "next"
 import { Noto_Sans_JP, M_PLUS_1p } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
@@ -106,7 +107,7 @@ export default function RootLayout({
     >
       <head>
         {/* ダークモード・フォントの初期化（チラつき防止のため同期実行） */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
 
         {/* Font Awesome（アイコン用）CDNから読み込む */}
         <link

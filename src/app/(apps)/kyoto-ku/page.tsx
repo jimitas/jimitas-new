@@ -17,7 +17,7 @@
 
 "use client"
 
-import { useState, useRef, useCallback, useLayoutEffect } from "react"
+import { useState, useRef, useCallback, useLayoutEffect, useEffect } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
@@ -57,14 +57,21 @@ export default function KyotoKuPage() {
     () => Array(WARDS.length).fill(null)
   )
   // 右パネルのカード順（シャッフル済み wardId の配列）
-  const [cardOrder, setCardOrder] = useState<number[]>(() => {
-    const ids = WARDS.map((_, i) => i)
-    for (let i = ids.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [ids[i], ids[j]] = [ids[j], ids[i]]
-    }
-    return ids
-  })
+  // ※ SSRとクライアントで Math.random() の結果が異なるため、
+  //   初期値は固定順にして、マウント後にシャッフルする（hydration mismatch 防止）
+  const [cardOrder, setCardOrder] = useState<number[]>(
+    () => WARDS.map((_, i) => i)
+  )
+  useEffect(() => {
+    setCardOrder(prev => {
+      const ids = [...prev]
+      for (let i = ids.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [ids[i], ids[j]] = [ids[j], ids[i]]
+      }
+      return ids
+    })
+  }, [])
   // 正解済みのゾーン（コイン重複防止用）
   const [locked, setLocked] = useState<boolean[]>(
     () => Array(WARDS.length).fill(false)
