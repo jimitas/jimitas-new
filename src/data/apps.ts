@@ -298,14 +298,24 @@ export const apps: AppItem[] = [
     path: "/romaji",
   },
   {
-    id: "kanpuri",
+    id: "kanji-test",
     title: "漢字テスト作成",
     description: "テキストエリアに問題を入力するだけで漢字テストが作れる。学年プリセット・シャッフル・ファイル保存対応",
     grades: [1, 2, 3, 4, 5, 6],
     subjects: ["国語"],
     tags: ["漢字", "テスト作成", "プリント", "先生向け", "教材作成"],
     type: "print",
-    path: "/kanpuri",
+    path: "/kanji-test",
+  },
+  {
+    id: "kanji-print",
+    title: "漢字プリント作成",
+    description: "漢字2文字を入力するだけで書き取り練習プリントが作れる。なぞり字・読み方・部首・熟語づくり付き",
+    grades: [1, 2, 3, 4, 5, 6],
+    subjects: ["国語"],
+    tags: ["漢字", "書き取り", "プリント", "先生向け", "教材作成"],
+    type: "print",
+    path: "/kanji-print",
   },
 
   // ============================================================

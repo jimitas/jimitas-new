@@ -170,7 +170,7 @@ input, textarea {
 }
 
 /* -------------------------------------------------------
-   漢字テスト作成（kanpuri）- 印刷レイアウト
+   漢字テスト作成（kanji-test）- 印刷レイアウト
    writing-mode: vertical-rl で A4 横向き縦書きプリントを実現する。
    スクリーン表示: transform: scale(0.5) で 50% 縮小プレビュー
    印刷時: position: fixed で body のフローから切り離してページを1枚に固定
@@ -178,22 +178,22 @@ input, textarea {
    【jimipri の手法を参考に】
    jimipri では .page { position: fixed } を使い body フローから切り離すことで
    body の min-h-screen が印刷ページ数に影響しないようにしている。
-   kanpuri でも同じ手法を採用する。
+   kanji-test でも同じ手法を採用する。
 
    @page はここ（<head> から読み込まれる CSS ファイル）に書くことで
    Chrome にも確実に適用される（<body> 内 <style> タグでは無視される場合がある）。
    ------------------------------------------------------- */
 
-/* A4 横向き・余白ゼロ（kanpuri の印刷時に適用）
-   ※ このファイルはグローバルに読み込まれるため全ページに影響するが、
-     現状 kanpuri 以外に印刷機能がないため許容する */
+/* @page はグローバルに1つしか書けないため、デフォルトは A4 余白ゼロのみ指定。
+   landscape / portrait の切替は各アプリの JSX <style> タグで上書きする。
+   ※ kanji-test は landscape、kanji-print は portrait */
 @page {
-  size: A4 landscape;
+  size: A4;
   margin: 0mm;
 }
 
 /* プレビューのコンテナ（スクリーンのみ: スケール後のサイズに合わせてクリップ） */
-.kanpuri-print-wrapper {
+.kanji-test-print-wrapper {
   position: relative;
   width: calc(297mm * 0.5);
   height: calc(210mm * 0.5);
@@ -201,7 +201,7 @@ input, textarea {
 }
 
 /* 印刷エリア本体 */
-.kanpuri-print-area {
+.kanji-test-print-area {
   position: absolute;
   top: 0;
   left: 0;
@@ -216,7 +216,7 @@ input, textarea {
 
 /* 印刷時 */
 @media print {
-  .kanpuri-no-print {
+  .kanji-test-no-print {
     display: none !important;
   }
   /*
@@ -224,13 +224,62 @@ input, textarea {
     body の min-h-screen がいくら大きくても fixed 要素は高さ計算に入らず
     2ページ目（白紙）が出なくなる。これが jimipri で機能していた手法。
   */
-  .kanpuri-print-area {
+  .kanji-test-print-area {
     position: fixed !important;
     top: 0 !important;
     left: 0 !important;
     width: 297mm !important;
     height: 210mm !important;
     transform: scale(1) !important;
+    box-shadow: none !important;
+  }
+}
+
+/* -------------------------------------------------------
+   漢字プリント作成（kanji-print）- 印刷レイアウト
+   writing-mode: vertical-rl で A4 縦向き縦書きプリントを実現する。
+   スクリーン表示: transform: scale(0.75) で 75% 縮小プレビュー
+   印刷時: position: fixed + CSS変数 --kp-print-scale で出力
+   ------------------------------------------------------- */
+
+/* プレビューのコンテナ（スクリーンのみ: スケール後のサイズに合わせてクリップ） */
+.kp-print-wrapper {
+  position: relative;
+  width: calc(210mm * 0.75);
+  height: calc(297mm * 0.75);
+  overflow: hidden;
+}
+
+/* 印刷エリア本体（A4 縦向き・縦書き） */
+.kp-print-area {
+  position: absolute;
+  top: 0;
+  left: 0;
+  -ms-writing-mode: tb-rl;
+  writing-mode: vertical-rl;
+  width: 210mm;
+  height: 297mm;
+  box-sizing: border-box;
+  transform-origin: 0 0;
+  transform: scale(0.75);
+  background: white;
+  border: dotted 0.5px #888;
+}
+
+/* 印刷時 */
+@media print {
+  .kp-no-print {
+    display: none !important;
+  }
+  .kp-print-area {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    transform-origin: 0 0 !important;
+    transform: scale(var(--kp-print-scale, 0.97)) !important;
+    border: none !important;
     box-shadow: none !important;
   }
 }

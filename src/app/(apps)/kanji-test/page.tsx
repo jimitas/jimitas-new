@@ -3,7 +3,7 @@
 // ======================================================
 // 漢字テスト作成 ページ
 //
-// URL: /kanpuri
+// URL: /kanji-test
 // 対象: 先生向け（1〜6年生の漢字テスト・プリント作成）
 //
 // 機能:
@@ -297,7 +297,9 @@ export default function KanpuriPage() {
 
   return (
     <>
-    <div className="kanpuri-outer min-h-screen bg-gray-50 dark:bg-gray-900">
+    {/* A4 横向き印刷を指定（globals.css のデフォルト @page を上書き） */}
+    <style>{`@page { size: A4 landscape; margin: 0mm; }`}</style>
+    <div className="kanji-test-outer min-h-screen bg-gray-50 dark:bg-gray-900">
 
       {/* ===== ページタイトル ===== */}
       <header className="text-center pt-4 pb-2">
@@ -307,10 +309,10 @@ export default function KanpuriPage() {
       </header>
 
       {/* ===== メインコンテンツ（左右2カラム） ===== */}
-      <main className="kanpuri-main flex gap-4 p-3 items-start">
+      <main className="kanji-test-main flex gap-4 p-3 items-start">
 
         {/* ========== 左パネル: コントロール（印刷時非表示） ========== */}
-        <div className="kanpuri-no-print flex flex-col gap-3" style={{ width: "360px", flexShrink: 0 }}>
+        <div className="kanji-test-no-print flex flex-col gap-3" style={{ width: "360px", flexShrink: 0 }}>
 
           {/* 学年プリセット */}
           <div className="bg-white dark:bg-gray-800 rounded-xl border-2 border-warm-400 p-3">
@@ -426,7 +428,7 @@ export default function KanpuriPage() {
         <div className="flex flex-col gap-3">
 
           {/* 設定パネル（印刷時非表示） */}
-          <div className="kanpuri-no-print bg-warm-50 dark:bg-gray-800 border border-warm-200
+          <div className="kanji-test-no-print bg-warm-50 dark:bg-gray-800 border border-warm-200
                           dark:border-gray-700 rounded-xl p-3 flex flex-col gap-2">
 
             {/* 問題数・フォントサイズ・段数 */}
@@ -534,21 +536,21 @@ export default function KanpuriPage() {
           </div>
 
           {/* プレビュー見出し（印刷時非表示） */}
-          <p className="kanpuri-no-print text-xs text-gray-500 dark:text-gray-400 mb-0">
+          <p className="kanji-test-no-print text-xs text-gray-500 dark:text-gray-400 mb-0">
             ↓ 印刷イメージ（実際の印刷は A4 横向きで出力されます）
           </p>
 
           {/* ========== 印刷エリア ========== */}
           {/*
-            kanpuri-print-wrapper: スクリーン表示用ラッパー（scale後のサイズにクリップ）
-            kanpuri-print-area:    writing-mode:vertical-rl のA4コンテンツ
+            kanji-test-print-wrapper: スクリーン表示用ラッパー（scale後のサイズにクリップ）
+            kanji-test-print-area:    writing-mode:vertical-rl のA4コンテンツ
             globals.css の @media print で:
               wrapper → position:static, 297mm×210mm
               area    → transform:scale(1)
           */}
-          <div className="kanpuri-print-wrapper">
+          <div className="kanji-test-print-wrapper">
             <div
-              className="kanpuri-print-area"
+              className="kanji-test-print-area"
               style={{ fontFamily: '"UD デジタル 教科書体 NK-R", "Noto Sans JP", sans-serif' }}
             >
 
