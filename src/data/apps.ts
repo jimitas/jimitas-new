@@ -226,17 +226,6 @@ export const apps: AppItem[] = [
     disabled: true,
   },
   {
-    id: "wari-hissan",
-    title: "わり算の筆算",
-    description: "6段階の難易度でわり算の筆算に挑戦しよう。ヒント機能あり",
-    grades: [4],
-    subjects: ["算数"],
-    tags: ["計算", "筆算", "わり算", "難易度選択", "コイン獲得"],
-    type: "app",
-    path: "/wari-hissan",
-    disabled: true,
-  },
-  {
     id: "shishagonyu",
     title: "四捨五入の練習",
     description: "位の数字を見ながら四捨五入の練習をしよう。テンキーで答えを入力。ヒントで判定する桁を確認できる",
