@@ -297,3 +297,26 @@ input, textarea {
     transparent calc(50% + 1px)
   );
 }
+
+/* -------------------------------------------------------
+   わり算の筆算: 小数点の移動を示す斜線
+   小数÷小数で除数の小数点を消す操作に使う
+   ------------------------------------------------------- */
+.decimal-crossed {
+  position: relative;
+}
+.decimal-crossed::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-image: linear-gradient(
+    to right top,
+    transparent calc(50% - 1px),
+    red 50%,
+    red calc(50% + 1px),
+    transparent calc(50% + 2px)
+  );
+}

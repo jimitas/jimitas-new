@@ -194,6 +194,16 @@ export const apps: AppItem[] = [
     path: "/kake-hissan2",
   },
   {
+    id: "wari-hissan",
+    title: "わり算の筆算（小数対応）",
+    description: "整数・小数のわり算筆算に挑戦しよう。14段階モードでステップアップ",
+    grades: [4, 5],
+    subjects: ["算数"],
+    tags: ["計算", "筆算", "わり算", "小数", "コイン獲得"],
+    type: "app",
+    path: "/wari-hissan",
+  },
+  {
     id: "warizan",
     title: "わり算の考え方①",
     description: "クッキーを等しく分けるイメージで、わり算の意味を学ぼう",
