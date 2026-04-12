@@ -1,7 +1,18 @@
-import { getAppMetadata } from "@/lib/seo"
+import { getAppMetadata, getAppJsonLd } from "@/lib/seo"
 
 export const metadata = getAppMetadata("barnsley-fern")
 
 export default function Layout({ children }: { children: React.ReactNode }) {
-  return children
+  const jsonLd = getAppJsonLd("barnsley-fern")
+  return (
+    <>
+      {jsonLd && (
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
+      {children}
+    </>
+  )
 }
