@@ -35,13 +35,14 @@ function readCoins(): number {
 }
 
 export function useCoins() {
-  // コイン数を状態として管理する（localStorage から初期値を復元）
-  const [coins, setCoins] = useState<number>(() => {
-    if (typeof window === "undefined") return 0
-    return readCoins()
-  })
+  // コイン数を状態として管理する
+  // SSR と一致させるため初期値は 0、マウント後に localStorage から復元する
+  const [coins, setCoins] = useState<number>(0)
 
   useEffect(() => {
+    // マウント時に localStorage から復元
+    setCoins(readCoins())
+
     // 同タブ内での変更を受け取る（アプリ→ヘッダーの同期）
     const handleCoinsChanged = () => setCoins(readCoins())
 

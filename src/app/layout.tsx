@@ -12,7 +12,7 @@
 
 import type { Metadata, Viewport } from "next"
 import { Noto_Sans_JP, M_PLUS_1p } from "next/font/google"
-import Script from "next/script"
+// Script は不要（テーマ初期化は生の <script> タグで実行）
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
@@ -83,9 +83,18 @@ export const viewport: Viewport = {
 // メタデータ（ブラウザのタブや検索結果に使われる）
 // -------------------------------------------------------
 export const metadata: Metadata = {
-  title: "Jimitas（ジミタス）| 地味に助かる学習コンテンツ",
+  title: {
+    default: "Jimitas（ジミタス）| 地味に助かる学習コンテンツ",
+    template: "%s | Jimitas",  // 子ページで title を設定すると「○○ | Jimitas」になる
+  },
   description:
     "先生・子ども・保護者のための学習アプリポータル。算数・国語・音楽・社会など36種類のアプリが無料で使えます。",
+  metadataBase: new URL("https://jimitas.com"),
+  openGraph: {
+    siteName: "Jimitas（ジミタス）",
+    type: "website",
+    locale: "ja_JP",
+  },
 }
 
 export default function RootLayout({
@@ -107,7 +116,8 @@ export default function RootLayout({
     >
       <head>
         {/* ダークモード・フォントの初期化（チラつき防止のため同期実行） */}
-        <Script id="theme-init" strategy="beforeInteractive" dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        {/* React 19 では src 付き script を使う（インラインは警告が出る） */}
+        <script src="/theme-init.js" />
 
         {/* Font Awesome（アイコン用）CDNから読み込む */}
         <link
