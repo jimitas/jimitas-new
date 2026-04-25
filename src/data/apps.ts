@@ -259,7 +259,6 @@ export const apps: AppItem[] = [
     tags: ["プリント", "教材作成"],
     type: "print",
     path: "/jimipri",
-    disabled: true,
   },
   {
     id: "kuku-hyo",
