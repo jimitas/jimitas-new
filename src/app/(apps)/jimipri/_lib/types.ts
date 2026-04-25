@@ -43,7 +43,7 @@ export type PrintDef = {
   /** 問題生成関数 */
   generate: ProblemGenerator
   /** 表示タイプ */
-  displayType: "oneLine" | "threeLine" | "column" | "custom"
+  displayType: "oneLine" | "threeLine" | "column" | "division" | "decimalColumn" | "custom"
 }
 
 /** 学年グループ */

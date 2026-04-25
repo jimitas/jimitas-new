@@ -22,9 +22,15 @@ const BANGOU = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪
 
 // モード別演算記号（operatorが空のプリントで使用）
 const MODE_OPERATORS: Record<string, Record<number, string>> = {
-  "100made":  { 0: "+", 1: "-", 2: "+", 3: "-" },
-  "hissan-1": { 0: "+", 1: "+", 2: "-", 3: "-" },
-  "hissan-2": { 0: "+", 1: "+", 2: "-", 3: "-" },
+  "100made":    { 0: "+", 1: "-", 2: "+", 3: "-" },
+  "hissan-1":   { 0: "+", 1: "+", 2: "-", 3: "-" },
+  "hissan-2":   { 0: "+", 1: "+", 2: "-", 3: "-" },
+  "shousu-kiso": { 0: "×", 1: "÷", 2: "×", 3: "÷" },
+}
+
+// shousu-kiso のモード別表示タイプ（モードによって表示形式が変わる特殊プリント）
+const MODE_DISPLAY: Record<string, Record<number, string>> = {
+  "shousu-kiso": { 0: "oneLine", 1: "oneLine", 2: "decimalColumn", 3: "division" },
 }
 
 export default function JimipriPrintPage() {
@@ -85,6 +91,12 @@ export default function JimipriPrintPage() {
   const operator = modeOps
     ? modeOps[modeIndex] || "+"
     : printDef.operator
+
+  // 表示タイプの決定（shousu-kiso はモードごとに変わる）
+  const modeDisp = MODE_DISPLAY[printDef.id]
+  const displayType = modeDisp
+    ? modeDisp[modeIndex] || printDef.displayType
+    : printDef.displayType
 
   return (
     <main className="min-h-screen flex flex-col px-4 py-4">
@@ -177,7 +189,7 @@ export default function JimipriPrintPage() {
           </table>
 
           {/* 問題テーブル（1行式: 10行×2列 = 20問） */}
-          {data && printDef.displayType === "oneLine" && (
+          {data && displayType === "oneLine" && (
             <OneLineTable
               left={(data as OneLineResult).left}
               operator={operator}
@@ -186,13 +198,30 @@ export default function JimipriPrintPage() {
           )}
 
           {/* 問題テーブル（3つの数: 10行×1列 = 10問） */}
-          {data && printDef.displayType === "threeLine" && (
+          {data && displayType === "threeLine" && (
             <ThreeLineTable data={data as ThreeLineResult} />
           )}
 
           {/* 問題テーブル（筆算: 3列×N行） */}
-          {data && printDef.displayType === "column" && (
+          {data && displayType === "column" && (
             <ColumnCalcTable
+              left={(data as OneLineResult).left}
+              right={(data as OneLineResult).right}
+              operator={operator}
+            />
+          )}
+
+          {/* 問題テーブル（わり算の筆算: 3列×3行） */}
+          {data && displayType === "division" && (
+            <DivisionTable
+              left={(data as OneLineResult).left}
+              right={(data as OneLineResult).right}
+            />
+          )}
+
+          {/* 問題テーブル（小数の筆算: 3列×3行） */}
+          {data && displayType === "decimalColumn" && (
+            <DecimalCalcTable
               left={(data as OneLineResult).left}
               right={(data as OneLineResult).right}
               operator={operator}
@@ -479,6 +508,173 @@ function colStyle(maxDigits: number): React.CSSProperties {
     width: maxDigits === 3 ? "16mm" : "18mm",
     height: "10mm",
   }
+}
+
+// -------------------------------------------------------
+// わり算筆算テーブル（3列×3行 = 9問）
+// 元の columnCalcCreateDivision のReact版
+// レイアウト: 番号行 → 除数 ) 被除数（上に横線） → 余白行
+// -------------------------------------------------------
+function DivisionTable({
+  left,
+  right,
+}: {
+  left: number[]
+  right: number[]
+}) {
+  const total = left.length
+  const cols = 3
+  const rows = Math.ceil(total / cols)
+  const answerHeight = rows <= 3 ? "45mm" : "30mm"
+
+  return (
+    <table style={{ borderCollapse: "collapse", width: "100%", marginTop: "10mm" }}>
+      <tbody>
+        {Array.from({ length: rows }, (_, row) =>
+          // 各問題は3行: 番号+答え記入線、除数)被除数、余白
+          [0, 1, 2].map((subRow) => (
+            <tr key={`${row}-${subRow}`}>
+              {Array.from({ length: cols }, (_, col) => {
+                const idx = row * cols + col
+                if (idx >= total) {
+                  return [0, 1, 2, 3, 4].map(c =>
+                    <td key={c} style={{ width: "10mm", height: "10mm" }} />
+                  )
+                }
+
+                const a = left[idx]  // 被除数
+                const b = right[idx] // 除数
+                const divCellW = "10mm"
+                const divCellH = "10mm"
+                const fontSize = "10mm"
+
+                switch (subRow) {
+                  case 0: // 番号 + 答え書く線（被除数の上）
+                    return [
+                      <td key={`${idx}-0-0`} style={{ width: divCellW, height: divCellH, fontSize }}>{BANGOU[idx]}</td>,
+                      <td key={`${idx}-0-1`} style={{ width: divCellW, height: divCellH, fontSize }} />,
+                      <td key={`${idx}-0-2`} style={{ width: "16px", height: divCellH, fontSize }} />,
+                      <td key={`${idx}-0-3`} style={{ width: divCellW, height: divCellH, fontSize, borderBottom: "solid 3px black" }} />,
+                      <td key={`${idx}-0-4`} style={{ width: "40mm", height: divCellH, fontSize }} />,
+                    ]
+                  case 1: // 除数 ) 被除数
+                    return [
+                      <td key={`${idx}-1-0`} style={{ width: divCellW, height: divCellH, fontSize }} />,
+                      <td key={`${idx}-1-1`} style={{ width: divCellW, height: divCellH, fontSize, textAlign: "center" }}>{b}</td>,
+                      <td key={`${idx}-1-2`} style={{ width: "16px", height: divCellH, fontSize, textAlign: "right", borderTop: "solid 3px black" }}>{")"}</td>,
+                      <td key={`${idx}-1-3`} style={{
+                        width: divCellW, height: divCellH, fontSize,
+                        letterSpacing: a > 999 ? "8px" : (!Number.isInteger(a) ? "0px" : "16px"),
+                      }}>{a}</td>,
+                      <td key={`${idx}-1-4`} style={{ width: "40mm", height: divCellH, fontSize }} />,
+                    ]
+                  case 2: // 余白（筆算計算スペース）
+                    return [
+                      <td key={`${idx}-2-0`} style={{ width: divCellW, height: answerHeight }} />,
+                      <td key={`${idx}-2-1`} style={{ width: divCellW, height: answerHeight }} />,
+                      <td key={`${idx}-2-2`} style={{ width: "16px", height: answerHeight }} />,
+                      <td key={`${idx}-2-3`} style={{ width: divCellW, height: answerHeight }} />,
+                      <td key={`${idx}-2-4`} style={{ width: "40mm", height: answerHeight }} />,
+                    ]
+                  default:
+                    return null
+                }
+              })}
+            </tr>
+          ))
+        ).flat()}
+      </tbody>
+    </table>
+  )
+}
+
+// -------------------------------------------------------
+// 小数筆算テーブル（3列×3行 = 9問）
+// 元の columnCalcCreateDecimals のReact版
+// 小数点を含む数の筆算表示
+// -------------------------------------------------------
+function DecimalCalcTable({
+  left,
+  right,
+  operator,
+}: {
+  left: number[]
+  right: number[]
+  operator: string
+}) {
+  const total = left.length
+  const cols = 3
+  const rows = Math.ceil(total / cols)
+  const answerHeight = rows <= 3 ? "38mm" : "20mm"
+  const cellW = "16mm"
+  const cellH = "10mm"
+  const fontSize = "11mm"
+
+  return (
+    <table style={{ borderCollapse: "collapse", width: "100%" }}>
+      <tbody>
+        {Array.from({ length: rows }, (_, row) =>
+          [0, 1, 2, 3].map((subRow) => (
+            <tr key={`${row}-${subRow}`}>
+              {Array.from({ length: cols }, (_, col) => {
+                const idx = row * cols + col
+                if (idx >= total) {
+                  return [0, 1, 2, 3, 4].map(c =>
+                    <td key={c} style={{ width: cellW, height: cellH }} />
+                  )
+                }
+
+                const a = left[idx]
+                const b = right[idx]
+
+                // 数値を小数点区切りで分解する関数
+                const splitDecimal = (n: number) => {
+                  if (Number.isInteger(n)) {
+                    return { whole: Math.floor(n / 10), dot: "", frac: String(n % 10) }
+                  }
+                  const whole = Math.floor(n)
+                  const frac = Math.floor((n * 10) % 10)
+                  return { whole: String(whole), dot: ".", frac: String(frac) }
+                }
+
+                const aStr = splitDecimal(a)
+                const bStr = splitDecimal(b)
+
+                switch (subRow) {
+                  case 0: // 空行
+                    return [0, 1, 2, 3, 4].map(c =>
+                      <td key={`${idx}-0-${c}`} style={{ width: c === 4 ? "30mm" : cellW, height: cellH, fontSize, textAlign: "center" }} />
+                    )
+                  case 1: // 番号 + 上の数
+                    return [
+                      <td key={`${idx}-1-0`} style={{ width: cellW, height: cellH, fontSize, textAlign: "center" }}>{BANGOU[idx]}</td>,
+                      <td key={`${idx}-1-1`} style={{ width: cellW, height: cellH, fontSize, textAlign: "right" }}>{aStr.whole}</td>,
+                      <td key={`${idx}-1-2`} style={{ width: "0", height: cellH, fontSize: "8mm", textAlign: "center", padding: 0 }}>{aStr.dot}</td>,
+                      <td key={`${idx}-1-3`} style={{ width: cellW, height: cellH, fontSize, textAlign: "left" }}>{aStr.frac}</td>,
+                      <td key={`${idx}-1-4`} style={{ width: "30mm", height: cellH, fontSize }} />,
+                    ]
+                  case 2: // 演算記号 + 下の数 + 下線
+                    return [
+                      <td key={`${idx}-2-0`} style={{ width: cellW, height: cellH, fontSize, textAlign: "center", borderBottom: "solid 1px black" }}>{operator}</td>,
+                      <td key={`${idx}-2-1`} style={{ width: cellW, height: cellH, fontSize, textAlign: "right", borderBottom: "solid 1px black" }}>{bStr.whole}</td>,
+                      <td key={`${idx}-2-2`} style={{ width: "0", height: cellH, fontSize: "8mm", textAlign: "center", padding: 0, borderBottom: "solid 1px black" }}>{bStr.dot}</td>,
+                      <td key={`${idx}-2-3`} style={{ width: cellW, height: cellH, fontSize, textAlign: "left", borderBottom: "solid 1px black" }}>{bStr.frac}</td>,
+                      <td key={`${idx}-2-4`} style={{ width: "30mm", height: cellH, fontSize }} />,
+                    ]
+                  case 3: // 答え記入欄
+                    return [0, 1, 2, 3, 4].map(c =>
+                      <td key={`${idx}-3-${c}`} style={{ width: c === 4 ? "30mm" : cellW, height: answerHeight }} />
+                    )
+                  default:
+                    return null
+                }
+              })}
+            </tr>
+          ))
+        ).flat()}
+      </tbody>
+    </table>
+  )
 }
 
 // -------------------------------------------------------

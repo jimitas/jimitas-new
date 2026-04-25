@@ -17,6 +17,11 @@ import { generateHissan1 } from "./problems/hissan1"
 import { generateHissan2 } from "./problems/hissan2"
 import { generateKakeHissan1 } from "./problems/kakeHissan1"
 import { generateKakeHissan2 } from "./problems/kakeHissan2"
+import { generateWariHissan1 } from "./problems/wariHissan1"
+import { generateWariHissan2 } from "./problems/wariHissan2"
+import { generateShousuKiso } from "./problems/shousuKiso"
+import { generateShousuKake } from "./problems/shousuKake"
+import { generateShousuWari } from "./problems/shousuWari"
 
 // 未実装プリントのプレースホルダー
 const notImplemented = () => ({ left: [], right: [], answers: [] })
@@ -57,15 +62,15 @@ export const ALL_PRINTS: PrintDef[] = [
   { id: "kake-hissan2", title: "２けたをかけるかけ算の筆算", originalNumber: 24, grade: 3, operator: "×", modes: [{ label: "2けた×2けた", value: 0 }, { label: "3けた×2けた", value: 1 }], generate: generateKakeHissan2, displayType: "column" },
 
   // --- 4年生 ---
-  { id: "wari-hissan1", title: "１けたでわるわり算の筆算", originalNumber: 25, grade: 4, operator: "÷", modes: [{ label: "2けた÷1けた", value: 0 }, { label: "3けた÷1けた", value: 1 }], generate: notImplemented, displayType: "column" },
-  { id: "wari-hissan2", title: "２けたでわるわり算の筆算", originalNumber: 26, grade: 4, operator: "÷", modes: [{ label: "2けた÷2けた", value: 0 }, { label: "3けた÷2けた", value: 1 }, { label: "4けた÷2けた", value: 2 }], generate: notImplemented, displayType: "column" },
-  { id: "shousu-kiso", title: "小数のかけ算やわり算",     originalNumber: 27, grade: 4, operator: "", modes: [{ label: "小数のかけわり基礎", value: 0 }], generate: notImplemented, displayType: "column" },
+  { id: "wari-hissan1", title: "１けたでわるわり算の筆算", originalNumber: 25, grade: 4, operator: "÷", modes: [{ label: "2けた÷1けた", value: 0 }, { label: "3けた÷1けた", value: 1 }], generate: generateWariHissan1, displayType: "division" },
+  { id: "wari-hissan2", title: "２けたでわるわり算の筆算", originalNumber: 26, grade: 4, operator: "÷", modes: [{ label: "2けた÷2けた", value: 0 }, { label: "3けた÷2けた", value: 1 }, { label: "4けた÷2けた", value: 2 }], generate: generateWariHissan2, displayType: "division" },
+  { id: "shousu-kiso", title: "小数のかけ算やわり算",     originalNumber: 27, grade: 4, operator: "", modes: [{ label: "小数×1けた", value: 0 }, { label: "小数÷1けた", value: 1 }, { label: "小数×2けた", value: 2 }, { label: "小数÷2けた", value: 3 }], generate: generateShousuKiso, displayType: "custom" },
   { id: "bunsu-kiso", title: "分数",                     originalNumber: 28, grade: 4, operator: "", modes: [{ label: "分数の基礎", value: 0 }], generate: notImplemented, displayType: "custom" },
 
   // --- 5年生 ---
   { id: "taiseki",    title: "体積",                     originalNumber: 29, grade: 5, operator: "", modes: [{ label: "体積", value: 0 }], generate: notImplemented, displayType: "custom" },
-  { id: "shousu-kake", title: "小数のかけ算",             originalNumber: 30, grade: 5, operator: "×", modes: [{ label: "小数のかけ算", value: 0 }], generate: notImplemented, displayType: "column" },
-  { id: "shousu-wari", title: "小数のわり算",             originalNumber: 31, grade: 5, operator: "÷", modes: [{ label: "小数のわり算", value: 0 }], generate: notImplemented, displayType: "column" },
+  { id: "shousu-kake", title: "小数のかけ算",             originalNumber: 30, grade: 5, operator: "×", modes: [{ label: "整数×小数", value: 0 }, { label: "小数×小数", value: 1 }, { label: "小数×小数(2)", value: 2 }], generate: generateShousuKake, displayType: "decimalColumn" },
+  { id: "shousu-wari", title: "小数のわり算",             originalNumber: 31, grade: 5, operator: "÷", modes: [{ label: "割り切れるまで", value: 0 }, { label: "四捨五入", value: 1 }, { label: "商とあまり", value: 2 }], generate: generateShousuWari, displayType: "division" },
   { id: "bunsu-1",    title: "分数（１）",               originalNumber: 32, grade: 5, operator: "", modes: [{ label: "分数(1)", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "taniryou",   title: "単位量あたりの大きさ",     originalNumber: 33, grade: 5, operator: "", modes: [{ label: "単位量あたり", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "bunsu-2",    title: "分数（２）",               originalNumber: 34, grade: 5, operator: "", modes: [{ label: "分数(2)", value: 0 }], generate: notImplemented, displayType: "custom" },
