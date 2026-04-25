@@ -1,16 +1,17 @@
 // なんじ　なんぷん
 // 元: 09_nanji2.js
-// 6問: 時計の読み取り（分単位、SVG時計版）
-// tokei アプリの描画ロジックを SVG に変換して印刷対応
+// 6問: 時計の読み取り（分単位、Canvas時計版）
+// tokei アプリと同じ Canvas 描画で時計を表示
 
-import { CustomResult } from "../types"
-import { clockSvg } from "../clockSvg"
+import { NanjiResult } from "../types"
 
-export function generateNanji2(): CustomResult {
+const BANGOU = ["①", "②", "③", "④", "⑤", "⑥"]
+
+export function generateNanji2(): NanjiResult {
   const problems: string[] = []
   const answers: (number | string)[] = []
+  const clocks: { hour: number; minute: number }[] = []
 
-  const BANGOU = ["①", "②", "③", "④", "⑤", "⑥"]
   const usedTimes: string[] = []
 
   problems.push(`つぎの　じこくを　こたえましょう。`)
@@ -26,12 +27,10 @@ export function generateNanji2(): CustomResult {
     } while (usedTimes.includes(timeKey))
     usedTimes.push(timeKey)
 
-    // 時計SVGを生成
-    const clock = clockSvg(hour, minute, 28)
-
-    problems.push(`<div style="display:flex;align-items:center;gap:8px;margin:2mm 0;">${BANGOU[i]}　${clock}　（　　じ　　ふん）</div>`)
+    clocks.push({ hour, minute })
+    problems.push(`${BANGOU[i]}　（　　じ　　ふん）`)
     answers.push(`${hour}じ${minute}ふん`)
   }
 
-  return { problems, answers }
+  return { problems, answers, clocks }
 }

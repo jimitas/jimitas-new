@@ -11,10 +11,11 @@
 // ======================================================
 
 import { useParams } from "next/navigation"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback, useEffect, useRef } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { getPrintDef, isImplemented } from "../_lib/prints"
-import type { OneLineResult, ThreeLineResult, CustomResult } from "../_lib/types"
+import type { OneLineResult, ThreeLineResult, CustomResult, NanjiResult, NanbanmeResult } from "../_lib/types"
 import { playSe, set as seSet, pi as sePi } from "@/lib/se"
 
 // 丸数字（①〜⑳）
@@ -40,7 +41,7 @@ export default function JimipriPrintPage() {
 
   // 状態: モード選択と問題データ
   const [modeIndex, setModeIndex] = useState(0)
-  const [data, setData] = useState<OneLineResult | ThreeLineResult | CustomResult | null>(null)
+  const [data, setData] = useState<OneLineResult | ThreeLineResult | CustomResult | NanjiResult | NanbanmeResult | null>(null)
   const [showAnswers, setShowAnswers] = useState(false)
 
   // 問題を生成する関数
@@ -228,8 +229,18 @@ export default function JimipriPrintPage() {
             />
           )}
 
-          {/* 問題表示（カスタムテキスト形式） */}
-          {data && displayType === "custom" && (
+          {/* なんばんめ専用表示 */}
+          {data && displayType === "custom" && printDef.id === "nanbanme" && (
+            <NanbanmeDisplay data={data as NanbanmeResult} />
+          )}
+
+          {/* なんじ系専用表示（Canvas時計） */}
+          {data && displayType === "custom" && (printDef.id === "nanji-1" || printDef.id === "nanji-2") && (
+            <NanjiDisplay data={data as NanjiResult} />
+          )}
+
+          {/* 問題表示（カスタムテキスト形式、nanbanme/nanji以外） */}
+          {data && displayType === "custom" && printDef.id !== "nanbanme" && printDef.id !== "nanji-1" && printDef.id !== "nanji-2" && (
             <CustomProblemDisplay data={data as CustomResult} />
           )}
 
@@ -733,6 +744,278 @@ function AnswerArea({ answers }: { answers: (number | string)[] }) {
           {BANGOU[i]}　{ans}
         </div>
       ))}
+    </div>
+  )
+}
+
+// -------------------------------------------------------
+// なんばんめ専用表示
+// 元: 01_nanbanme.js を忠実にReact化
+// 6匹の動物が横並び → 5問の位置問題
+// -------------------------------------------------------
+function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
+  const { animals, positions } = data
+
+  // 入力欄のスタイル（印刷用の空白ボックス）
+  const inputStyle: React.CSSProperties = {
+    display: "inline-block",
+    width: "15mm",
+    height: "8mm",
+    border: "solid 1px #999",
+    verticalAlign: "middle",
+    marginLeft: "2mm",
+    marginRight: "2mm",
+  }
+
+  // 動物画像のスタイル（問題文中の小さい画像）
+  const animalImgSize = 48
+
+  return (
+    <div style={{ fontSize: "5mm", lineHeight: "10mm" }}>
+      {/* タイトル */}
+      <div style={{ fontSize: "7mm", fontWeight: "bold", marginBottom: "3mm" }}>
+        なんばんめですか。
+      </div>
+
+      {/* 動物の横並び（ひだり・6匹・みぎ） */}
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          border: "solid 1px black",
+          padding: "3mm 5mm",
+          marginBottom: "5mm",
+        }}
+      >
+        <div style={{ paddingTop: "4mm", marginRight: "3mm" }}>ひだり</div>
+        <div style={{ display: "flex", gap: "2mm", flex: 1 }}>
+          {animals.map((name, i) => (
+            <Image
+              key={i}
+              src={`/images/${name}.png`}
+              alt={name}
+              width={64}
+              height={64}
+              style={{ width: "14mm", height: "14mm" }}
+            />
+          ))}
+        </div>
+        <div style={{ paddingTop: "4mm", marginLeft: "3mm" }}>みぎ　</div>
+      </div>
+
+      {/* ① ひだりから□ばんめ */}
+      <div style={{ marginBottom: "5mm" }}>
+        <span>①　</span>
+        <Image
+          src={`/images/${animals[positions[0] - 1]}.png`}
+          alt={animals[positions[0] - 1]}
+          width={animalImgSize}
+          height={animalImgSize}
+          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+        />
+        <span>は、ひだりから</span>
+        <span style={inputStyle} />
+        <span>ばんめ</span>
+      </div>
+
+      {/* ② みぎから□ばんめ */}
+      <div style={{ marginBottom: "5mm" }}>
+        <span>②　</span>
+        <Image
+          src={`/images/${animals[positions[1] - 1]}.png`}
+          alt={animals[positions[1] - 1]}
+          width={animalImgSize}
+          height={animalImgSize}
+          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+        />
+        <span>は、みぎから</span>
+        <span style={inputStyle} />
+        <span>ばんめ</span>
+      </div>
+
+      {/* ③ ひだりから□ばんめ、みぎから□ばんめ */}
+      <div style={{ marginBottom: "5mm" }}>
+        <span>③　</span>
+        <Image
+          src={`/images/${animals[positions[2] - 1]}.png`}
+          alt={animals[positions[2] - 1]}
+          width={animalImgSize}
+          height={animalImgSize}
+          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+        />
+        <span>は、</span>
+        <br />
+        <span>　　ひだりから</span>
+        <span style={inputStyle} />
+        <span>ばんめ、みぎから</span>
+        <span style={inputStyle} />
+        <span>ばんめ</span>
+      </div>
+
+      {/* ④ ひだりから□ばんめ、みぎから□ばんめ */}
+      <div style={{ marginBottom: "5mm" }}>
+        <span>④　</span>
+        <Image
+          src={`/images/${animals[positions[3] - 1]}.png`}
+          alt={animals[positions[3] - 1]}
+          width={animalImgSize}
+          height={animalImgSize}
+          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+        />
+        <span>は、</span>
+        <br />
+        <span>　　ひだりから</span>
+        <span style={inputStyle} />
+        <span>ばんめ、みぎから</span>
+        <span style={inputStyle} />
+        <span>ばんめ</span>
+      </div>
+
+      {/* ⑤ ひだりから□ばんめ、みぎから□ばんめ */}
+      <div style={{ marginBottom: "5mm" }}>
+        <span>⑤　</span>
+        <Image
+          src={`/images/${animals[positions[4] - 1]}.png`}
+          alt={animals[positions[4] - 1]}
+          width={animalImgSize}
+          height={animalImgSize}
+          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+        />
+        <span>は、</span>
+        <br />
+        <span>　　ひだりから</span>
+        <span style={inputStyle} />
+        <span>ばんめ、みぎから</span>
+        <span style={inputStyle} />
+        <span>ばんめ</span>
+      </div>
+    </div>
+  )
+}
+
+// -------------------------------------------------------
+// なんじ系専用表示（Canvas時計）
+// 元: tokei アプリの Canvas 描画を忠実に再現
+// 6問の時計を 3列×2行 で表示
+// -------------------------------------------------------
+
+// 1〜12 の数字の座標（tokei アプリと同じ 400x400 内部解像度基準）
+const CLOCK_NUM_X = [260, 305, 325, 310, 265, 200, 140,  95,  75,  95, 135, 200]
+const CLOCK_NUM_Y = [105, 150, 210, 275, 320, 335, 320, 270, 210, 150, 105,  85]
+
+function NanjiDisplay({ data }: { data: NanjiResult }) {
+  const canvasRefs = useRef<(HTMLCanvasElement | null)[]>([])
+
+  // 時計を Canvas に描画する関数（tokei アプリの draw 関数を移植）
+  const drawClock = useCallback((canvas: HTMLCanvasElement, hour: number, minute: number) => {
+    const ctx = canvas.getContext("2d")
+    if (!ctx) return
+
+    const C = 400
+    ctx.clearRect(0, 0, C, C)
+
+    // 外枠
+    ctx.beginPath()
+    ctx.arc(200, 200, 150, 0, Math.PI * 2)
+    ctx.lineWidth = 1.5
+    ctx.strokeStyle = "#333"
+    ctx.stroke()
+
+    // 分目盛り（60本・細め）
+    for (let i = 0; i < 60; i++) {
+      const rad = (Math.PI / 180) * (270 + i * 6)
+      ctx.beginPath()
+      ctx.moveTo(200 + 150 * Math.cos(rad), 200 + 150 * Math.sin(rad))
+      ctx.lineTo(200 + 145 * Math.cos(rad), 200 + 145 * Math.sin(rad))
+      ctx.lineWidth = 0.5
+      ctx.strokeStyle = "#000"
+      ctx.stroke()
+    }
+
+    // 時間目盛り（12本・太め）
+    for (let i = 0; i < 12; i++) {
+      const rad = (Math.PI / 180) * (270 + i * 30)
+      ctx.beginPath()
+      ctx.moveTo(200 + 150 * Math.cos(rad), 200 + 150 * Math.sin(rad))
+      ctx.lineTo(200 + 140 * Math.cos(rad), 200 + 140 * Math.sin(rad))
+      ctx.lineWidth = 2
+      ctx.strokeStyle = "#000"
+      ctx.stroke()
+    }
+
+    // 1〜12 の数字
+    ctx.font = "30px 'ＭＳ ゴシック'"
+    ctx.textAlign = "center"
+    ctx.fillStyle = "#000"
+    for (let i = 0; i < 12; i++) {
+      ctx.fillText(String(i + 1), CLOCK_NUM_X[i], CLOCK_NUM_Y[i])
+    }
+
+    // 分針（青・長め）
+    ctx.lineCap = "round"
+    const minRad = (Math.PI / 180) * (270 + 6 * minute)
+    ctx.beginPath()
+    ctx.moveTo(200, 200)
+    ctx.lineTo(200 + 128 * Math.cos(minRad), 200 + 128 * Math.sin(minRad))
+    ctx.lineWidth = 3
+    ctx.strokeStyle = "#2563eb"
+    ctx.stroke()
+
+    // 時針（赤・短め・分の影響を含む）
+    const hourRad = (Math.PI / 180) * (270 + 30 * (hour + minute / 60))
+    ctx.beginPath()
+    ctx.moveTo(200, 200)
+    ctx.lineTo(200 + 96 * Math.cos(hourRad), 200 + 96 * Math.sin(hourRad))
+    ctx.lineWidth = 6
+    ctx.strokeStyle = "#dc2626"
+    ctx.stroke()
+
+    // 中心の点
+    ctx.beginPath()
+    ctx.arc(200, 200, 5, 0, Math.PI * 2)
+    ctx.fillStyle = "#444"
+    ctx.fill()
+  }, [])
+
+  // data.clocks が変わるたびに全時計を再描画
+  useEffect(() => {
+    data.clocks.forEach((clock, i) => {
+      const canvas = canvasRefs.current[i]
+      if (canvas) {
+        drawClock(canvas, clock.hour, clock.minute)
+      }
+    })
+  }, [data.clocks, drawClock])
+
+  return (
+    <div style={{ fontSize: "5mm", lineHeight: "9mm" }}>
+      {/* 問題文（最初の要素はタイトル行） */}
+      <div style={{ fontSize: "6mm", fontWeight: "bold", marginBottom: "3mm" }}>
+        {data.problems[0]}
+      </div>
+
+      {/* 6問を 3列×2行 で配置 */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(3, 1fr)",
+          gap: "3mm",
+        }}
+      >
+        {data.clocks.map((_, i) => (
+          <div key={i} style={{ textAlign: "center" }}>
+            {/* Canvas 時計（400x400 内部解像度、表示サイズは CSS で縮小） */}
+            <canvas
+              ref={(el) => { canvasRefs.current[i] = el }}
+              width={400}
+              height={400}
+              style={{ width: "50mm", height: "50mm" }}
+            />
+            {/* 問題テキスト（①〜⑥） */}
+            <div>{data.problems[i + 1]}</div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

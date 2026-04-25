@@ -24,8 +24,23 @@ export type CustomResult = {
   answers: (number | string)[]
 }
 
+/** なんばんめ問題データ */
+export type NanbanmeResult = {
+  /** 並んでいる動物のファイル名（6匹） */
+  animals: string[]
+  /** 各問の位置（1〜6、左から何番目か） */
+  positions: number[]
+  answers: (number | string)[]
+}
+
+/** 時計問題データ（なんじ系） */
+export type NanjiResult = CustomResult & {
+  /** 各問の時刻データ（Canvas描画用） */
+  clocks: { hour: number; minute: number }[]
+}
+
 /** 問題生成関数の型 */
-export type ProblemGenerator = (modeIndex: number) => OneLineResult | ThreeLineResult | CustomResult
+export type ProblemGenerator = (modeIndex: number) => OneLineResult | ThreeLineResult | CustomResult | NanjiResult | NanbanmeResult
 
 /** モード（セレクトメニューの選択肢） */
 export type PrintMode = {

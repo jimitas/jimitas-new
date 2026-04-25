@@ -1,17 +1,18 @@
 // なんじ　なんじはん
 // 元: 04_nanji1.js
-// 6問: 時計の読み取り（SVG時計版）
-// tokei アプリの描画ロジックを SVG に変換して印刷対応
+// 6問: 時計の読み取り（Canvas時計版）
+// tokei アプリと同じ Canvas 描画で時計を表示
 
-import { CustomResult } from "../types"
+import { NanjiResult } from "../types"
 import { duplicationCheck } from "../duplicationCheck"
-import { clockSvg } from "../clockSvg"
 
-export function generateNanji1(): CustomResult {
+const BANGOU = ["①", "②", "③", "④", "⑤", "⑥"]
+
+export function generateNanji1(): NanjiResult {
   const problems: string[] = []
   const answers: (number | string)[] = []
+  const clocks: { hour: number; minute: number }[] = []
 
-  const BANGOU = ["①", "②", "③", "④", "⑤", "⑥"]
   const checkArray: number[] = []
 
   problems.push(`つぎの　じこくを　こたえましょう。`)
@@ -27,10 +28,9 @@ export function generateNanji1(): CustomResult {
     const isHalf = Math.random() < 0.5
     const minute = isHalf ? 30 : 0
 
-    // 時計SVGを生成
-    const clock = clockSvg(hour, minute, 28)
-
-    problems.push(`<div style="display:flex;align-items:center;gap:8px;margin:2mm 0;">${BANGOU[i]}　${clock}　（　　じ　　ふん）</div>`)
+    clocks.push({ hour, minute })
+    // 問題テキスト（時計画像はページ側で Canvas 描画）
+    problems.push(`${BANGOU[i]}　（　　じ　　ふん）`)
 
     if (isHalf) {
       answers.push(`${hour}じ30ぷん（${hour}じはん）`)
@@ -39,5 +39,5 @@ export function generateNanji1(): CustomResult {
     }
   }
 
-  return { problems, answers }
+  return { problems, answers, clocks }
 }
