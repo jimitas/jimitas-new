@@ -12,7 +12,7 @@
 
 import type { Metadata, Viewport } from "next"
 import { Noto_Sans_JP, M_PLUS_1p } from "next/font/google"
-// Script は不要（テーマ初期化は生の <script> タグで実行）
+import Script from "next/script"
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
@@ -116,8 +116,7 @@ export default function RootLayout({
     >
       <head>
         {/* ダークモード・フォントの初期化（チラつき防止のため同期実行） */}
-        {/* React 19 では src 付き script を使う（インラインは警告が出る） */}
-        <script src="/theme-init.js" />
+        <Script src="/theme-init.js" strategy="beforeInteractive" />
 
         {/* Font Awesome（アイコン用）CDNから読み込む */}
         <link
