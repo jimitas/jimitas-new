@@ -169,19 +169,17 @@ export default function JimipriPrintPage() {
       <div className="jimipri-print-wrapper mx-auto">
         <div className="jimipri-print-area">
 
-          {/* ヘッダー: タイトル + 名前欄 */}
-          <table className="w-full mb-2" style={{ borderCollapse: "collapse" }}>
+          {/* ヘッダー: タイトル + 名前欄（元: #title-header） */}
+          <table className="w-full" style={{ borderCollapse: "collapse", marginBottom: "1rem" }}>
             <tbody>
               <tr>
                 <td
-                  className="border border-black px-2 py-1"
-                  style={{ fontSize: "5mm" }}
+                  style={{ border: "solid 1px black", fontSize: "6mm", height: "15mm", paddingLeft: "2mm" }}
                 >
                   {printDef.originalNumber}　{printDef.title}
                 </td>
                 <td
-                  className="border border-black px-2 py-1"
-                  style={{ fontSize: "5mm", width: "50%" }}
+                  style={{ border: "solid 1px black", fontSize: "6mm", height: "15mm", paddingLeft: "2mm", paddingTop: "15px", width: "50%" }}
                 >
                   <ruby>名前<rp>(</rp><rt>なまえ</rt><rp>)</rp></ruby>
                 </td>
@@ -244,23 +242,19 @@ export default function JimipriPrintPage() {
             <CustomProblemDisplay data={data as CustomResult} />
           )}
 
-          {/* 答えエリア（こたえボタンON時のみ表示） */}
-          {data && showAnswers && (
-            <div className="mt-4">
-              <AnswerArea answers={data.answers} />
-            </div>
-          )}
+        </div>
 
-          {/* フッター */}
-          <div
-            className="absolute bottom-4 left-0 w-full px-4 text-right"
-            style={{ fontSize: "3mm" }}
-          >
+        {/* 答え+著作権エリア（A4下端に固定） */}
+        <section className="jimipri-footer-area">
+          {data && showAnswers && (
+            <AnswerArea answers={data.answers} />
+          )}
+          <div style={{ position: "absolute", height: "5mm", bottom: "7mm", right: "5mm", fontSize: "3mm" }}>
             <span>{dateStr}　</span>
             <strong>じみぷり（地味に助かる学習プリント）</strong>
             　©jimitas.com
           </div>
-        </div>
+        </section>
       </div>
     </main>
   )
@@ -734,16 +728,28 @@ function CustomProblemDisplay({ data }: { data: CustomResult }) {
 // 元の answerCreate のReact版
 // -------------------------------------------------------
 function AnswerArea({ answers }: { answers: (number | string)[] }) {
+  // 元: answerCreate — 列数 = ceil(問題数/2)、各セル幅 = 100/列数 %
   const cols = Math.floor(answers.length / 2 + 0.5)
   const widthPct = 100 / cols
 
   return (
-    <div className="flex flex-wrap" style={{ fontSize: "4mm", borderTop: "dashed 1px black", paddingTop: "2mm" }}>
-      {answers.map((ans, i) => (
-        <div key={i} className="flex" style={{ width: `${widthPct}%` }}>
-          {BANGOU[i]}　{ans}
-        </div>
-      ))}
+    <div style={{ display: "flex", flexWrap: "wrap", fontSize: "4mm" }}>
+      {answers.map((ans, i) => {
+        const text = `${BANGOU[i]}　${ans}`
+        // 分数答えなどHTMLを含む場合はdangerouslySetInnerHTMLで描画
+        const hasHtml = typeof ans === "string" && ans.includes("<")
+        return hasHtml ? (
+          <div
+            key={i}
+            style={{ display: "flex", width: `${widthPct}%` }}
+            dangerouslySetInnerHTML={{ __html: text }}
+          />
+        ) : (
+          <div key={i} style={{ display: "flex", width: `${widthPct}%` }}>
+            {text}
+          </div>
+        )
+      })}
     </div>
   )
 }
@@ -756,19 +762,19 @@ function AnswerArea({ answers }: { answers: (number | string)[] }) {
 function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
   const { animals, positions } = data
 
-  // 入力欄のスタイル（印刷用の空白ボックス）
+  // 入力欄のスタイル（元: .input-box { width: 15mm; height: 15mm; border: 1px solid black; }）
   const inputStyle: React.CSSProperties = {
     display: "inline-block",
     width: "15mm",
-    height: "8mm",
-    border: "solid 1px #999",
+    height: "15mm",
+    border: "1px solid black",
     verticalAlign: "middle",
     marginLeft: "2mm",
     marginRight: "2mm",
   }
 
-  // 動物画像のスタイル（問題文中の小さい画像）
-  const animalImgSize = 48
+  // 動物画像サイズ（元: .animal { width: 50px; height: 50px; margin: 2px; }）
+  const animalImgSize = 50
 
   return (
     <div style={{ fontSize: "5mm", lineHeight: "10mm" }}>
@@ -788,15 +794,15 @@ function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
         }}
       >
         <div style={{ paddingTop: "4mm", marginRight: "3mm" }}>ひだり</div>
-        <div style={{ display: "flex", gap: "2mm", flex: 1 }}>
+        <div style={{ display: "flex", flex: 1 }}>
           {animals.map((name, i) => (
             <Image
               key={i}
               src={`/images/${name}.png`}
               alt={name}
-              width={64}
-              height={64}
-              style={{ width: "14mm", height: "14mm" }}
+              width={50}
+              height={50}
+              style={{ width: "50px", height: "50px", margin: "2px" }}
             />
           ))}
         </div>
@@ -811,7 +817,7 @@ function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
           alt={animals[positions[0] - 1]}
           width={animalImgSize}
           height={animalImgSize}
-          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+          style={{ display: "inline-block", width: "50px", height: "50px", verticalAlign: "middle", margin: "2px" }}
         />
         <span>は、ひだりから</span>
         <span style={inputStyle} />
@@ -826,7 +832,7 @@ function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
           alt={animals[positions[1] - 1]}
           width={animalImgSize}
           height={animalImgSize}
-          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+          style={{ display: "inline-block", width: "50px", height: "50px", verticalAlign: "middle", margin: "2px" }}
         />
         <span>は、みぎから</span>
         <span style={inputStyle} />
@@ -841,7 +847,7 @@ function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
           alt={animals[positions[2] - 1]}
           width={animalImgSize}
           height={animalImgSize}
-          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+          style={{ display: "inline-block", width: "50px", height: "50px", verticalAlign: "middle", margin: "2px" }}
         />
         <span>は、</span>
         <br />
@@ -860,7 +866,7 @@ function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
           alt={animals[positions[3] - 1]}
           width={animalImgSize}
           height={animalImgSize}
-          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+          style={{ display: "inline-block", width: "50px", height: "50px", verticalAlign: "middle", margin: "2px" }}
         />
         <span>は、</span>
         <br />
@@ -879,7 +885,7 @@ function NanbanmeDisplay({ data }: { data: NanbanmeResult }) {
           alt={animals[positions[4] - 1]}
           width={animalImgSize}
           height={animalImgSize}
-          style={{ display: "inline-block", width: "10mm", height: "10mm", verticalAlign: "middle" }}
+          style={{ display: "inline-block", width: "50px", height: "50px", verticalAlign: "middle", margin: "2px" }}
         />
         <span>は、</span>
         <br />
@@ -988,31 +994,42 @@ function NanjiDisplay({ data }: { data: NanjiResult }) {
   }, [data.clocks, drawClock])
 
   return (
-    <div style={{ fontSize: "5mm", lineHeight: "9mm" }}>
+    <div>
       {/* 問題文（最初の要素はタイトル行） */}
       <div style={{ fontSize: "6mm", fontWeight: "bold", marginBottom: "3mm" }}>
         {data.problems[0]}
       </div>
 
-      {/* 6問を 3列×2行 で配置 */}
+      {/* 6問を flex で配置（元: display:flex; justify-content:space-between; flex-wrap:wrap） */}
       <div
         style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(3, 1fr)",
-          gap: "3mm",
+          display: "flex",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
         }}
       >
         {data.clocks.map((_, i) => (
-          <div key={i} style={{ textAlign: "center" }}>
-            {/* Canvas 時計（400x400 内部解像度、表示サイズは CSS で縮小） */}
-            <canvas
-              ref={(el) => { canvasRefs.current[i] = el }}
-              width={400}
-              height={400}
-              style={{ width: "50mm", height: "50mm" }}
-            />
-            {/* 問題テキスト（①〜⑥） */}
-            <div>{data.problems[i + 1]}</div>
+          <div key={i} style={{ display: "flex", fontSize: "20px" }}>
+            <div>{BANGOU[i]}</div>
+            <div>
+              {/* Canvas 時計（元: width=400 height=400 style="zoom:65%;margin-top:-25px"） */}
+              <canvas
+                ref={(el) => { canvasRefs.current[i] = el }}
+                width={400}
+                height={400}
+                style={{ zoom: 0.65, marginTop: "-25px" }}
+              />
+              {/* 回答テキスト枠（元: .clock_answer_text） */}
+              <div style={{
+                height: "50px",
+                marginTop: "-20px",
+                fontSize: "8mm",
+                textAlign: "right",
+                border: "solid 1px black",
+              }}>
+                {data.problems[i + 1]?.replace(/^[①②③④⑤⑥]\s*/, "")}
+              </div>
+            </div>
           </div>
         ))}
       </div>
