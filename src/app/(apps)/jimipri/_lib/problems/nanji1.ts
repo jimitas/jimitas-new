@@ -30,7 +30,8 @@ export function generateNanji1(): NanjiResult {
 
     clocks.push({ hour, minute })
     // 問題テキスト（時計画像はページ側で Canvas 描画）
-    problems.push(`${BANGOU[i]}　（　　じ　　ふん）`)
+    // 元: <div class="clock_answer_text">  じ　　　　</div>
+    problems.push(`${BANGOU[i]}　じ　　　　`)
 
     if (isHalf) {
       answers.push(`${hour}じ30ぷん（${hour}じはん）`)

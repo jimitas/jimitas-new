@@ -28,7 +28,8 @@ export function generateNanji2(): NanjiResult {
     usedTimes.push(timeKey)
 
     clocks.push({ hour, minute })
-    problems.push(`${BANGOU[i]}　（　　じ　　ふん）`)
+    // 元: <div class="clock_answer_text">  　　じ　　ふん</div>
+    problems.push(`${BANGOU[i]}　　　じ　　ふん`)
     answers.push(`${hour}じ${minute}ふん`)
   }
 

@@ -1,6 +1,8 @@
 // 比例と反比例
 // 元: 39_hirei_hanpirei.js
 // 10問: 表の読み取り + 比例/反比例判定
+// 元のCSS: TBL.style.lineHeight = "1.6"; TBL.style.fontSize = "18px";
+// 表: <table style="margin-left:50px"> + <td class="graphTd"> + 先頭列 width:100px
 
 import { CustomResult } from "../types"
 
@@ -16,15 +18,40 @@ export function generateHirei(): CustomResult {
   // 表の値を計算
   const yVals1 = [1, 2, 3, 4, 5].map(x => x * numberOfAngles)
 
-  problems.push(`(１) 次の表は、${Angle[numberOfAngles - 3]}で、１辺の長さをいろいろに変えたときの、\n　1辺の長さ xcm と、周りの長さ y cm の関係を表したものです。\n　┌────┬──┬──┬──┬──┬──┬──┐\n　│ x(cm) │ 1 │ 2 │ 3 │ 4 │ 5 │…│\n　├────┼──┼──┼──┼──┼──┼──┤\n　│ y(cm) │ ${yVals1[0]} │ ${yVals1[1]} │ ${yVals1[2]} │${yVals1[3]}│${yVals1[4]}│…│\n　└────┴──┴──┴──┴──┴──┴──┘`)
+  // (1) テキスト + テーブル + 小問3つをまとめて1つのHTMLブロックにする
+  let block1 = `<div>(１)  次の表は、${Angle[numberOfAngles - 3]}で、１辺の長さをいろいろに変えたときの、<br>`
+  block1 += `　　1辺の長さ xcm と、周りの長さ y cm の関係を表したものです。</div>`
 
-  problems.push(`①　1辺の長さ xcm と周りの長さ ycm は比例しますか、反比例しますか？\n　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）`)
+  // テーブル（元: generateTable 関数）
+  block1 += `<table style="margin-left:50px;">`
+  block1 += `<tr>`
+  block1 += `<td class="graphTd" style="width:100px;">x(cm)</td>`
+  for (let j = 1; j <= 5; j++) {
+    block1 += `<td class="graphTd">${j}</td>`
+  }
+  block1 += `<td class="graphTd">…</td>`
+  block1 += `</tr>`
+  block1 += `<tr>`
+  block1 += `<td class="graphTd" style="width:100px;">y(cm)</td>`
+  for (let j = 0; j < 5; j++) {
+    block1 += `<td class="graphTd">${yVals1[j]}</td>`
+  }
+  block1 += `<td class="graphTd">…</td>`
+  block1 += `</tr>`
+  block1 += `</table>`
+
+  // 小問①②③
+  block1 += `<div>　①　1辺の長さ xcm と周りの長さ ycm は比例しますか、反比例しますか？<br>`
+  block1 += `　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）</div>`
+  block1 += `<div>　②　x と y の関係を式に表しましょう。<br>`
+  block1 += `　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）</div>`
+  block1 += `<div>　③　1辺の長さが${num}cmのとき、周りの長さは、何cmになりますか。<br>`
+  block1 += `　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）<br><br></div>`
+
+  problems.push(block1)
+
   answers.push("比例する")
-
-  problems.push(`②　x と y の関係を式に表しましょう。\n　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）`)
   answers.push(`y=${numberOfAngles}×x`)
-
-  problems.push(`③　1辺の長さが${num}cmのとき、周りの長さは、何cmになりますか。\n　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）`)
   answers.push(`${numberOfAngles * num}cm`)
 
   // (2) 三角形の反比例問題
@@ -34,15 +61,39 @@ export function generateHirei(): CustomResult {
   // 表の値を計算（面積一定の三角形: 底辺×高さ÷2 = 面積 → 高さ = 面積×2÷底辺）
   const yVals2 = [1, 2, 3, 4, 5].map(x => areaOfTriangle / x)
 
-  problems.push(`(２) 次の表は、面積が決まっている三角形で、底辺の長さをいろいろに\n　変えたときの底辺の長さ xcm と、高さ y cm の関係を表したものです。\n　┌────┬──┬──┬──┬──┬──┬──┐\n　│ x(cm) │ 1 │ 2 │ 3 │ 4 │ 5 │…│\n　├────┼──┼──┼──┼──┼──┼──┤\n　│ y(cm) │${yVals2[0]}│${yVals2[1]}│${yVals2[2]}│${yVals2[3]}│${yVals2[4]}│…│\n　└────┴──┴──┴──┴──┴──┴──┘`)
+  let block2 = `<div>(2)  次の表は、面積が決まっている三角形で、底辺の長さをいろいろに<br>`
+  block2 += `　　変えたときの底辺の長さ xcm と、高さ y cm の関係を表したものです。</div>`
 
-  problems.push(`④　底辺の長さ xcm と高さ ycm は比例しますか、反比例しますか？\n　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）`)
+  // テーブル
+  block2 += `<table style="margin-left:50px;">`
+  block2 += `<tr>`
+  block2 += `<td class="graphTd" style="width:100px;">x(cm)</td>`
+  for (let j = 1; j <= 5; j++) {
+    block2 += `<td class="graphTd">${j}</td>`
+  }
+  block2 += `<td class="graphTd">…</td>`
+  block2 += `</tr>`
+  block2 += `<tr>`
+  block2 += `<td class="graphTd" style="width:100px;">y(cm)</td>`
+  for (let j = 0; j < 5; j++) {
+    block2 += `<td class="graphTd">${yVals2[j]}</td>`
+  }
+  block2 += `<td class="graphTd">…</td>`
+  block2 += `</tr>`
+  block2 += `</table>`
+
+  // 小問④⑤⑥
+  block2 += `<div>　④　底辺の長さ xcm と高さ ycm は比例しますか、反比例しますか？<br>`
+  block2 += `　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）</div>`
+  block2 += `<div>　⑤　x と y の関係を式に表しましょう。<br>`
+  block2 += `　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）</div>`
+  block2 += `<div>　⑥　底辺の長さが${teihen}cmのとき、高さは、何cmになりますか。<br>`
+  block2 += `　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）<br><br></div>`
+
+  problems.push(block2)
+
   answers.push("反比例する")
-
-  problems.push(`⑤　x と y の関係を式に表しましょう。\n　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）`)
   answers.push(`y=${areaOfTriangle}÷x`)
-
-  problems.push(`⑥　底辺の長さが${teihen}cmのとき、高さは、何cmになりますか。\n　　　　　　　　　　　　　　　　　　答え（　　　　　　　　　　　　　）`)
   answers.push(`${areaOfTriangle / teihen}cm`)
 
   // (3) 比例/反比例/どちらでもないの判定問題
@@ -62,13 +113,18 @@ export function generateHirei(): CustomResult {
 
   const order = shuffleArray([0, 1, 2, 3, 4]).slice(0, 4)
 
-  problems.push(`(３)　比例…〇、反比例…△、どちらでもない…×の記号をつけましょう。`)
+  let block3 = `<div>(３)　比例…〇、反比例…△、どちらでもない…×の記号をつけましょう。</div>`
+  block3 += `<div>　⑦（　　）${TEXT[order[0]]}</div>`
+  block3 += `<div>　⑧（　　）${TEXT[order[1]]}</div>`
+  block3 += `<div>　⑨（　　）${TEXT[order[2]]}</div>`
+  block3 += `<div>　⑩（　　）${TEXT[order[3]]}</div>`
 
-  const bangou = ["⑦", "⑧", "⑨", "⑩"]
-  for (let i = 0; i < 4; i++) {
-    problems.push(`${bangou[i]}（　　）${TEXT[order[i]]}`)
-    answers.push(ANSWER[order[i]])
-  }
+  problems.push(block3)
+
+  answers.push(ANSWER[order[0]])
+  answers.push(ANSWER[order[1]])
+  answers.push(ANSWER[order[2]])
+  answers.push(ANSWER[order[3]])
 
   return { problems, answers }
 }

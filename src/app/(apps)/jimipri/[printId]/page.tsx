@@ -239,22 +239,22 @@ export default function JimipriPrintPage() {
 
           {/* 問題表示（カスタムテキスト形式、nanbanme/nanji以外） */}
           {data && displayType === "custom" && printDef.id !== "nanbanme" && printDef.id !== "nanji-1" && printDef.id !== "nanji-2" && (
-            <CustomProblemDisplay data={data as CustomResult} />
+            <CustomProblemDisplay data={data as CustomResult} printId={printDef.id} />
           )}
+
+          {/* 答え+著作権エリア（A4下端に固定・print-area内に配置して font-family を継承） */}
+          <section className="jimipri-footer-area" style={showAnswers ? undefined : { borderTop: "none" }}>
+            {data && showAnswers && (
+              <AnswerArea answers={data.answers} />
+            )}
+            <div style={{ position: "absolute", height: "5mm", bottom: "7mm", right: "5mm", fontSize: "3mm" }}>
+              <span>{dateStr}　</span>
+              <strong>じみぷり（地味に助かる学習プリント）</strong>
+              　©jimitas.com
+            </div>
+          </section>
 
         </div>
-
-        {/* 答え+著作権エリア（A4下端に固定） */}
-        <section className="jimipri-footer-area">
-          {data && showAnswers && (
-            <AnswerArea answers={data.answers} />
-          )}
-          <div style={{ position: "absolute", height: "5mm", bottom: "7mm", right: "5mm", fontSize: "3mm" }}>
-            <span>{dateStr}　</span>
-            <strong>じみぷり（地味に助かる学習プリント）</strong>
-            　©jimitas.com
-          </div>
-        </section>
       </div>
     </main>
   )
@@ -692,11 +692,28 @@ function DecimalCalcTable({
 // 文章題・穴埋め・単位変換などテキスト形式の問題を表示
 // problems配列の各要素を改行(\n)で分割して描画する
 // -------------------------------------------------------
-function CustomProblemDisplay({ data }: { data: CustomResult }) {
+// 問題固有のスタイル設定（元のJSで TBL.style.xxx や インラインで設定されていた値）
+const CUSTOM_STYLES: Record<string, React.CSSProperties> = {
+  // 元: TBL.style.lineHeight = "1.6"; TBL.style.fontSize = "18px";
+  "hirei":       { fontSize: "18px", lineHeight: "1.6" },
+  // 元: TBL.style.lineHeight = "1.7"; TBL.style.fontSize = "18px";
+  "mojitoshiki": { fontSize: "18px", lineHeight: "1.7" },
+  // 元: <div class="h4" style="line-height:36px;"> (Bootstrap .h4 = 1.5rem = 24px)
+  "1000made":    { fontSize: "24px", lineHeight: "36px" },
+  // 元: <div class="h4" style="line-height:34px;">
+  "10000made":   { fontSize: "24px", lineHeight: "34px" },
+  // 元: <h5 style="width:18cm;"> (Bootstrap .h5 = 1.25rem = 20px)
+  "hayasa":      { fontSize: "20px", width: "18cm" },
+  "taiseki":     { fontSize: "20px", width: "18cm" },
+  "taniryou":    { fontSize: "20px", width: "18cm" },
+}
+
+function CustomProblemDisplay({ data, printId }: { data: CustomResult; printId: string }) {
   // HTMLタグを含む問題（分数表示など）はdangerouslySetInnerHTMLで描画
   // 全問題テキストは内部生成のため安全
+  const customStyle = CUSTOM_STYLES[printId]
   return (
-    <div style={{ fontSize: "5mm", lineHeight: "9mm" }}>
+    <div style={customStyle || { fontSize: "5mm", lineHeight: "9mm" }}>
       {data.problems.map((text, i) => {
         const hasHtml = text.includes("<")
         if (hasHtml) {
@@ -733,7 +750,7 @@ function AnswerArea({ answers }: { answers: (number | string)[] }) {
   const widthPct = 100 / cols
 
   return (
-    <div style={{ display: "flex", flexWrap: "wrap", fontSize: "4mm" }}>
+    <div style={{ display: "flex", flexWrap: "wrap" }}>
       {answers.map((ans, i) => {
         const text = `${BANGOU[i]}　${ans}`
         // 分数答えなどHTMLを含む場合はdangerouslySetInnerHTMLで描画
@@ -1019,14 +1036,8 @@ function NanjiDisplay({ data }: { data: NanjiResult }) {
                 height={400}
                 style={{ zoom: 0.65, marginTop: "-25px" }}
               />
-              {/* 回答テキスト枠（元: .clock_answer_text） */}
-              <div style={{
-                height: "50px",
-                marginTop: "-20px",
-                fontSize: "8mm",
-                textAlign: "right",
-                border: "solid 1px black",
-              }}>
+              {/* 回答テキスト枠（元: .clock_answer_text — globals.css で定義） */}
+              <div className="clock_answer_text">
                 {data.problems[i + 1]?.replace(/^[①②③④⑤⑥]\s*/, "")}
               </div>
             </div>
