@@ -417,7 +417,6 @@ input, textarea {
     transform: scale(1) !important;
     border: none !important;
     box-shadow: none !important;
-    zoom: 1.25;
   }
   .jimipri-footer-area {
     position: fixed !important;
