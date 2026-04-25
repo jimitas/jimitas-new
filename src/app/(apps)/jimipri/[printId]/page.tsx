@@ -743,37 +743,36 @@ function CustomProblemDisplay({ data, printId }: { data: CustomResult; printId: 
 }
 
 // -------------------------------------------------------
-// 答えエリア
-// 元の answerCreate のReact版
+// 答えエリア（元: answerCreate のReact版）
 //
-// 元の実装:
-//   answerCreate() は各答えを div(display:flex, width:N%) で並べる。
-//   ただし 1000made/10000made など一部プリントは answerCreate() を使わず
-//   直接 innerHTML にプレーンテキストを流し込んでいた（<br>で改行制御）。
+// 元の answerCreate():
+//   cols = ceil(問題数/2)
+//   各答えを div(display:flex, width: 100/cols %) で配置
+//   親 #answer-area は d-flex flex-wrap（Bootstrap）
+//   → 均等幅で2行に並ぶ（例: 20問なら10列×2行）
 //
-// React版では全プリント統一で、元と同じ flex-wrap レイアウトを使う。
-// 答えが長いプリントはフッターと重ならないよう問題側で短い答えを生成する。
+// answerCreate() を使わないプリントは answerHtml を使い、
+// この AnswerArea は呼ばれない。
 // -------------------------------------------------------
 function AnswerArea({ answers }: { answers: (number | string)[] }) {
-  // 元の実装:
-  //   answerCreate() は各答えを div(display:flex, width:N%) で flex-wrap 配置。
-  //   ただし 1000made/10000made 等は answerCreate() を使わず
-  //   直接 innerHTML にインラインテキストを流し込んでいた。
-  //
-  // どちらの方式でもフッター内に収まるよう、インラインspan方式で統一する。
-  // 答えテキストが自然に横に流れ、親の幅で折り返すため改行数が最小になる。
+  const cols = Math.ceil(answers.length / 2)
+  const widthPct = 100 / cols
+
   return (
-    <div>
+    <div style={{ display: "flex", flexWrap: "wrap" }}>
       {answers.map((ans, i) => {
-        const text = `${BANGOU[i]}　${ans}　　`
+        const text = `${BANGOU[i]}　${ans}`
         const hasHtml = typeof ans === "string" && ans.includes("<")
         return hasHtml ? (
-          <span
+          <div
             key={i}
+            style={{ display: "flex", width: `${widthPct}%` }}
             dangerouslySetInnerHTML={{ __html: text }}
           />
         ) : (
-          <span key={i}>{text}</span>
+          <div key={i} style={{ display: "flex", width: `${widthPct}%` }}>
+            {text}
+          </div>
         )
       })}
     </div>
