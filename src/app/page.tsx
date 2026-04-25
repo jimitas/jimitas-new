@@ -21,6 +21,7 @@
 // サーバーコンポーネントでOK（データ取得・表示のみ）。
 // ======================================================
 
+import Link from "next/link"
 import GradeSection from "@/components/common/GradeSection"
 import { apps } from "@/data/apps"
 import { AppItem, Grade } from "@/types"
@@ -115,11 +116,11 @@ const SECTIONS: SectionDef[] = [
       ) || app.grades.includes("先生向け"),
   },
 
-  // 教材作成（print 種別のみ）
+  // 教材作成（print 種別、jimipri はバナーで別表示するので除外）
   {
     id: "print",
     title: "📄 教材作成",
-    filter: (app) => app.type === "print",
+    filter: (app) => app.type === "print" && app.id !== "jimipri",
   },
 ]
 
@@ -141,6 +142,43 @@ export default function HomePage() {
         id を GradeSection に渡すことで <section id="grade-1"> が生成され、
         ヘッダーの学年ナビのアンカーリンクが機能する。
       */}
+      {/* ===== じみぷりバナー ===== */}
+      {/* 39種の算数プリントを内包する大型コンテンツなので、
+          通常カードとは別に目立つバナーとして配置する */}
+      <section className="mb-10 scroll-mt-24">
+        <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b-2 border-brand-400">
+          🖨️ じみぷり（算数プリント）
+        </h2>
+        <Link href="/jimipri">
+          <div className="
+            rounded-xl border-2 border-green-300 dark:border-green-700
+            bg-gradient-to-r from-green-50 to-emerald-50
+            dark:from-green-950 dark:to-emerald-950
+            p-4 hover:shadow-md hover:-translate-y-0.5
+            transition-all duration-150 cursor-pointer
+          ">
+            <div className="flex items-center gap-3">
+              <div className="text-3xl">📝</div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
+                  じみぷり ― 地味に助かる学習プリント
+                </h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                  たし算・ひき算・かけ算・わり算・分数など、1〜6年生の算数プリントを自動生成して印刷できます（全39種）
+                </p>
+                <div className="flex gap-2 mt-2">
+                  {["1年", "2年", "3年", "4年", "5年", "6年"].map((g) => (
+                    <span key={g} className="text-xs px-2 py-0.5 rounded-full bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200">
+                      {g}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+        </Link>
+      </section>
+
       {SECTIONS.map((section) => {
         // フィルタ後のアプリ一覧（disabled なアプリは除外）
         const filtered = apps.filter(a => !a.disabled && section.filter(a))

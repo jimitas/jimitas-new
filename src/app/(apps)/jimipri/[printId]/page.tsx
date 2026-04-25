@@ -81,7 +81,7 @@ export default function JimipriPrintPage() {
           href="/jimipri"
           className="px-3 py-2 bg-gray-200 dark:bg-gray-700 rounded text-sm font-bold hover:bg-gray-300"
         >
-          メニュー
+          じみぷりメニュー
         </Link>
 
         {/* モード選択（複数モードがある場合のみ表示） */}
