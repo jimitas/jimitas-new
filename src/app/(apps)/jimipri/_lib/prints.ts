@@ -8,6 +8,11 @@ import { generateHiku1 } from "./problems/hiku1"
 import { generateTasu2 } from "./problems/tasu2"
 import { generateHiku2 } from "./problems/hiku2"
 import { generateKake1 } from "./problems/kake1"
+import { generateKake2 } from "./problems/kake2"
+import { generateWarizan } from "./problems/warizan"
+import { generateWariAmari } from "./problems/wariAmari"
+import { generateHyakuMade } from "./problems/hyakuMade"
+import { generateMittuNo } from "./problems/mittuNo"
 
 // 未実装プリントのプレースホルダー
 const notImplemented = () => ({ left: [], right: [], answers: [] })
@@ -22,13 +27,13 @@ export const ALL_PRINTS: PrintDef[] = [
   { id: "tasu-1",     title: "たしざん（１）",           originalNumber: 2,  grade: 1, operator: "+", modes: [{ label: "10までのたしざん", value: 0 }], generate: generateTasu1, displayType: "oneLine" },
   { id: "hiku-1",     title: "ひきざん（１）",           originalNumber: 3,  grade: 1, operator: "-", modes: [{ label: "10までのひきざん", value: 0 }], generate: generateHiku1, displayType: "oneLine" },
   { id: "nanji-1",    title: "なんじ　なんじはん",       originalNumber: 4,  grade: 1, operator: "", modes: [{ label: "なんじ　なんじはん", value: 0 }], generate: notImplemented, displayType: "custom" },
-  { id: "3tuno",      title: "３つのかずのけいさん",     originalNumber: 5,  grade: 1, operator: "", modes: [{ label: "〇+〇+〇", value: 0 }, { label: "〇-〇-〇", value: 1 }, { label: "+と-のまじった", value: 2 }], generate: notImplemented, displayType: "oneLine" },
+  { id: "3tuno",      title: "３つのかずのけいさん",     originalNumber: 5,  grade: 1, operator: "", modes: [{ label: "〇+〇+〇", value: 0 }, { label: "〇-〇-〇", value: 1 }, { label: "+と-のまじった", value: 2 }], generate: generateMittuNo, displayType: "threeLine" },
   { id: "tasu-2",     title: "たしざん（２）",           originalNumber: 6,  grade: 1, operator: "+", modes: [{ label: "20までのたしざん", value: 0 }], generate: generateTasu2, displayType: "oneLine" },
   { id: "hiku-2",     title: "ひきざん（２）",           originalNumber: 7,  grade: 1, operator: "-", modes: [{ label: "くりさがり あり", value: 0 }, { label: "１□-□", value: 1 }], generate: generateHiku2, displayType: "oneLine" },
   { id: "mono-hito",  title: "ものとひとのかず",         originalNumber: 8,  grade: 1, operator: "", modes: [{ label: "ものとひとのかず", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "nanji-2",    title: "なんじ　なんぷん",         originalNumber: 9,  grade: 1, operator: "", modes: [{ label: "なんじなんぷん", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "tasu-hiku",  title: "たすのかな　ひくのかな",   originalNumber: 10, grade: 1, operator: "", modes: [{ label: "たすのかなひくのかな", value: 0 }], generate: notImplemented, displayType: "custom" },
-  { id: "100made",    title: "１００までのかずのけいさん", originalNumber: 11, grade: 1, operator: "", modes: [{ label: "10のくらい+10のくらい", value: 0 }, { label: "10のくらい+1のくらい", value: 1 }, { label: "100のくらい", value: 2 }], generate: notImplemented, displayType: "oneLine" },
+  { id: "100made",    title: "１００までのかずのけいさん", originalNumber: 11, grade: 1, operator: "", modes: [{ label: "〇0+〇0", value: 0 }, { label: "〇0-〇0", value: 1 }, { label: "〇〇+〇", value: 2 }, { label: "〇〇-〇", value: 3 }], generate: generateHyakuMade, displayType: "oneLine" },
 
   // --- 2年生 ---
   { id: "hyou-graph", title: "ひょう・グラフ",           originalNumber: 12, grade: 2, operator: "", modes: [{ label: "ひょう・グラフ", value: 0 }], generate: notImplemented, displayType: "custom" },
@@ -36,14 +41,14 @@ export const ALL_PRINTS: PrintDef[] = [
   { id: "1000made",   title: "１０００までの数",         originalNumber: 14, grade: 2, operator: "", modes: [{ label: "1000までの数", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "hissan-2",   title: "たし算とひき算のひっ算（２）", originalNumber: 15, grade: 2, operator: "", modes: [{ label: "たし算(3けた)", value: 0 }, { label: "ひき算(3けた)", value: 1 }], generate: notImplemented, displayType: "column" },
   { id: "kake-1",     title: "かけ算（１）",             originalNumber: 16, grade: 2, operator: "×", modes: [{ label: "かけざん(2〜5)のだん", value: 0 }], generate: generateKake1, displayType: "oneLine" },
-  { id: "kake-2",     title: "かけ算（２）",             originalNumber: 17, grade: 2, operator: "×", modes: [{ label: "かけざん(6〜9)のだん", value: 0 }], generate: notImplemented, displayType: "oneLine" },
+  { id: "kake-2",     title: "かけ算（２）",             originalNumber: 17, grade: 2, operator: "×", modes: [{ label: "かけざん(6〜9)のだん", value: 0 }, { label: "かけざん(2〜9)のだん", value: 1 }], generate: generateKake2, displayType: "oneLine" },
   { id: "10000made",  title: "１００００までの数",       originalNumber: 18, grade: 2, operator: "", modes: [{ label: "10000までの数", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "kasa-nagasa", title: "かさ・長さのたんい",      originalNumber: 19, grade: 2, operator: "", modes: [{ label: "かさ・長さ", value: 0 }], generate: notImplemented, displayType: "custom" },
 
   // --- 3年生 ---
-  { id: "warizan",    title: "わり算",                   originalNumber: 20, grade: 3, operator: "÷", modes: [{ label: "わり算", value: 0 }], generate: notImplemented, displayType: "oneLine" },
+  { id: "warizan",    title: "わり算",                   originalNumber: 20, grade: 3, operator: "÷", modes: [{ label: "わり算", value: 0 }], generate: generateWarizan, displayType: "oneLine" },
   { id: "jikoku",     title: "時こくと時間",             originalNumber: 21, grade: 3, operator: "", modes: [{ label: "時こくと時間", value: 0 }], generate: notImplemented, displayType: "custom" },
-  { id: "wari-amari", title: "あまりのあるわり算",       originalNumber: 22, grade: 3, operator: "÷", modes: [{ label: "あまりのあるわり算", value: 0 }], generate: notImplemented, displayType: "oneLine" },
+  { id: "wari-amari", title: "あまりのあるわり算",       originalNumber: 22, grade: 3, operator: "÷", modes: [{ label: "あまりのあるわり算", value: 0 }], generate: generateWariAmari, displayType: "oneLine" },
   { id: "kake-hissan1", title: "１けたをかけるかけ算の筆算", originalNumber: 23, grade: 3, operator: "×", modes: [{ label: "くり上がりなし", value: 0 }, { label: "くり上がり1回", value: 1 }, { label: "くり上がり2回", value: 2 }], generate: notImplemented, displayType: "column" },
   { id: "kake-hissan2", title: "２けたをかけるかけ算の筆算", originalNumber: 24, grade: 3, operator: "×", modes: [{ label: "2けた×2けた", value: 0 }, { label: "3けた×2けた", value: 1 }], generate: notImplemented, displayType: "column" },
 

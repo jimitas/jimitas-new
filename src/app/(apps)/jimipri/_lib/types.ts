@@ -7,8 +7,18 @@ export type OneLineResult = {
   answers: (number | string)[]
 }
 
+/** 3つの数の計算の問題データ（10問セット） */
+export type ThreeLineResult = {
+  left: number[]
+  kigo1: string[]
+  mid: number[]
+  kigo2: string[]
+  right: number[]
+  answers: (number | string)[]
+}
+
 /** 問題生成関数の型 */
-export type ProblemGenerator = (modeIndex: number) => OneLineResult
+export type ProblemGenerator = (modeIndex: number) => OneLineResult | ThreeLineResult
 
 /** モード（セレクトメニューの選択肢） */
 export type PrintMode = {
@@ -32,8 +42,8 @@ export type PrintDef = {
   modes: PrintMode[]
   /** 問題生成関数 */
   generate: ProblemGenerator
-  /** 表示タイプ（将来拡張用: "oneLine" | "column" | "custom"） */
-  displayType: "oneLine" | "column" | "custom"
+  /** 表示タイプ */
+  displayType: "oneLine" | "threeLine" | "column" | "custom"
 }
 
 /** 学年グループ */

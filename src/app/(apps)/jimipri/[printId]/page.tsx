@@ -4,8 +4,8 @@
 // じみぷり 各プリントページ（動的ルート）
 //
 // /jimipri/[printId] で各プリントを表示する。
-// 左: コントロールパネル（モード選択・もんだい・いんさつ）
-// 右: A4プレビュー（印刷対象エリア）
+// コントロールパネル（モード選択・もんだい・いんさつ）
+// A4プレビュー（印刷対象エリア）
 //
 // 問題生成は純粋関数で行い、stateで保持 → JSXで描画する。
 // ======================================================
@@ -14,10 +14,14 @@ import { useParams } from "next/navigation"
 import { useState, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { getPrintDef, isImplemented } from "../_lib/prints"
-import type { OneLineResult } from "../_lib/types"
+import type { OneLineResult, ThreeLineResult } from "../_lib/types"
+import { playSe, set as seSet, pi as sePi } from "@/lib/se"
 
 // 丸数字（①〜⑳）
 const BANGOU = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬","⑭","⑮","⑯","⑰","⑱","⑲","⑳"]
+
+// 100made のモード別演算記号
+const HYAKU_OPERATOR: Record<number, string> = { 0: "+", 1: "-", 2: "+", 3: "-" }
 
 export default function JimipriPrintPage() {
   const params = useParams()
@@ -26,7 +30,7 @@ export default function JimipriPrintPage() {
 
   // 状態: モード選択と問題データ
   const [modeIndex, setModeIndex] = useState(0)
-  const [data, setData] = useState<OneLineResult | null>(null)
+  const [data, setData] = useState<OneLineResult | ThreeLineResult | null>(null)
   const [showAnswers, setShowAnswers] = useState(false)
 
   // 問題を生成する関数
@@ -35,6 +39,7 @@ export default function JimipriPrintPage() {
     const result = printDef.generate(modeIndex)
     setData(result)
     setShowAnswers(false)
+    playSe(seSet)
   }, [printDef, modeIndex])
 
   // 初回ロード時に問題を生成
@@ -70,6 +75,11 @@ export default function JimipriPrintPage() {
   // 今日の日付
   const now = new Date()
   const dateStr = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`
+
+  // 演算記号の決定（100made はモードごとに記号が変わる）
+  const operator = printDef.id === "100made"
+    ? HYAKU_OPERATOR[modeIndex] || "+"
+    : printDef.operator
 
   return (
     <main className="min-h-screen flex flex-col px-4 py-4">
@@ -112,7 +122,10 @@ export default function JimipriPrintPage() {
 
         {/* こたえ表示/非表示 */}
         <button
-          onClick={() => setShowAnswers(!showAnswers)}
+          onClick={() => {
+            setShowAnswers(!showAnswers)
+            playSe(sePi)
+          }}
           className={`px-4 py-2 rounded font-bold text-sm ${
             showAnswers
               ? "bg-warm-500 text-white"
@@ -161,10 +174,15 @@ export default function JimipriPrintPage() {
           {/* 問題テーブル（1行式: 10行×2列 = 20問） */}
           {data && printDef.displayType === "oneLine" && (
             <OneLineTable
-              left={data.left}
-              operator={printDef.operator}
-              right={data.right}
+              left={(data as OneLineResult).left}
+              operator={operator}
+              right={(data as OneLineResult).right}
             />
+          )}
+
+          {/* 問題テーブル（3つの数: 10行×1列 = 10問） */}
+          {data && printDef.displayType === "threeLine" && (
+            <ThreeLineTable data={data as ThreeLineResult} />
           )}
 
           {/* 答えエリア（こたえボタンON時のみ表示） */}
@@ -226,13 +244,48 @@ function OneLineTable({
   )
 }
 
-// テーブルセルのインラインスタイル
+// -------------------------------------------------------
+// 3つの数テーブル（10行×1列 = 10問）
+// 元の oneLine3FormulaCreate のReact版
+// -------------------------------------------------------
+function ThreeLineTable({ data }: { data: ThreeLineResult }) {
+  return (
+    <table style={{ borderCollapse: "collapse", width: "100%" }}>
+      <tbody>
+        {Array.from({ length: 10 }, (_, row) => (
+          <tr key={row}>
+            <td className="text-center" style={tdStyle3("20mm", "22mm")}>{BANGOU[row]}</td>
+            <td className="text-center" style={tdStyle3("12mm", "22mm")}>{data.left[row]}</td>
+            <td className="text-center" style={tdStyle3("12mm", "22mm")}>{data.kigo1[row]}</td>
+            <td className="text-center" style={tdStyle3("12mm", "22mm")}>{data.mid[row]}</td>
+            <td className="text-center" style={tdStyle3("12mm", "22mm")}>{data.kigo2[row]}</td>
+            <td className="text-center" style={tdStyle3("12mm", "22mm")}>{data.right[row]}</td>
+            <td className="text-left" style={tdStyle3("60mm", "22mm")}>=</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}
+
+// テーブルセルのインラインスタイル（1行式用）
 function tdStyle(width: string, height: string): React.CSSProperties {
   return {
     width,
     height,
     fontSize: "10mm",
     lineHeight: height,
+  }
+}
+
+// テーブルセルのインラインスタイル（3つの数用）
+function tdStyle3(width: string, height: string): React.CSSProperties {
+  return {
+    width,
+    height,
+    fontSize: "10mm",
+    lineHeight: height,
+    textAlign: "center",
   }
 }
 
