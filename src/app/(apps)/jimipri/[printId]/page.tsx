@@ -20,8 +20,12 @@ import { playSe, set as seSet, pi as sePi } from "@/lib/se"
 // 丸数字（①〜⑳）
 const BANGOU = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬","⑭","⑮","⑯","⑰","⑱","⑲","⑳"]
 
-// 100made のモード別演算記号
-const HYAKU_OPERATOR: Record<number, string> = { 0: "+", 1: "-", 2: "+", 3: "-" }
+// モード別演算記号（operatorが空のプリントで使用）
+const MODE_OPERATORS: Record<string, Record<number, string>> = {
+  "100made":  { 0: "+", 1: "-", 2: "+", 3: "-" },
+  "hissan-1": { 0: "+", 1: "+", 2: "-", 3: "-" },
+  "hissan-2": { 0: "+", 1: "+", 2: "-", 3: "-" },
+}
 
 export default function JimipriPrintPage() {
   const params = useParams()
@@ -76,9 +80,10 @@ export default function JimipriPrintPage() {
   const now = new Date()
   const dateStr = `${now.getFullYear()}/${now.getMonth() + 1}/${now.getDate()}`
 
-  // 演算記号の決定（100made はモードごとに記号が変わる）
-  const operator = printDef.id === "100made"
-    ? HYAKU_OPERATOR[modeIndex] || "+"
+  // 演算記号の決定（一部プリントはモードごとに記号が変わる）
+  const modeOps = MODE_OPERATORS[printDef.id]
+  const operator = modeOps
+    ? modeOps[modeIndex] || "+"
     : printDef.operator
 
   return (
@@ -185,6 +190,15 @@ export default function JimipriPrintPage() {
             <ThreeLineTable data={data as ThreeLineResult} />
           )}
 
+          {/* 問題テーブル（筆算: 3列×N行） */}
+          {data && printDef.displayType === "column" && (
+            <ColumnCalcTable
+              left={(data as OneLineResult).left}
+              right={(data as OneLineResult).right}
+              operator={operator}
+            />
+          )}
+
           {/* 答えエリア（こたえボタンON時のみ表示） */}
           {data && showAnswers && (
             <div className="mt-4">
@@ -286,6 +300,184 @@ function tdStyle3(width: string, height: string): React.CSSProperties {
     fontSize: "10mm",
     lineHeight: height,
     textAlign: "center",
+  }
+}
+
+// -------------------------------------------------------
+// 筆算テーブル（3列×N行）
+// 元の columnCalcCreate2Digit / columnCalcCreate3Digit のReact版
+// 数値の桁数から自動で2桁/3桁レイアウトを判定する
+// -------------------------------------------------------
+function ColumnCalcTable({
+  left,
+  right,
+  operator,
+}: {
+  left: number[]
+  right: number[]
+  operator: string
+}) {
+  const total = left.length
+  const cols = 3
+  const rows = Math.ceil(total / cols)
+
+  // 最大桁数を判定（上の数が3桁以上なら3桁レイアウト）
+  const maxDigits = Math.max(...left) >= 100 ? 3 : 2
+
+  // 行の高さ調整（行数が少ないほど余白を大きく）
+  const answerHeight = rows <= 3 ? "38mm" : rows <= 4 ? "20mm" : "10mm"
+
+  return (
+    <table style={{ borderCollapse: "collapse", width: "100%" }}>
+      <tbody>
+        {Array.from({ length: rows }, (_, row) =>
+          // 各問題は4行で構成: 空行、上の数、下の数（演算記号+下線）、答え記入欄
+          [0, 1, 2, 3].map((subRow) => (
+            <tr key={`${row}-${subRow}`}>
+              {Array.from({ length: cols }, (_, col) => {
+                const idx = row * cols + col
+                if (idx >= total) {
+                  // 問題数に満たない場合は空セル
+                  return maxDigits === 3
+                    ? [0, 1, 2, 3, 4].map(c => <td key={c} style={colStyle(maxDigits)} />)
+                    : [0, 1, 2, 3].map(c => <td key={c} style={colStyle(maxDigits)} />)
+                }
+
+                const a = left[idx]
+                const b = right[idx]
+
+                if (maxDigits === 3) {
+                  return renderColumn3Digit(subRow, idx, a, b, operator, answerHeight)
+                } else {
+                  return renderColumn2Digit(subRow, idx, a, b, operator, answerHeight)
+                }
+              })}
+            </tr>
+          ))
+        ).flat()}
+      </tbody>
+    </table>
+  )
+}
+
+// 2桁筆算の1問分のセルを描画（番号、十の位、一の位、余白）
+function renderColumn2Digit(
+  subRow: number, idx: number, a: number, b: number,
+  operator: string, answerHeight: string
+) {
+  const cellW = "18mm"
+  const cellH = "10mm"
+  const fontSize = "11mm"
+
+  switch (subRow) {
+    case 0: // 空行
+      return [
+        <td key={`${idx}-0-0`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-1`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-2`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-3`} style={{ ...colCellStyle("40mm", cellH, fontSize) }} />,
+      ]
+    case 1: // 番号 + 上の数
+      return [
+        <td key={`${idx}-1-0`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>{BANGOU[idx]}</td>,
+        <td key={`${idx}-1-1`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>
+          {Math.floor(a / 10) !== 0 ? Math.floor(a / 10) : ""}
+        </td>,
+        <td key={`${idx}-1-2`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>{a % 10}</td>,
+        <td key={`${idx}-1-3`} style={{ ...colCellStyle("40mm", cellH, fontSize) }} />,
+      ]
+    case 2: // 演算記号 + 下の数 + 下線
+      return [
+        <td key={`${idx}-2-0`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>{operator}</td>,
+        <td key={`${idx}-2-1`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>
+          {Math.floor(b / 10) !== 0 ? Math.floor(b / 10) : ""}
+        </td>,
+        <td key={`${idx}-2-2`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>{b % 10}</td>,
+        <td key={`${idx}-2-3`} style={{ ...colCellStyle("40mm", cellH, fontSize) }} />,
+      ]
+    case 3: // 答え記入欄
+      return [
+        <td key={`${idx}-3-0`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-1`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-2`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-3`} style={{ ...colCellStyle("40mm", answerHeight, fontSize) }} />,
+      ]
+    default:
+      return null
+  }
+}
+
+// 3桁筆算の1問分のセルを描画（番号、百の位、十の位、一の位、余白）
+function renderColumn3Digit(
+  subRow: number, idx: number, a: number, b: number,
+  operator: string, answerHeight: string
+) {
+  const cellW = "16mm"
+  const cellH = "10mm"
+  const fontSize = "11mm"
+
+  switch (subRow) {
+    case 0: // 空行
+      return [
+        <td key={`${idx}-0-0`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-1`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-2`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-3`} style={{ ...colCellStyle(cellW, cellH, fontSize) }} />,
+        <td key={`${idx}-0-4`} style={{ ...colCellStyle("40mm", cellH, fontSize) }} />,
+      ]
+    case 1: // 番号 + 上の数
+      return [
+        <td key={`${idx}-1-0`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>{BANGOU[idx]}</td>,
+        <td key={`${idx}-1-1`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>
+          {Math.floor(a / 100) !== 0 ? Math.floor(a / 100) : ""}
+        </td>,
+        <td key={`${idx}-1-2`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>{Math.floor((a % 100) / 10)}</td>,
+        <td key={`${idx}-1-3`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center" }}>{a % 10}</td>,
+        <td key={`${idx}-1-4`} style={{ ...colCellStyle("40mm", cellH, fontSize) }} />,
+      ]
+    case 2: // 演算記号 + 下の数 + 下線
+      return [
+        <td key={`${idx}-2-0`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>{operator}</td>,
+        <td key={`${idx}-2-1`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>
+          {/* 下の数が3桁の場合: 百の位 / 2桁の場合: 空 */}
+          {b >= 100 ? Math.floor(b / 100) : ""}
+        </td>,
+        <td key={`${idx}-2-2`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>
+          {Math.floor(b / 10) % 10 !== 0 || b >= 100 ? Math.floor(b / 10) % 10 : ""}
+          {/* 2桁の場合は十の位、0でなければ表示 */}
+        </td>,
+        <td key={`${idx}-2-3`} style={{ ...colCellStyle(cellW, cellH, fontSize), textAlign: "center", borderBottom: "solid 1px black" }}>{b % 10}</td>,
+        <td key={`${idx}-2-4`} style={{ ...colCellStyle("40mm", cellH, fontSize) }} />,
+      ]
+    case 3: // 答え記入欄
+      return [
+        <td key={`${idx}-3-0`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-1`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-2`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-3`} style={{ ...colCellStyle(cellW, answerHeight, fontSize) }} />,
+        <td key={`${idx}-3-4`} style={{ ...colCellStyle("40mm", answerHeight, fontSize) }} />,
+      ]
+    default:
+      return null
+  }
+}
+
+// 筆算セルの共通スタイル
+function colCellStyle(width: string, height: string, fontSize: string): React.CSSProperties {
+  return {
+    width,
+    height,
+    lineHeight: height,
+    fontSize,
+    textAlign: "center",
+  }
+}
+
+// 空セルスタイル（桁数で変える）
+function colStyle(maxDigits: number): React.CSSProperties {
+  return {
+    width: maxDigits === 3 ? "16mm" : "18mm",
+    height: "10mm",
   }
 }
 
