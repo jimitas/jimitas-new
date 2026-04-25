@@ -38,6 +38,10 @@ import { generateBunsu1 } from "./problems/bunsu1"
 import { generateBunsu2 } from "./problems/bunsu2"
 import { generateBunsuKake } from "./problems/bunsuKake"
 import { generateBunsuWari } from "./problems/bunsuWari"
+import { generateNanbanme } from "./problems/nanbanme"
+import { generateNanji1 } from "./problems/nanji1"
+import { generateNanji2 } from "./problems/nanji2"
+import { generateHyouGraph } from "./problems/hyouGraph"
 
 // 未実装プリントのプレースホルダー
 const notImplemented = () => ({ left: [], right: [], answers: [] })
@@ -48,20 +52,20 @@ const notImplemented = () => ({ left: [], right: [], answers: [] })
 // ======================================================
 export const ALL_PRINTS: PrintDef[] = [
   // --- 1年生 ---
-  { id: "nanbanme",   title: "なんばんめ",               originalNumber: 1,  grade: 1, operator: "", modes: [{ label: "なんばんめ", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "nanbanme",   title: "なんばんめ",               originalNumber: 1,  grade: 1, operator: "", modes: [{ label: "なんばんめ", value: 0 }], generate: generateNanbanme, displayType: "custom" },
   { id: "tasu-1",     title: "たしざん（１）",           originalNumber: 2,  grade: 1, operator: "+", modes: [{ label: "10までのたしざん", value: 0 }], generate: generateTasu1, displayType: "oneLine" },
   { id: "hiku-1",     title: "ひきざん（１）",           originalNumber: 3,  grade: 1, operator: "-", modes: [{ label: "10までのひきざん", value: 0 }], generate: generateHiku1, displayType: "oneLine" },
-  { id: "nanji-1",    title: "なんじ　なんじはん",       originalNumber: 4,  grade: 1, operator: "", modes: [{ label: "なんじ　なんじはん", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "nanji-1",    title: "なんじ　なんじはん",       originalNumber: 4,  grade: 1, operator: "", modes: [{ label: "なんじ　なんじはん", value: 0 }], generate: generateNanji1, displayType: "custom" },
   { id: "3tuno",      title: "３つのかずのけいさん",     originalNumber: 5,  grade: 1, operator: "", modes: [{ label: "〇+〇+〇", value: 0 }, { label: "〇-〇-〇", value: 1 }, { label: "+と-のまじった", value: 2 }], generate: generateMittuNo, displayType: "threeLine" },
   { id: "tasu-2",     title: "たしざん（２）",           originalNumber: 6,  grade: 1, operator: "+", modes: [{ label: "20までのたしざん", value: 0 }], generate: generateTasu2, displayType: "oneLine" },
   { id: "hiku-2",     title: "ひきざん（２）",           originalNumber: 7,  grade: 1, operator: "-", modes: [{ label: "くりさがり あり", value: 0 }, { label: "１□-□", value: 1 }], generate: generateHiku2, displayType: "oneLine" },
   { id: "mono-hito",  title: "ものとひとのかず",         originalNumber: 8,  grade: 1, operator: "", modes: [{ label: "ものとひとのかず", value: 0 }], generate: generateMonoHito, displayType: "custom" },
-  { id: "nanji-2",    title: "なんじ　なんぷん",         originalNumber: 9,  grade: 1, operator: "", modes: [{ label: "なんじなんぷん", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "nanji-2",    title: "なんじ　なんぷん",         originalNumber: 9,  grade: 1, operator: "", modes: [{ label: "なんじなんぷん", value: 0 }], generate: generateNanji2, displayType: "custom" },
   { id: "tasu-hiku",  title: "たすのかな　ひくのかな",   originalNumber: 10, grade: 1, operator: "", modes: [{ label: "たすのかなひくのかな", value: 0 }], generate: generateTasuHiku, displayType: "custom" },
   { id: "100made",    title: "１００までのかずのけいさん", originalNumber: 11, grade: 1, operator: "", modes: [{ label: "〇0+〇0", value: 0 }, { label: "〇0-〇0", value: 1 }, { label: "〇〇+〇", value: 2 }, { label: "〇〇-〇", value: 3 }], generate: generateHyakuMade, displayType: "oneLine" },
 
   // --- 2年生 ---
-  { id: "hyou-graph", title: "ひょう・グラフ",           originalNumber: 12, grade: 2, operator: "", modes: [{ label: "ひょう・グラフ", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "hyou-graph", title: "ひょう・グラフ",           originalNumber: 12, grade: 2, operator: "", modes: [{ label: "ひょう・グラフ", value: 0 }], generate: generateHyouGraph, displayType: "custom" },
   { id: "hissan-1",   title: "たし算とひき算のひっ算（１）", originalNumber: 13, grade: 2, operator: "", modes: [{ label: "+くり上がりなし", value: 0 }, { label: "+くり上がりあり", value: 1 }, { label: "-くりさがりなし", value: 2 }, { label: "-くりさがりあり", value: 3 }], generate: generateHissan1, displayType: "column" },
   { id: "1000made",   title: "１０００までの数",         originalNumber: 14, grade: 2, operator: "", modes: [{ label: "1000までの数", value: 0 }], generate: generateSenMade, displayType: "custom" },
   { id: "hissan-2",   title: "たし算とひき算のひっ算（２）", originalNumber: 15, grade: 2, operator: "", modes: [{ label: "100をこえるたし算", value: 0 }, { label: "99+99まで", value: 1 }, { label: "100をこえるひき算", value: 2 }, { label: "1○○-○○", value: 3 }], generate: generateHissan2, displayType: "column" },
