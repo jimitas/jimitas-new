@@ -15,7 +15,7 @@ export function generateNanji1(): NanjiResult {
 
   const checkArray: number[] = []
 
-  problems.push(`つぎの　じこくを　こたえましょう。`)
+  // 元の nanji-1 にはタイトル行がない（プリントタイトルはヘッダーに表示）
 
   for (let i = 0; i < 6; i++) {
     let hour: number

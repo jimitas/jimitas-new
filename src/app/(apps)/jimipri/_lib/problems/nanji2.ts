@@ -14,7 +14,7 @@ export function generateNanji2(): NanjiResult {
 
   const usedTimes: string[] = []
 
-  problems.push(`つぎの　じこくを　こたえましょう。`)
+  // 元の nanji-2 にはタイトル行がない（プリントタイトルはヘッダーに表示）
 
   for (let i = 0; i < 6; i++) {
     let hour: number, minute: number, timeKey: string

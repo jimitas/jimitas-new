@@ -26,7 +26,7 @@ export function generateHyouGraph(): CustomResult {
   let animalImgs = ""
   for (let i = 0; i < 4; i++) {
     for (let j = 0; j < counts[i]; j++) {
-      animalImgs += `<img src="/images/${ANIMAL_FILES[i]}.png" style="width:50px;height:50px;margin:2px;" />`
+      animalImgs += `<img src="/images/${ANIMAL_FILES[i]}.png" style="display:inline-block;width:50px;height:50px;margin:2px;" />`
     }
   }
   problems.push(

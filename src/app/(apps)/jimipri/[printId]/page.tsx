@@ -743,28 +743,35 @@ function CustomProblemDisplay({ data, printId }: { data: CustomResult; printId: 
 // -------------------------------------------------------
 // 答えエリア
 // 元の answerCreate のReact版
+//
+// 元の実装:
+//   answerCreate() は各答えを div(display:flex, width:N%) で並べる。
+//   ただし 1000made/10000made など一部プリントは answerCreate() を使わず
+//   直接 innerHTML にプレーンテキストを流し込んでいた（<br>で改行制御）。
+//
+// React版では全プリント統一で、元と同じ flex-wrap レイアウトを使う。
+// 答えが長いプリントはフッターと重ならないよう問題側で短い答えを生成する。
 // -------------------------------------------------------
 function AnswerArea({ answers }: { answers: (number | string)[] }) {
-  // 元: answerCreate — 列数 = ceil(問題数/2)、各セル幅 = 100/列数 %
-  const cols = Math.floor(answers.length / 2 + 0.5)
-  const widthPct = 100 / cols
-
+  // 元の実装:
+  //   answerCreate() は各答えを div(display:flex, width:N%) で flex-wrap 配置。
+  //   ただし 1000made/10000made 等は answerCreate() を使わず
+  //   直接 innerHTML にインラインテキストを流し込んでいた。
+  //
+  // どちらの方式でもフッター内に収まるよう、インラインspan方式で統一する。
+  // 答えテキストが自然に横に流れ、親の幅で折り返すため改行数が最小になる。
   return (
-    <div style={{ display: "flex", flexWrap: "wrap" }}>
+    <div>
       {answers.map((ans, i) => {
-        const text = `${BANGOU[i]}　${ans}`
-        // 分数答えなどHTMLを含む場合はdangerouslySetInnerHTMLで描画
+        const text = `${BANGOU[i]}　${ans}　　`
         const hasHtml = typeof ans === "string" && ans.includes("<")
         return hasHtml ? (
-          <div
+          <span
             key={i}
-            style={{ display: "flex", width: `${widthPct}%` }}
             dangerouslySetInnerHTML={{ __html: text }}
           />
         ) : (
-          <div key={i} style={{ display: "flex", width: `${widthPct}%` }}>
-            {text}
-          </div>
+          <span key={i}>{text}</span>
         )
       })}
     </div>
@@ -1012,10 +1019,7 @@ function NanjiDisplay({ data }: { data: NanjiResult }) {
 
   return (
     <div>
-      {/* 問題文（最初の要素はタイトル行） */}
-      <div style={{ fontSize: "6mm", fontWeight: "bold", marginBottom: "3mm" }}>
-        {data.problems[0]}
-      </div>
+      {/* 元の nanji-1/nanji-2 にはタイトル行がない（プリントタイトルはヘッダーに表示） */}
 
       {/* 6問を flex で配置（元: display:flex; justify-content:space-between; flex-wrap:wrap） */}
       <div
@@ -1038,7 +1042,7 @@ function NanjiDisplay({ data }: { data: NanjiResult }) {
               />
               {/* 回答テキスト枠（元: .clock_answer_text — globals.css で定義） */}
               <div className="clock_answer_text">
-                {data.problems[i + 1]?.replace(/^[①②③④⑤⑥]\s*/, "")}
+                {data.problems[i]?.replace(/^[①②③④⑤⑥]\s*/, "")}
               </div>
             </div>
           </div>
