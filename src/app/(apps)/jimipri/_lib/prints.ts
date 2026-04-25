@@ -22,6 +22,12 @@ import { generateWariHissan2 } from "./problems/wariHissan2"
 import { generateShousuKiso } from "./problems/shousuKiso"
 import { generateShousuKake } from "./problems/shousuKake"
 import { generateShousuWari } from "./problems/shousuWari"
+import { generateSenMade } from "./problems/senMade"
+import { generateManMade } from "./problems/manMade"
+import { generateKasaNagasa } from "./problems/kasaNagasa"
+import { generateJikoku } from "./problems/jikoku"
+import { generateMonoHito } from "./problems/monoHito"
+import { generateTasuHiku } from "./problems/tasuHiku"
 
 // 未実装プリントのプレースホルダー
 const notImplemented = () => ({ left: [], right: [], answers: [] })
@@ -39,24 +45,24 @@ export const ALL_PRINTS: PrintDef[] = [
   { id: "3tuno",      title: "３つのかずのけいさん",     originalNumber: 5,  grade: 1, operator: "", modes: [{ label: "〇+〇+〇", value: 0 }, { label: "〇-〇-〇", value: 1 }, { label: "+と-のまじった", value: 2 }], generate: generateMittuNo, displayType: "threeLine" },
   { id: "tasu-2",     title: "たしざん（２）",           originalNumber: 6,  grade: 1, operator: "+", modes: [{ label: "20までのたしざん", value: 0 }], generate: generateTasu2, displayType: "oneLine" },
   { id: "hiku-2",     title: "ひきざん（２）",           originalNumber: 7,  grade: 1, operator: "-", modes: [{ label: "くりさがり あり", value: 0 }, { label: "１□-□", value: 1 }], generate: generateHiku2, displayType: "oneLine" },
-  { id: "mono-hito",  title: "ものとひとのかず",         originalNumber: 8,  grade: 1, operator: "", modes: [{ label: "ものとひとのかず", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "mono-hito",  title: "ものとひとのかず",         originalNumber: 8,  grade: 1, operator: "", modes: [{ label: "ものとひとのかず", value: 0 }], generate: generateMonoHito, displayType: "custom" },
   { id: "nanji-2",    title: "なんじ　なんぷん",         originalNumber: 9,  grade: 1, operator: "", modes: [{ label: "なんじなんぷん", value: 0 }], generate: notImplemented, displayType: "custom" },
-  { id: "tasu-hiku",  title: "たすのかな　ひくのかな",   originalNumber: 10, grade: 1, operator: "", modes: [{ label: "たすのかなひくのかな", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "tasu-hiku",  title: "たすのかな　ひくのかな",   originalNumber: 10, grade: 1, operator: "", modes: [{ label: "たすのかなひくのかな", value: 0 }], generate: generateTasuHiku, displayType: "custom" },
   { id: "100made",    title: "１００までのかずのけいさん", originalNumber: 11, grade: 1, operator: "", modes: [{ label: "〇0+〇0", value: 0 }, { label: "〇0-〇0", value: 1 }, { label: "〇〇+〇", value: 2 }, { label: "〇〇-〇", value: 3 }], generate: generateHyakuMade, displayType: "oneLine" },
 
   // --- 2年生 ---
   { id: "hyou-graph", title: "ひょう・グラフ",           originalNumber: 12, grade: 2, operator: "", modes: [{ label: "ひょう・グラフ", value: 0 }], generate: notImplemented, displayType: "custom" },
   { id: "hissan-1",   title: "たし算とひき算のひっ算（１）", originalNumber: 13, grade: 2, operator: "", modes: [{ label: "+くり上がりなし", value: 0 }, { label: "+くり上がりあり", value: 1 }, { label: "-くりさがりなし", value: 2 }, { label: "-くりさがりあり", value: 3 }], generate: generateHissan1, displayType: "column" },
-  { id: "1000made",   title: "１０００までの数",         originalNumber: 14, grade: 2, operator: "", modes: [{ label: "1000までの数", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "1000made",   title: "１０００までの数",         originalNumber: 14, grade: 2, operator: "", modes: [{ label: "1000までの数", value: 0 }], generate: generateSenMade, displayType: "custom" },
   { id: "hissan-2",   title: "たし算とひき算のひっ算（２）", originalNumber: 15, grade: 2, operator: "", modes: [{ label: "100をこえるたし算", value: 0 }, { label: "99+99まで", value: 1 }, { label: "100をこえるひき算", value: 2 }, { label: "1○○-○○", value: 3 }], generate: generateHissan2, displayType: "column" },
   { id: "kake-1",     title: "かけ算（１）",             originalNumber: 16, grade: 2, operator: "×", modes: [{ label: "かけざん(2〜5)のだん", value: 0 }], generate: generateKake1, displayType: "oneLine" },
   { id: "kake-2",     title: "かけ算（２）",             originalNumber: 17, grade: 2, operator: "×", modes: [{ label: "かけざん(6〜9)のだん", value: 0 }, { label: "かけざん(2〜9)のだん", value: 1 }], generate: generateKake2, displayType: "oneLine" },
-  { id: "10000made",  title: "１００００までの数",       originalNumber: 18, grade: 2, operator: "", modes: [{ label: "10000までの数", value: 0 }], generate: notImplemented, displayType: "custom" },
-  { id: "kasa-nagasa", title: "かさ・長さのたんい",      originalNumber: 19, grade: 2, operator: "", modes: [{ label: "かさ・長さ", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "10000made",  title: "１００００までの数",       originalNumber: 18, grade: 2, operator: "", modes: [{ label: "10000までの数", value: 0 }], generate: generateManMade, displayType: "custom" },
+  { id: "kasa-nagasa", title: "かさ・長さのたんい",      originalNumber: 19, grade: 2, operator: "", modes: [{ label: "かさ・長さ", value: 0 }], generate: generateKasaNagasa, displayType: "custom" },
 
   // --- 3年生 ---
   { id: "warizan",    title: "わり算",                   originalNumber: 20, grade: 3, operator: "÷", modes: [{ label: "わり算", value: 0 }], generate: generateWarizan, displayType: "oneLine" },
-  { id: "jikoku",     title: "時こくと時間",             originalNumber: 21, grade: 3, operator: "", modes: [{ label: "時こくと時間", value: 0 }], generate: notImplemented, displayType: "custom" },
+  { id: "jikoku",     title: "時こくと時間",             originalNumber: 21, grade: 3, operator: "", modes: [{ label: "時こくと時間", value: 0 }], generate: generateJikoku, displayType: "custom" },
   { id: "wari-amari", title: "あまりのあるわり算",       originalNumber: 22, grade: 3, operator: "÷", modes: [{ label: "あまりのあるわり算", value: 0 }], generate: generateWariAmari, displayType: "oneLine" },
   { id: "kake-hissan1", title: "１けたをかけるかけ算の筆算", originalNumber: 23, grade: 3, operator: "×", modes: [{ label: "くり上がりなし", value: 0 }, { label: "くり上がり1回A", value: 1 }, { label: "くり上がり1回B", value: 2 }, { label: "くり上がり2回", value: 3 }], generate: generateKakeHissan1, displayType: "column" },
   { id: "kake-hissan2", title: "２けたをかけるかけ算の筆算", originalNumber: 24, grade: 3, operator: "×", modes: [{ label: "2けた×2けた", value: 0 }, { label: "3けた×2けた", value: 1 }], generate: generateKakeHissan2, displayType: "column" },

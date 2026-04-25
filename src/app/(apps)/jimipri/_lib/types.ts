@@ -17,8 +17,15 @@ export type ThreeLineResult = {
   answers: (number | string)[]
 }
 
+/** カスタム表示型の問題データ（テキスト問題形式） */
+export type CustomResult = {
+  /** 問題テキストのHTML配列（各要素が1問分） */
+  problems: string[]
+  answers: (number | string)[]
+}
+
 /** 問題生成関数の型 */
-export type ProblemGenerator = (modeIndex: number) => OneLineResult | ThreeLineResult
+export type ProblemGenerator = (modeIndex: number) => OneLineResult | ThreeLineResult | CustomResult
 
 /** モード（セレクトメニューの選択肢） */
 export type PrintMode = {

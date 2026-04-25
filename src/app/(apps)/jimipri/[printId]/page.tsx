@@ -14,7 +14,7 @@ import { useParams } from "next/navigation"
 import { useState, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { getPrintDef, isImplemented } from "../_lib/prints"
-import type { OneLineResult, ThreeLineResult } from "../_lib/types"
+import type { OneLineResult, ThreeLineResult, CustomResult } from "../_lib/types"
 import { playSe, set as seSet, pi as sePi } from "@/lib/se"
 
 // 丸数字（①〜⑳）
@@ -40,7 +40,7 @@ export default function JimipriPrintPage() {
 
   // 状態: モード選択と問題データ
   const [modeIndex, setModeIndex] = useState(0)
-  const [data, setData] = useState<OneLineResult | ThreeLineResult | null>(null)
+  const [data, setData] = useState<OneLineResult | ThreeLineResult | CustomResult | null>(null)
   const [showAnswers, setShowAnswers] = useState(false)
 
   // 問題を生成する関数
@@ -226,6 +226,11 @@ export default function JimipriPrintPage() {
               right={(data as OneLineResult).right}
               operator={operator}
             />
+          )}
+
+          {/* 問題表示（カスタムテキスト形式） */}
+          {data && displayType === "custom" && (
+            <CustomProblemDisplay data={data as CustomResult} />
           )}
 
           {/* 答えエリア（こたえボタンON時のみ表示） */}
@@ -674,6 +679,28 @@ function DecimalCalcTable({
         ).flat()}
       </tbody>
     </table>
+  )
+}
+
+// -------------------------------------------------------
+// カスタムテキスト問題表示
+// 文章題・穴埋め・単位変換などテキスト形式の問題を表示
+// problems配列の各要素を改行(\n)で分割して描画する
+// -------------------------------------------------------
+function CustomProblemDisplay({ data }: { data: CustomResult }) {
+  return (
+    <div style={{ fontSize: "5mm", lineHeight: "9mm" }}>
+      {data.problems.map((text, i) => (
+        <div key={i} style={{ marginBottom: "3mm" }}>
+          {text.split("\n").map((line, j) => (
+            <span key={j}>
+              {line}
+              {j < text.split("\n").length - 1 && <br />}
+            </span>
+          ))}
+        </div>
+      ))}
+    </div>
   )
 }
 
