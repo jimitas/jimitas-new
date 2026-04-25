@@ -352,6 +352,43 @@ input, textarea {
   font-family: "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", sans-serif;
 }
 
+/* 分数表示（じみぷり内の分数問題用） */
+.jf {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  vertical-align: middle;
+  margin: 0 2px;
+  line-height: 1.2;
+}
+.jf-n {
+  border-bottom: 1px solid black;
+  padding: 0 4px;
+  min-width: 1.2em;
+  text-align: center;
+}
+.jf-d {
+  padding: 0 4px;
+  min-width: 1.2em;
+  text-align: center;
+}
+.jf-whole {
+  display: inline;
+  vertical-align: middle;
+  margin-right: 1px;
+}
+/* 分数式の1行（横並び） */
+.jf-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 3mm;
+  font-size: 5mm;
+}
+.jf-row .jf-eq {
+  min-width: 30mm;
+}
+
 /* 印刷時 */
 @media print {
   .jimipri-no-print {

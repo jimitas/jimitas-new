@@ -688,18 +688,32 @@ function DecimalCalcTable({
 // problems配列の各要素を改行(\n)で分割して描画する
 // -------------------------------------------------------
 function CustomProblemDisplay({ data }: { data: CustomResult }) {
+  // HTMLタグを含む問題（分数表示など）はdangerouslySetInnerHTMLで描画
+  // 全問題テキストは内部生成のため安全
   return (
     <div style={{ fontSize: "5mm", lineHeight: "9mm" }}>
-      {data.problems.map((text, i) => (
-        <div key={i} style={{ marginBottom: "3mm" }}>
-          {text.split("\n").map((line, j) => (
-            <span key={j}>
-              {line}
-              {j < text.split("\n").length - 1 && <br />}
-            </span>
-          ))}
-        </div>
-      ))}
+      {data.problems.map((text, i) => {
+        const hasHtml = text.includes("<")
+        if (hasHtml) {
+          return (
+            <div
+              key={i}
+              style={{ marginBottom: "3mm" }}
+              dangerouslySetInnerHTML={{ __html: text.replace(/\n/g, "<br/>") }}
+            />
+          )
+        }
+        return (
+          <div key={i} style={{ marginBottom: "3mm" }}>
+            {text.split("\n").map((line, j) => (
+              <span key={j}>
+                {line}
+                {j < text.split("\n").length - 1 && <br />}
+              </span>
+            ))}
+          </div>
+        )
+      })}
     </div>
   )
 }
