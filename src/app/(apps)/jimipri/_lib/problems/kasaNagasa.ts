@@ -90,5 +90,24 @@ export function generateKasaNagasa(): CustomResult {
   problems.push(`⑮　${Math.floor(leftVal[4] / 10)}L${leftVal[4] % 10}dL + ${rightVal[4]}L`)
   answers.push(`${Math.floor((ans[14] as number) / 10)}L${(ans[14] as number) % 10}dL`)
 
-  return { problems, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み（⑤⑩の後で改行）
+  const answerHtml = `
+    ①　${answers[0]}
+    ②　${answers[1]}
+    ③　${answers[2]}
+    ④　${answers[3]}
+    ⑤　${answers[4]}<br/>
+    ⑥　${answers[5]}
+    ⑦　${answers[6]}
+    ⑧　${answers[7]}
+    ⑨　${answers[8]}
+    ⑩　${answers[9]}<br/>
+    ⑪　${answers[10]}
+    ⑫　${answers[11]}
+    ⑬　${answers[12]}
+    ⑭　${answers[13]}
+    ⑮　${answers[14]}
+  `
+
+  return { problems, answers, answerHtml }
 }

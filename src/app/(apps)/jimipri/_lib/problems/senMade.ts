@@ -61,5 +61,21 @@ export function generateSenMade(): CustomResult {
   problems.push(`⑩　${ans100[9] * 100 + ans10[9] * 10}は　10を（　　　）こあつめた数です。`)
   answers.push(`${ans100[9] * 10 + ans10[9]}こ`)
 
-  return { problems, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み
+  const answerHtml = `
+    ①　${ans[0]}
+    ②　${ans[1]}
+    ③　100を${ans100[2]}こ,10を${ans10[2]}こ,1を${ans1[2]}こ
+    <br/>
+    ④　100を${ans100[3]}こ,10を${ans10[3]}こ,1を${ans1[3]}こ
+    ⑤　100を${ans100[4]}こ,1を${ans1[4]}こ
+    ⑥　100を${ans100[5]}こ,1を${ans1[5]}こ
+    <br/>
+    ⑦　${ans100[6] * 100 + ans10[6] * 10}
+    ⑧　${ans100[7] * 100 + ans10[7] * 10}
+    ⑨　${ans100[8] * 10 + ans10[8]}こ
+    ⑩　${ans100[9] * 10 + ans10[9]}こ
+  `
+
+  return { problems, answers, answerHtml }
 }

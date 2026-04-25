@@ -22,6 +22,12 @@ export type CustomResult = {
   /** 問題テキストのHTML配列（各要素が1問分） */
   problems: string[]
   answers: (number | string)[]
+  /**
+   * 元ファイルで answerCreate() を使わず独自に answer-area.innerHTML を
+   * 設定していたプリント用。設定されている場合、AnswerArea の代わりに
+   * この HTML をそのまま描画する。
+   */
+  answerHtml?: string
 }
 
 /** なんばんめ問題データ */
@@ -31,6 +37,7 @@ export type NanbanmeResult = {
   /** 各問の位置（1〜6、左から何番目か） */
   positions: number[]
   answers: (number | string)[]
+  answerHtml?: string
 }
 
 /** 時計問題データ（なんじ系） */

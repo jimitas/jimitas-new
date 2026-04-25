@@ -245,7 +245,9 @@ export default function JimipriPrintPage() {
           {/* 答え+著作権エリア（A4下端に固定・print-area内に配置して font-family を継承） */}
           <section className="jimipri-footer-area" style={showAnswers ? undefined : { borderTop: "none" }}>
             {data && showAnswers && (
-              <AnswerArea answers={data.answers} />
+              "answerHtml" in data && data.answerHtml
+                ? <div dangerouslySetInnerHTML={{ __html: data.answerHtml }} />
+                : <AnswerArea answers={data.answers} />
             )}
             <div style={{ position: "absolute", height: "5mm", bottom: "7mm", right: "5mm", fontSize: "3mm" }}>
               <span>{dateStr}　</span>

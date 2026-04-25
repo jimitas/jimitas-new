@@ -63,5 +63,21 @@ export function generateManMade(): CustomResult {
   problems.push(`⑩　${ans1000[9] * 1000 + ans100[9] * 100}は　100を（　　　）こあつめた数です。\nまた、10を（　　　）こあつめた数です。`)
   answers.push(`${ans1000[9] * 10 + ans100[9]}こ、${ans1000[9] * 100 + ans100[9] * 10}こ`)
 
-  return { problems, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み
+  const answerHtml = `
+    ①　${ans[0]}
+    ②　${ans[1]}
+    ③　${ans1000[2]}こ,${ans100[2]}こ,${ans10[2]}こ,${ans1[2]}こ
+    ④　${ans1000[3]}こ,${ans100[3]}こ,${ans10[3]}こ,${ans1[3]}こ
+    <br/>
+    ⑤　1000を${ans1000[4]}こ,10を${ans10[4]}こ,1を${ans1[4]}こ
+    ⑥　1000を${ans1000[5]}こ,100を${ans100[5]}こ,1を${ans1[5]}こ
+    <br/>
+    ⑦　${ans1000[6] * 1000 + ans100[6] * 100}
+    ⑧　${ans1000[7] * 1000 + ans100[7] * 100}
+    ⑨　${ans1000[8] * 10 + ans100[8]}こ、　${ans1000[8] * 100 + ans100[8] * 10}こ
+    ⑩　${ans1000[9] * 10 + ans100[9]}こ、　${ans1000[9] * 100 + ans100[9] * 10}こ
+  `
+
+  return { problems, answers, answerHtml }
 }

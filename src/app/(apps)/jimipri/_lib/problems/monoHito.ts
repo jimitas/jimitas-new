@@ -45,7 +45,15 @@ export function generateMonoHito(): CustomResult {
     answers.push(ansArray[idx])
   }
 
-  return { problems, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み（②の後で改行）
+  const answerHtml = `
+    ①　${ansArray[order[0]]}
+    ②　${ansArray[order[1]]}<br/>
+    ③　${ansArray[order[2]]}
+    ④　${ansArray[order[3]]}
+  `
+
+  return { problems, answers, answerHtml }
 }
 
 const BANGOU = ["①","②","③","④"]

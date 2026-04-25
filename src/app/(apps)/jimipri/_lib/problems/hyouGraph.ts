@@ -102,7 +102,20 @@ export function generateHyouGraph(): CustomResult {
   answers.push(ANIMAL_NAMES[maxIdx])
   answers.push(`${maxCount - minCount}ひき`)
 
-  return { problems, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み
+  const answerHtml = `
+    ①　${counts[0]}
+    ②　${counts[1]}
+    ③　${counts[2]}
+    ④　${counts[3]}
+    <br/>
+    ⑤～⑧　あっているか　どうか　だれかに　みてもらいましょう。
+    <br/>
+    ⑨　${ANIMAL_NAMES[maxIdx]}
+    ⑩　${maxCount - minCount}ひき
+  `
+
+  return { problems, answers, answerHtml }
 }
 
 function shuffleArray(arr: number[]): number[] {

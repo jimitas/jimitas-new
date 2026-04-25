@@ -66,7 +66,15 @@ export function generateTasuHiku(): CustomResult {
     answers.push(ans)
   }
 
-  return { problems, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み（②の後で改行）
+  const answerHtml = `
+    ①　${answers[0]}
+    ②　${answers[1]}<br/>
+    ③　${answers[2]}
+    ④　${answers[3]}
+  `
+
+  return { problems, answers, answerHtml }
 }
 
 const BANGOU = ["①", "②", "③", "④"]

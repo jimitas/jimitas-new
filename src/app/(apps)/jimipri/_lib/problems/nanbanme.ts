@@ -26,7 +26,7 @@ export function generateNanbanme(): NanbanmeResult {
     }
   }
 
-  // 答え
+  // 答え（answerCreate用のフォールバック）
   const answers: (number | string)[] = [
     `ひだりから${positions[0]}ばんめ`,
     `みぎから${7 - positions[1]}ばんめ`,
@@ -35,7 +35,17 @@ export function generateNanbanme(): NanbanmeResult {
     `ひだりから${positions[4]}ばんめ、みぎから${7 - positions[4]}ばんめ`,
   ]
 
-  return { animals, positions, answers }
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み
+  const answerHtml = `
+    ①　ひだりから${positions[0]}ばんめ
+    ②　みぎから${7 - positions[1]}ばんめ
+    ③　ひだりから${positions[2]}ばんめ、みぎから${7 - positions[2]}ばんめ
+    <br/>
+    ④　ひだりから${positions[3]}ばんめ、みぎから${7 - positions[3]}ばんめ
+    ⑤　ひだりから${positions[4]}ばんめ、みぎから${7 - positions[4]}ばんめ
+  `
+
+  return { animals, positions, answers, answerHtml }
 }
 
 function shuffleArray(arr: number[]): number[] {
