@@ -8,19 +8,22 @@ import { duplicationCheck } from "../duplicationCheck"
 
 // nanbanme アプリと同じ10匹の動物（public/images/ 内の png）
 const ANIMALS = ["dog", "cat", "monkey", "frog", "usagi", "niwatori", "ika", "tako", "iruka", "butterfly"]
-// 日本語名（問題文で使用）
+// 日本語名（alt属性で使用）
 const ANIMAL_NAMES: Record<string, string> = {
   dog: "いぬ", cat: "ねこ", monkey: "さる", frog: "かえる", usagi: "うさぎ",
   niwatori: "にわとり", ika: "いか", tako: "たこ", iruka: "いるか", butterfly: "ちょう",
 }
 
-const BANGOU = ["①", "②", "③", "④", "⑤"]
-const IMG_SIZE = 50 // 画像サイズ（px、印刷時は小さめ）
+const IMG_SIZE = 50 // 並びの画像サイズ（px）
+const Q_IMG_SIZE = 36 // 問題文中の画像サイズ（px）
 
 /** 動物画像のimgタグを生成 */
-function animalImg(name: string, size = IMG_SIZE): string {
+function animalImg(name: string, size: number): string {
   return `<img src="/images/${name}.png" alt="${ANIMAL_NAMES[name]}" style="width:${size}px;height:${size}px;object-fit:contain;vertical-align:middle;" />`
 }
+
+/** 入力欄（印刷用の下線） */
+const BLANK = `<span style="display:inline-block;width:3em;border-bottom:1px solid #000;">&nbsp;</span>`
 
 export function generateNanbanme(): CustomResult {
   const problems: string[] = []
@@ -41,27 +44,28 @@ export function generateNanbanme(): CustomResult {
     }
   }
 
-  // 並び順を画像で表示
-  problems.push(`なんばんめですか。`)
+  // タイトル
+  problems.push(`<div style="font-size:6mm;font-weight:bold;">なんばんめですか。</div>`)
 
   // 動物の並びを画像で表示（ひだり〜みぎ）
-  const animalRow = orderedAnimals.map(a => animalImg(a)).join("　")
-  problems.push(`<div style="display:flex;align-items:center;border:solid 1px #888;padding:8px 12px;gap:4px;"><span style="font-size:4mm;">ひだり</span>${animalRow}<span style="font-size:4mm;">みぎ</span></div>`)
+  const animalRow = orderedAnimals.map(a => animalImg(a, IMG_SIZE)).join("")
+  problems.push(`<div style="display:flex;align-items:center;border:solid 1px black;padding:8px 16px;gap:4px;"><div style="padding-top:12px;">ひだり</div><div>${animalRow}</div><div style="padding-top:12px;">みぎ　</div></div>`)
 
-  // ①ひだりからなんばんめ
+  // ① ○○は、ひだりから___ばんめ
   const a1 = orderedAnimals[positions[0] - 1]
-  problems.push(`${BANGOU[0]}　${animalImg(a1, 36)}は、ひだりから（　　）ばんめ`)
-  answers.push(`${positions[0]}ばんめ`)
+  problems.push(`<div style="margin-top:4mm;">①　${animalImg(a1, Q_IMG_SIZE)}は、ひだりから${BLANK}ばんめ</div>`)
+  answers.push(`ひだりから${positions[0]}ばんめ`)
 
-  // ②みぎからなんばんめ
+  // ② ○○は、みぎから___ばんめ
   const a2 = orderedAnimals[positions[1] - 1]
-  problems.push(`${BANGOU[1]}　${animalImg(a2, 36)}は、みぎから（　　）ばんめ`)
-  answers.push(`${7 - positions[1]}ばんめ`)
+  problems.push(`<div style="margin-top:4mm;">②　${animalImg(a2, Q_IMG_SIZE)}は、みぎから${BLANK}ばんめ</div>`)
+  answers.push(`みぎから${7 - positions[1]}ばんめ`)
 
-  // ③〜⑤ ひだりから＆みぎから
+  // ③〜⑤ ○○は、（改行）ひだりから___ばんめ、みぎから___ばんめ
+  const bangou = ["③", "④", "⑤"]
   for (let i = 2; i < 5; i++) {
     const animal = orderedAnimals[positions[i] - 1]
-    problems.push(`${BANGOU[i]}　${animalImg(animal, 36)}は、\n　　ひだりから（　　）ばんめ、みぎから（　　）ばんめ`)
+    problems.push(`<div style="margin-top:4mm;">${bangou[i - 2]}　${animalImg(animal, Q_IMG_SIZE)}は、<br/>　　ひだりから${BLANK}ばんめ、みぎから${BLANK}ばんめ</div>`)
     answers.push(`ひだりから${positions[i]}ばんめ、みぎから${7 - positions[i]}ばんめ`)
   }
 
