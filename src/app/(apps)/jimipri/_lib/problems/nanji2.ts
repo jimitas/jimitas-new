@@ -1,9 +1,10 @@
 // なんじ　なんぷん
 // 元: 09_nanji2.js
-// 6問: 時計の読み取り（分単位、テキスト版）
-// 元はCanvasで時計を描画していたが、プリント版はテキストで出題
+// 6問: 時計の読み取り（分単位、SVG時計版）
+// tokei アプリの描画ロジックを SVG に変換して印刷対応
 
 import { CustomResult } from "../types"
+import { clockSvg } from "../clockSvg"
 
 export function generateNanji2(): CustomResult {
   const problems: string[] = []
@@ -17,7 +18,7 @@ export function generateNanji2(): CustomResult {
   for (let i = 0; i < 6; i++) {
     let hour: number, minute: number, timeKey: string
 
-    // 重複しない時刻を生成
+    // 重複しない時刻を生成（5分刻み）
     do {
       hour = Math.floor(Math.random() * 12 + 1)
       minute = Math.floor(Math.random() * 12) * 5 // 0,5,10,...,55
@@ -25,21 +26,10 @@ export function generateNanji2(): CustomResult {
     } while (usedTimes.includes(timeKey))
     usedTimes.push(timeKey)
 
-    // 長針の位置を数字で表現
-    const longHandPos = minute === 0 ? 12 : minute / 5
+    // 時計SVGを生成
+    const clock = clockSvg(hour, minute, 28)
 
-    if (minute === 0) {
-      problems.push(`${BANGOU[i]}　みじかいはりが　${hour}、\n　　ながいはりが　12をさしています。\n　　　　　　　（　　じ　　ふん）`)
-    } else {
-      // 短針の位置表現（分が30以上なら次の時間に近い）
-      const nextHour = hour === 12 ? 1 : hour + 1
-      if (minute >= 30) {
-        problems.push(`${BANGOU[i]}　みじかいはりが　${hour}と${nextHour}のあいだで${nextHour}にちかく、\n　　ながいはりが　${longHandPos}をさしています。\n　　　　　　　（　　じ　　ふん）`)
-      } else if (minute > 0) {
-        problems.push(`${BANGOU[i]}　みじかいはりが　${hour}と${nextHour}のあいだで${hour}にちかく、\n　　ながいはりが　${longHandPos}をさしています。\n　　　　　　　（　　じ　　ふん）`)
-      }
-    }
-
+    problems.push(`<div style="display:flex;align-items:center;gap:8px;margin:2mm 0;">${BANGOU[i]}　${clock}　（　　じ　　ふん）</div>`)
     answers.push(`${hour}じ${minute}ふん`)
   }
 

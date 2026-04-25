@@ -1,10 +1,11 @@
 // なんじ　なんじはん
 // 元: 04_nanji1.js
-// 6問: 時計の読み取り（テキスト版）
-// 元はCanvasで時計を描画していたが、プリント版はテキストで出題
+// 6問: 時計の読み取り（SVG時計版）
+// tokei アプリの描画ロジックを SVG に変換して印刷対応
 
 import { CustomResult } from "../types"
 import { duplicationCheck } from "../duplicationCheck"
+import { clockSvg } from "../clockSvg"
 
 export function generateNanji1(): CustomResult {
   const problems: string[] = []
@@ -22,16 +23,18 @@ export function generateNanji1(): CustomResult {
     } while (!duplicationCheck(hour, checkArray))
     checkArray.push(hour)
 
-    // なんじはん: 半分の確率で「〇時」か「〇時はん（半）」
+    // なんじはん: 半分の確率で「〇時」か「〇時はん（30分）」
     const isHalf = Math.random() < 0.5
+    const minute = isHalf ? 30 : 0
+
+    // 時計SVGを生成
+    const clock = clockSvg(hour, minute, 28)
+
+    problems.push(`<div style="display:flex;align-items:center;gap:8px;margin:2mm 0;">${BANGOU[i]}　${clock}　（　　じ　　ふん）</div>`)
 
     if (isHalf) {
-      // 短針は hour と hour+1 の間、長針は6（下）
-      problems.push(`${BANGOU[i]}　みじかいはりが　${hour}と${hour === 12 ? 1 : hour + 1}のあいだ、\n　　ながいはりが　6をさしています。\n　　　　　　　（　　じ　　ふん）`)
       answers.push(`${hour}じ30ぷん（${hour}じはん）`)
     } else {
-      // 短針は hour、長針は12（上）
-      problems.push(`${BANGOU[i]}　みじかいはりが　${hour}、\n　　ながいはりが　12をさしています。\n　　　　　　　（　　じ）`)
       answers.push(`${hour}じ`)
     }
   }
