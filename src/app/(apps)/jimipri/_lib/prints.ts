@@ -1,6 +1,5 @@
 // じみぷり 全39種のプリント定義データ
-// Phase 1: tasu-1, hiku-1, tasu-2, hiku-2, kake-1 の5本を実装
-// 残りは後続フェーズで generate 関数を差し替える
+// 全39種の問題生成関数を実装済み
 
 import { PrintDef, GradeGroup } from "./types"
 import { generateTasu1 } from "./problems/tasu1"
