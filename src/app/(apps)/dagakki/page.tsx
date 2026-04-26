@@ -23,7 +23,7 @@ type Percussion = {
 }
 
 const PERCUSSION: Percussion[] = [
-  { id: "kasuta", label: "カスタネット", file: "kasuta", image: "/images/dagakki/kasuta.png", color: "rose" },
+  { id: "kasuta", label: "カスタネット", file: "kasuta", image: "/images/dagakki/kasuta-v2.png", color: "rose" },
   { id: "tam",    label: "タンバリン",   file: "tam",    image: "/images/dagakki/tam.png",    color: "amber" },
   { id: "cow",    label: "カウベル",     file: "cow",    image: "/images/dagakki/cow.png",    color: "lime" },
 ]
