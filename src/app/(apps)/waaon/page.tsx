@@ -31,19 +31,24 @@ type Chord = {
 }
 
 // ハ長調の和音（C・F・G・G7）
+// 6年生の音楽教科書（教育芸術社・教育出版など）では、和音をローマ数字
+// （Ⅰ・Ⅳ・Ⅴ・Ⅴ7）で表記するのが一般的。「主和音／下属和音／属和音／
+// 属七の和音」の呼び方も併記される。ここでは小学生に親しみやすい
+// アラビア数字 + ローマ数字風の "I / IV / V / V7" を採用し、
+// 補助としてコードネームも括弧書きで添える。
 const CHORDS_MAJOR: Chord[] = [
-  { id: "C",  label: "C",  yobina: "１度",       notes: ["C3", "C4", "E4", "G4"],   category: "major" },
-  { id: "F",  label: "F",  yobina: "４度",       notes: ["F2", "C4", "F4", "A4"],   category: "major" },
-  { id: "G",  label: "G",  yobina: "５度",       notes: ["G2", "B3", "D4", "G4"],   category: "major" },
-  { id: "G7", label: "G7", yobina: "５度の７",   notes: ["G2", "B3", "F4", "G4"],   category: "major" },
+  { id: "C",  label: "C",  yobina: "I",  notes: ["C3", "C4", "E4", "G4"],   category: "major" },
+  { id: "F",  label: "F",  yobina: "IV", notes: ["F2", "C4", "F4", "A4"],   category: "major" },
+  { id: "G",  label: "G",  yobina: "V",  notes: ["G2", "B3", "D4", "G4"],   category: "major" },
+  { id: "G7", label: "G7", yobina: "V7", notes: ["G2", "B3", "F4", "G4"],   category: "major" },
 ]
 
 // イ短調の和音（Am・Dm・E・E7）
 const CHORDS_MINOR: Chord[] = [
-  { id: "Am", label: "Am", yobina: "１度",       notes: ["A2", "C4", "E4", "A4"],   category: "minor" },
-  { id: "Dm", label: "Dm", yobina: "４度",       notes: ["D2", "D3", "F4", "A4"],   category: "minor" },
-  { id: "E",  label: "E",  yobina: "５度",       notes: ["E3", "B3", "E4", "G#4"],  category: "minor" },
-  { id: "E7", label: "E7", yobina: "５度の７",   notes: ["E3", "D4", "E4", "G#4"],  category: "minor" },
+  { id: "Am", label: "Am", yobina: "I",  notes: ["A2", "C4", "E4", "A4"],   category: "minor" },
+  { id: "Dm", label: "Dm", yobina: "IV", notes: ["D2", "D3", "F4", "A4"],   category: "minor" },
+  { id: "E",  label: "E",  yobina: "V",  notes: ["E3", "B3", "E4", "G#4"],  category: "minor" },
+  { id: "E7", label: "E7", yobina: "V7", notes: ["E3", "D4", "E4", "G#4"],  category: "minor" },
 ]
 
 export default function WaaonPage() {
@@ -214,8 +219,10 @@ function ChordButton({
         }
       `}
     >
-      {/* 小学生は「１度・４度」のような度数で覚える方が直感的なので大きく、コードネームは小さく補助表示 */}
-      <div className="text-xl font-bold mb-1">{chord.yobina}の和音</div>
+      {/* 6年生の音楽教科書に合わせてローマ数字（I / IV / V / V7）で表記。
+          コードネームは小さく補助表示。テキスト折り返しを避けるため
+          text-lg + whitespace-nowrap でコンパクトに揃える */}
+      <div className="text-lg font-bold mb-1 whitespace-nowrap">{chord.yobina}の和音</div>
       <div className="text-xs opacity-80 tabular-nums">（{chord.label}）</div>
     </button>
   )

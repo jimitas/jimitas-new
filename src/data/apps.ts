@@ -425,10 +425,10 @@ export const apps: AppItem[] = [
   {
     id: "waaon",
     title: "和音を出そう",
-    description: "ハ長調・イ短調でよく使われる8つの和音を聴き比べよう。Web Audio で4音同時に鳴らす",
-    grades: [4, 5, 6],
+    description: "ハ長調・イ短調の主要4和音（I/IV/V/V7）を聴き比べよう。6年生の音楽で扱う和音を Web Audio で4音同時再生",
+    grades: [6],
     subjects: ["音楽"],
-    tags: ["和音", "音", "ハ長調", "イ短調"],
+    tags: ["和音", "音", "ハ長調", "イ短調", "6年生"],
     type: "app",
     path: "/waaon",
   },

@@ -3,19 +3,25 @@
 // ======================================================
 // せんやマスのいろぬり
 //
-// 14×24 のマス目に「せんをひく」または「ますをぬる」モードで色を塗れる。
-// SVG ベースで、セル・水平線・垂直線の3レイヤを切り替え可能。
-// 旧 jimitas.com「もっと学習コンテンツ」内の masu 機能を移植。
+// 14×24 のマス目に「ますをぬる」「せんをひく」「てがき」の
+// 3 モードで自由に書き込める。SVG ベースで4レイヤ構成：
+//   - セル（180枚の rect）
+//   - 水平線セグメント
+//   - 垂直線セグメント
+//   - 手書きストローク（path 群）
+//
+// 旧 jimitas.com「もっと学習コンテンツ」内の masu 機能を移植・拡張。
+// 手書きは算数ノート風の補足メモ（変化のきまり等）に活用できる。
 // ======================================================
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useRef } from "react"
 import { useSound } from "@/hooks/useSound"
 
-// マス数を拡大（旧 10×18 → 14×24、約1.86倍）
+// マス数（旧 10×18 → 14×24）
 const ROWS = 14
 const COLS = 24
 
-type Mode = "cells" | "lines"
+type Mode = "cells" | "lines" | "tegaki"
 
 const COLORS = [
   { value: "#dc2626", label: "あか" },
@@ -32,6 +38,14 @@ const COLORS = [
 
 // セル/ライン1単位を 50 とする（viewBox 用の論理座標）
 const CELL = 50
+const STROKE_WIDTH = 3
+
+// 確定済みストローク
+type Stroke = {
+  id: string
+  color: string
+  d: string  // SVG path "M x,y L x,y L ..."
+}
 
 export default function MasuNuriPage() {
   const [mode, setMode] = useState<Mode>("cells")
@@ -39,12 +53,17 @@ export default function MasuNuriPage() {
   const [cellColors, setCellColors] = useState<Record<string, string>>({})
   const [hLineColors, setHLineColors] = useState<Record<string, string>>({})
   const [vLineColors, setVLineColors] = useState<Record<string, string>>({})
+  const [strokes, setStrokes] = useState<Stroke[]>([])
   const [confirmingReset, setConfirmingReset] = useState(false)
   const { play } = useSound()
 
+  // 手書き中のストローク：PointerMove 中は state を更新せず DOM 直接更新
+  // （memory: feedback_drag_dom_direct に従い追従遅延を防ぐ）
+  const inProgressPathRef = useRef<SVGPathElement | null>(null)
+  const inProgressDataRef = useRef<string>("")
+
   // -------------------------------------------------------
-  // 塗る処理（同じ色なら消す＝トグル）
-  // 元実装に合わせて、置く瞬間に pi 効果音
+  // ますをぬる（同じ色なら消す＝トグル、置く瞬間に pi 効果音）
   // -------------------------------------------------------
   const paintCell = useCallback((r: number, c: number) => {
     if (mode !== "cells") return
@@ -88,7 +107,70 @@ export default function MasuNuriPage() {
     })
   }, [mode, color, play])
 
-  // モード/色/リセット ボタン用：ひと呼吸ある set 音
+  // -------------------------------------------------------
+  // 手書きモード：ポインタイベント処理
+  //   onPointerDown: ストローク開始
+  //   onPointerMove: in-progress path を DOM 直接更新（再レンダーなし）
+  //   onPointerUp:   strokes 配列に確定追加
+  // -------------------------------------------------------
+  const svgPoint = (svg: SVGSVGElement, clientX: number, clientY: number) => {
+    const pt = svg.createSVGPoint()
+    pt.x = clientX
+    pt.y = clientY
+    const ctm = svg.getScreenCTM()
+    if (!ctm) return { x: 0, y: 0 }
+    const transformed = pt.matrixTransform(ctm.inverse())
+    return { x: transformed.x, y: transformed.y }
+  }
+
+  const handlePointerDown = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (mode !== "tegaki") return
+    const { x, y } = svgPoint(e.currentTarget, e.clientX, e.clientY)
+    inProgressDataRef.current = `M ${x.toFixed(1)},${y.toFixed(1)}`
+    if (inProgressPathRef.current) {
+      inProgressPathRef.current.setAttribute("d", inProgressDataRef.current)
+      inProgressPathRef.current.setAttribute("stroke", color)
+    }
+    e.currentTarget.setPointerCapture(e.pointerId)
+  }
+
+  const handlePointerMove = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (mode !== "tegaki" || !inProgressDataRef.current) return
+    const { x, y } = svgPoint(e.currentTarget, e.clientX, e.clientY)
+    inProgressDataRef.current += ` L ${x.toFixed(1)},${y.toFixed(1)}`
+    if (inProgressPathRef.current) {
+      inProgressPathRef.current.setAttribute("d", inProgressDataRef.current)
+    }
+  }
+
+  const handlePointerUp = (e: React.PointerEvent<SVGSVGElement>) => {
+    if (mode !== "tegaki" || !inProgressDataRef.current) return
+    // 1点だけのストロークは無視（誤タップ）
+    const data = inProgressDataRef.current
+    if (data.includes("L")) {
+      setStrokes(prev => [...prev, {
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        color,
+        d: data,
+      }])
+    }
+    inProgressDataRef.current = ""
+    if (inProgressPathRef.current) {
+      inProgressPathRef.current.setAttribute("d", "")
+    }
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
+    }
+  }
+
+  // 「ひとつもどす」：直近のストロークを取り消し
+  const undoStroke = () => {
+    if (strokes.length === 0) return
+    play("/sounds/cancel.mp3", 0.4)
+    setStrokes(prev => prev.slice(0, -1))
+  }
+
+  // モード/色/リセット ボタン用
   const playSwitchSound = useCallback(() => {
     play("/sounds/set.mp3", 0.4)
   }, [play])
@@ -98,6 +180,7 @@ export default function MasuNuriPage() {
     setCellColors({})
     setHLineColors({})
     setVLineColors({})
+    setStrokes([])
     setConfirmingReset(false)
   }
 
@@ -107,13 +190,13 @@ export default function MasuNuriPage() {
         せんやマスのいろぬり
       </h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4">
-        マスをぬったり、せんをひいたりして、じゆうにえをかこう。
+        マスをぬったり、せんをひいたり、手がきでメモしたりして、じゆうにえや学びをのこそう。
       </p>
 
       {/* ===== コントロール ===== */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-3">
         <div className="flex flex-wrap items-center gap-3">
-          {/* モード切替 */}
+          {/* モード切替（3種） */}
           <div className="flex gap-1">
             <button
               onClick={() => { playSwitchSound(); setMode("cells") }}
@@ -135,6 +218,16 @@ export default function MasuNuriPage() {
             >
               せんをひく
             </button>
+            <button
+              onClick={() => { playSwitchSound(); setMode("tegaki") }}
+              className={`px-3 py-2 rounded-lg text-sm font-bold ${
+                mode === "tegaki"
+                  ? "bg-brand-500 text-white"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+              }`}
+            >
+              てがき
+            </button>
           </div>
 
           {/* 色パレット */}
@@ -155,8 +248,16 @@ export default function MasuNuriPage() {
             ))}
           </div>
 
-          {/* リセット */}
-          <div className="ml-auto">
+          {/* 右側：てがきモード時の「ひとつもどす」＋ リセット */}
+          <div className="ml-auto flex items-center gap-2">
+            {mode === "tegaki" && strokes.length > 0 && (
+              <button
+                onClick={undoStroke}
+                className="px-3 py-2 rounded-lg bg-warm-100 dark:bg-warm-900 text-warm-800 dark:text-warm-200 text-sm hover:bg-warm-200 dark:hover:bg-warm-800"
+              >
+                ↶ ひとつもどす
+              </button>
+            )}
             {!confirmingReset ? (
               <button
                 onClick={() => { playSwitchSound(); setConfirmingReset(true) }}
@@ -190,7 +291,11 @@ export default function MasuNuriPage() {
         <svg
           viewBox={`0 0 ${COLS * CELL} ${ROWS * CELL}`}
           className="w-full h-auto"
-          style={{ touchAction: "none" }}
+          style={{ touchAction: "none", cursor: mode === "tegaki" ? "crosshair" : "default" }}
+          onPointerDown={handlePointerDown}
+          onPointerMove={handlePointerMove}
+          onPointerUp={handlePointerUp}
+          onPointerCancel={handlePointerUp}
         >
           {/* セル本体（背景） */}
           {Array.from({ length: ROWS }).map((_, r) =>
@@ -214,7 +319,7 @@ export default function MasuNuriPage() {
             })
           )}
 
-          {/* 水平線（各セルの上端） - row=0..ROWS, col=0..COLS-1 */}
+          {/* 水平線（各セルの上端） */}
           {Array.from({ length: ROWS + 1 }).map((_, r) =>
             Array.from({ length: COLS }).map((_, c) => {
               const key = `${r}-${c}`
@@ -235,7 +340,7 @@ export default function MasuNuriPage() {
             })
           )}
 
-          {/* 垂直線（各セルの左端） - row=0..ROWS-1, col=0..COLS */}
+          {/* 垂直線（各セルの左端） */}
           {Array.from({ length: ROWS }).map((_, r) =>
             Array.from({ length: COLS + 1 }).map((_, c) => {
               const key = `${r}-${c}`
@@ -255,11 +360,36 @@ export default function MasuNuriPage() {
               )
             })
           )}
+
+          {/* 手がきストローク（確定済み） */}
+          {strokes.map(s => (
+            <path
+              key={s.id}
+              d={s.d}
+              stroke={s.color}
+              strokeWidth={STROKE_WIDTH}
+              fill="none"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              pointerEvents="none"
+            />
+          ))}
+
+          {/* 手がきストローク（描画中・DOM直接更新） */}
+          <path
+            ref={inProgressPathRef}
+            stroke={color}
+            strokeWidth={STROKE_WIDTH}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            pointerEvents="none"
+          />
         </svg>
       </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
-        💡 同じ色をもう一度クリックすると、消せるよ。
+        💡 「ますをぬる」「せんをひく」は同じ色をもう一度タップで消去。「てがき」は変化のきまりや矢印などのメモに使えるよ。
       </p>
     </div>
   )
