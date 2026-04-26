@@ -11,7 +11,6 @@
 // ======================================================
 
 import { useState, useCallback } from "react"
-import Image from "next/image"
 import { useSound } from "@/hooks/useSound"
 
 const NUM_CARDS = 10  // 5種類 × 2枚
@@ -187,13 +186,12 @@ function Card({
           className="absolute inset-0 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/images/eawase/cardura.png"
             alt="カード（裏）"
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
             draggable={false}
-            sizes="100px"
           />
         </div>
         {/* 表面 */}
@@ -201,13 +199,12 @@ function Card({
           className="absolute inset-0 rounded-lg overflow-hidden border-2 border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 p-1"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={`/images/eawase/${imageIndex}.png`}
             alt={`カード ${imageIndex}`}
-            fill
-            className="object-contain"
+            className="w-full h-full object-contain"
             draggable={false}
-            sizes="100px"
           />
         </div>
       </div>

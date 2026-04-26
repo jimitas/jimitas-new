@@ -11,7 +11,6 @@
 // ======================================================
 
 import { useState, useCallback } from "react"
-import Image from "next/image"
 import { useSound } from "@/hooks/useSound"
 
 // 各スートが占める番号レンジ（card1.png〜card54.png）
@@ -209,26 +208,24 @@ function Card({
           className="absolute inset-0 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 bg-white"
           style={{ backfaceVisibility: "hidden" }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src="/images/nandemo/cardura.png"
             alt="カード（裏）"
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
             draggable={false}
-            sizes="80px"
           />
         </div>
         <div
           className="absolute inset-0 rounded-md overflow-hidden border border-gray-300 dark:border-gray-600 bg-white"
           style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
         >
-          <Image
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
             src={`/images/nandemo/card${num}.png`}
             alt={`カード ${num}`}
-            fill
-            className="object-cover"
+            className="w-full h-full object-cover"
             draggable={false}
-            sizes="80px"
           />
         </div>
       </div>
