@@ -526,6 +526,16 @@ export const apps: AppItem[] = [
     path: "/classroom-timer",
   },
   {
+    id: "nandemo",
+    title: "なんでもトランプ",
+    description: "スペード・クラブ・ダイヤ・ハート＋ジョーカーから使うカードを選んでシャッフル。出たカードに合わせて先生が問題や質問を出すなど自由に使える",
+    grades: ["全学年", "先生向け"],
+    subjects: ["その他"],
+    tags: ["カード", "トランプ", "授業支援", "あそび"],
+    type: "tool",
+    path: "/nandemo",
+  },
+  {
     id: "eawase",
     title: "えあわせ",
     description: "5種類のくだものイラスト×2枚＝計10枚のカードをひっくり返してあそぼう。「ひんと」で「ひだり」「みぎ」のもじが赤くなる",

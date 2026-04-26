@@ -75,8 +75,9 @@ const SECTIONS: SectionDef[] = [
     filter: (app) => hasGrade(app, 2) && app.type !== "print",
     order: [
       "tokei", "kazoe-bou", "okane",
-      "tashi-hissan", "hiki-hissan", "kuku-array",
-      "kuku-yomi", "sansu-note", "kenban", "masu-nuri",
+      "tashi-hissan", "hiki-hissan",
+      "kuku-hyo", "kuku-array", "kuku-yomi",
+      "sansu-note", "kenban", "masu-nuri",
     ],
   },
   {
@@ -84,6 +85,8 @@ const SECTIONS: SectionDef[] = [
     title: "３年生",
     filter: (app) => hasGrade(app, 3) && app.type !== "print",
     order: [
+      // 3年のはじめに九九を復習する場面が多いため先頭に配置
+      "kuku-hyo",
       "tashi-hissan", "hiki-hissan", "kuku-array",
       "kuku-yomi", "kake-hissan-1", "warizan",
       "warizan2", "kake-hissan2", "romaji",

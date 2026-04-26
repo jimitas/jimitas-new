@@ -13,6 +13,7 @@
 // ======================================================
 
 import { useState, useCallback } from "react"
+import { useSound } from "@/hooks/useSound"
 
 // セル背景色のパレット（白＝クリア相当は除外、視認できる8色）
 const COLORS = [
@@ -40,9 +41,11 @@ export default function KukuHyoPage() {
   const [showRow, setShowRow] = useState<boolean[]>(Array(10).fill(false))
   const [cellState, setCellState] = useState<Record<string, CellState>>({})
   const [confirmingReset, setConfirmingReset] = useState(false)
+  const { play } = useSound()
 
   // ----- セルクリック：個別の答え表示と色塗りトグル -----
   const handleCellClick = useCallback((row: number, col: number) => {
+    play("/sounds/pi.mp3", 0.4)
     const key = `${row}-${col}`
     setCellState(prev => {
       const cur = prev[key]
@@ -54,33 +57,37 @@ export default function KukuHyoPage() {
       }
       return { ...prev, [key]: { shown: true, color: selectedColor } }
     })
-  }, [selectedColor])
+  }, [selectedColor, play])
 
   // ----- 列ヘッダ：その列の答えをすべて表示/非表示 -----
   const handleColHeaderClick = useCallback((col: number) => {
+    play("/sounds/pi.mp3", 0.4)
     setShowCol(prev => {
       const next = [...prev]
       next[col] = !prev[col]
       return next
     })
-  }, [])
+  }, [play])
 
   // ----- 行ヘッダ：その行の答えをすべて表示/非表示 -----
   const handleRowHeaderClick = useCallback((row: number) => {
+    play("/sounds/pi.mp3", 0.4)
     setShowRow(prev => {
       const next = [...prev]
       next[row] = !prev[row]
       return next
     })
-  }, [])
+  }, [play])
 
   // ----- × ：全答えを一括表示/非表示 -----
   const handleAllClick = useCallback(() => {
+    play("/sounds/set.mp3", 0.4)  // 全切替なので少し違う音
     setShowAll(prev => !prev)
-  }, [])
+  }, [play])
 
   // ----- リセット -----
   const reset = () => {
+    play("/sounds/reset.mp3", 0.4)
     setShowAll(false)
     setShowCol(Array(10).fill(false))
     setShowRow(Array(10).fill(false))
@@ -156,82 +163,88 @@ export default function KukuHyoPage() {
         </div>
       </div>
 
-      {/* ===== 九九の表 ===== */}
-      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2 overflow-x-auto">
-        <table className="w-full table-fixed border-collapse text-center">
-          <tbody>
-            {Array.from({ length: 10 }).map((_, row) => (
-              <tr key={`row-${row}`}>
-                {Array.from({ length: 10 }).map((_, col) => {
-                  // (0,0): × （全表示トグル）
-                  if (row === 0 && col === 0) {
+      {/* ===== 九九の表 =====
+           正方形感を保つため、テーブル全体を max-w-2xl の正方形に近い枠で囲み、
+           各セルに aspect-square を付与して列幅＝行高さになるようにする。 */}
+      <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2">
+        <div className="mx-auto" style={{ maxWidth: "min(100%, 640px)" }}>
+          <table className="w-full table-fixed border-collapse text-center">
+            <tbody>
+              {Array.from({ length: 10 }).map((_, row) => (
+                <tr key={`row-${row}`}>
+                  {Array.from({ length: 10 }).map((_, col) => {
+                    // (0,0): × （全表示トグル）
+                    if (row === 0 && col === 0) {
+                      return (
+                        <td
+                          key={`cell-${row}-${col}`}
+                          onClick={handleAllClick}
+                          className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-2xl font-bold transition-colors aspect-square ${
+                            showAll
+                              ? "bg-warm-500 text-white"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-warm-100 dark:hover:bg-warm-900"
+                          }`}
+                          style={{ width: "10%" }}
+                        >
+                          ×
+                        </td>
+                      )
+                    }
+                    // (0, c): 列ヘッダ
+                    if (row === 0) {
+                      return (
+                        <td
+                          key={`cell-${row}-${col}`}
+                          onClick={() => handleColHeaderClick(col)}
+                          className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-xl font-bold transition-colors aspect-square ${
+                            showCol[col]
+                              ? "bg-brand-500 text-white"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
+                          }`}
+                          style={{ width: "10%" }}
+                        >
+                          {col}
+                        </td>
+                      )
+                    }
+                    // (r, 0): 行ヘッダ
+                    if (col === 0) {
+                      return (
+                        <td
+                          key={`cell-${row}-${col}`}
+                          onClick={() => handleRowHeaderClick(row)}
+                          className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-xl font-bold transition-colors aspect-square ${
+                            showRow[row]
+                              ? "bg-brand-500 text-white"
+                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
+                          }`}
+                          style={{ width: "10%" }}
+                        >
+                          {row}
+                        </td>
+                      )
+                    }
+                    // 答えセル
+                    const key = `${row}-${col}`
+                    const state = cellState[key]
+                    const visible = isAnswerVisible(row, col)
+                    const bgColor = state?.shown ? state.color : "transparent"
                     return (
                       <td
                         key={`cell-${row}-${col}`}
-                        onClick={handleAllClick}
-                        className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-2xl font-bold p-2 transition-colors ${
-                          showAll
-                            ? "bg-warm-500 text-white"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-warm-100 dark:hover:bg-warm-900"
-                        }`}
+                        onClick={() => handleCellClick(row, col)}
+                        className="border border-gray-300 dark:border-gray-600 cursor-pointer text-lg font-bold text-red-600 dark:text-red-400 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 aspect-square"
+                        style={{ backgroundColor: bgColor, width: "10%" }}
                       >
-                        ×
+                        {visible ? row * col : ""}
                       </td>
                     )
-                  }
-                  // (0, c): 列ヘッダ
-                  if (row === 0) {
-                    return (
-                      <td
-                        key={`cell-${row}-${col}`}
-                        onClick={() => handleColHeaderClick(col)}
-                        className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-xl font-bold p-2 transition-colors ${
-                          showCol[col]
-                            ? "bg-brand-500 text-white"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
-                        }`}
-                      >
-                        {col}
-                      </td>
-                    )
-                  }
-                  // (r, 0): 行ヘッダ
-                  if (col === 0) {
-                    return (
-                      <td
-                        key={`cell-${row}-${col}`}
-                        onClick={() => handleRowHeaderClick(row)}
-                        className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-xl font-bold p-2 transition-colors ${
-                          showRow[row]
-                            ? "bg-brand-500 text-white"
-                            : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
-                        }`}
-                      >
-                        {row}
-                      </td>
-                    )
-                  }
-                  // 答えセル
-                  const key = `${row}-${col}`
-                  const state = cellState[key]
-                  const visible = isAnswerVisible(row, col)
-                  // 個別クリックで色を付けた場合のみ背景色を反映、列/行/全表示の場合は色なし
-                  const bgColor = state?.shown ? state.color : "transparent"
-                  return (
-                    <td
-                      key={`cell-${row}-${col}`}
-                      onClick={() => handleCellClick(row, col)}
-                      className="border border-gray-300 dark:border-gray-600 cursor-pointer text-lg font-bold p-2 text-red-600 dark:text-red-400 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700"
-                      style={{ backgroundColor: bgColor }}
-                    >
-                      {visible ? row * col : ""}
-                    </td>
-                  )
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
+                  })}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
 
       <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
