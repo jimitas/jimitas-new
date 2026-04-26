@@ -12,7 +12,7 @@
 // ======================================================
 
 import { useParams } from "next/navigation"
-import { useState, useCallback, useEffect } from "react"
+import { useState, useCallback } from "react"
 import Link from "next/link"
 import { getPrintDef, isImplemented } from "../_lib/prints"
 import type { OneLineResult, ThreeLineResult, CustomResult, NanjiResult, NanbanmeResult } from "../_lib/types"
@@ -49,22 +49,20 @@ export default function JimipriPrintPage() {
 
   // 状態: モード選択と問題データ
   const [modeIndex, setModeIndex] = useState(0)
-  const [data, setData] = useState<OneLineResult | ThreeLineResult | CustomResult | NanjiResult | NanbanmeResult | null>(null)
+  // 初期データは useState の初期値関数で生成（useEffect 不要）
+  const [data, setData] = useState<OneLineResult | ThreeLineResult | CustomResult | NanjiResult | NanbanmeResult | null>(
+    () => (printDef && isImplemented(printDef)) ? printDef.generate(0) : null
+  )
   const [showAnswers, setShowAnswers] = useState(false)
 
-  // 問題を生成する関数
-  const generateProblem = useCallback(() => {
+  // 問題を生成する関数（ボタン押下・モード変更時に呼ぶ）
+  const generateProblem = useCallback((mode: number = modeIndex) => {
     if (!printDef || !isImplemented(printDef)) return
-    const result = printDef.generate(modeIndex)
+    const result = printDef.generate(mode)
     setData(result)
     setShowAnswers(false)
     playSe(seSet)
   }, [printDef, modeIndex])
-
-  // 初回ロード時に問題を生成
-  useEffect(() => {
-    generateProblem()
-  }, [generateProblem])
 
   // プリント定義が見つからない場合
   if (!printDef) {
@@ -127,6 +125,7 @@ export default function JimipriPrintPage() {
             onChange={(e) => {
               const idx = Number(e.target.value)
               setModeIndex(idx)
+              generateProblem(idx)
             }}
             className="px-2 py-2 border rounded text-sm bg-pink-100 dark:bg-pink-900 w-[300px]"
           >
@@ -140,7 +139,7 @@ export default function JimipriPrintPage() {
 
         {/* もんだいボタン */}
         <button
-          onClick={generateProblem}
+          onClick={() => generateProblem()}
           className="px-4 py-2 bg-brand-500 text-white rounded font-bold text-sm hover:bg-brand-600"
         >
           もんだい
