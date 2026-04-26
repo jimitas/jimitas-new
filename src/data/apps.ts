@@ -432,14 +432,13 @@ export const apps: AppItem[] = [
   },
   {
     id: "fushi-dukuri",
-    title: "ふしづくり4年",
-    description: "簡単な旋律を自分で作ってみよう（4年生向け）",
+    title: "ふしづくり",
+    description: "階名（ドレミ）と音の長さを選んで、自分のメロディーを作って再生できる。テンポ30〜250、5〜20音まで対応",
     grades: [4],
     subjects: ["音楽"],
-    tags: ["創作", "旋律"],
+    tags: ["創作", "旋律", "メロディー", "音楽"],
     type: "app",
     path: "/fushi-dukuri",
-    disabled: true,
   },
   {
     id: "dagakki",
