@@ -203,11 +203,17 @@ function ColorSlider({ label, value, min, max, color, onChange }: SliderProps) {
 }
 
 // ── 色情報テキスト ─────────────────────────────────
-function ColorInfo({ r, g, b }: { r: number; g: number; b: number }) {
+// variant="dark": 暗い背景（光の三原色パネル）用に白寄りの文字色
+// variant="light": 明るい背景（色の三原色パネル）用に黒寄りの文字色
+function ColorInfo({ r, g, b, variant = "light" }: {
+  r: number; g: number; b: number;
+  variant?: "dark" | "light";
+}) {
   const hex = rgbToHex(r, g, b);
   const cmy = rgbToCMY(r, g, b);
+  const textClass = variant === "dark" ? "text-gray-100" : "text-gray-800";
   return (
-    <div className="text-sm font-mono text-gray-500 space-y-1">
+    <div className={`text-sm font-mono space-y-1 font-semibold ${textClass}`}>
       <div>HEX: {hex}</div>
       <div>RGB: rgb({r}, {g}, {b})</div>
       <div>CMY: C:{cmy.c}% M:{cmy.m}% Y:{cmy.y}%</div>
@@ -376,7 +382,7 @@ export default function SangenshokuPage() {
 
           {/* 色情報 */}
           <div className="mb-4">
-            <ColorInfo r={rgbResult.r} g={rgbResult.g} b={rgbResult.b} />
+            <ColorInfo r={rgbResult.r} g={rgbResult.g} b={rgbResult.b} variant="dark" />
           </div>
 
           {/* 色番号入力 */}
@@ -522,7 +528,7 @@ export default function SangenshokuPage() {
 
           {/* 色情報 */}
           <div className="mb-4">
-            <ColorInfo r={cmyResult.r} g={cmyResult.g} b={cmyResult.b} />
+            <ColorInfo r={cmyResult.r} g={cmyResult.g} b={cmyResult.b} variant="light" />
           </div>
 
           {/* 色番号入力 */}
