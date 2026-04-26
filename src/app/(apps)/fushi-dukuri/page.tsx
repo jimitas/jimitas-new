@@ -19,6 +19,7 @@
 // ======================================================
 
 import { useState, useRef, useCallback, useEffect } from "react"
+import { useSound } from "@/hooks/useSound"
 
 // ── 音符・休符パレット定義 ─────────────────────────────
 // factor: 4分音符を1とした相対長さ
@@ -94,6 +95,9 @@ export default function FushiDukuriPage() {
   // localStorage 復元完了フラグ（復元前に書き戻しが走るのを防ぐ）
   const [loaded, setLoaded] = useState(false)
   const [confirmingClear, setConfirmingClear] = useState(false)
+
+  // ドロップ時の効果音（メロディ再生は Web Audio、SE は Howler/useSound）
+  const { play: playSE } = useSound()
 
   const audioCtxRef = useRef<AudioContext | null>(null)
   const scheduledRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
@@ -420,6 +424,12 @@ export default function FushiDukuriPage() {
           const dur = DURATIONS[drag.source.durationIdx]
 
           if (Number.isFinite(targetSlot) && dur) {
+            // ピッチ行に音符を置けるか／休符行に何かを置けるかを判定
+            const willPlace = (isRestRow || dur.isRest) || (Number.isFinite(targetPitch) && targetPitch >= 0)
+            if (willPlace) {
+              // ドロップ成功の効果音
+              playSE("/sounds/pi.mp3", 0.4)
+            }
             setSlots(prev => {
               const next = [...prev]
               // slot 由来なら元の位置を空にしてから新しい位置に置く
