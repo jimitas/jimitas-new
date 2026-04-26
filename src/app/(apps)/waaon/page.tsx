@@ -91,9 +91,9 @@ export default function WaaonPage() {
     stopAll()
 
     const now = ctx.currentTime
-    const sustainSec = 1.8
+    const sustainSec = 3.6   // 旧 1.8s から倍に拡張（小学生がじっくり聴き比べできる長さ）
     const attackSec = 0.02
-    const releaseSec = 0.5
+    const releaseSec = 0.8
     const peakGain = 0.18 / chord.notes.length // 4音合算で過大にならない量
 
     chord.notes.forEach(note => {
@@ -214,8 +214,9 @@ function ChordButton({
         }
       `}
     >
-      <div className="text-2xl font-bold mb-1">{chord.label}</div>
-      <div className="text-xs opacity-80">{chord.yobina}の和音</div>
+      {/* 小学生は「１度・４度」のような度数で覚える方が直感的なので大きく、コードネームは小さく補助表示 */}
+      <div className="text-xl font-bold mb-1">{chord.yobina}の和音</div>
+      <div className="text-xs opacity-80 tabular-nums">（{chord.label}）</div>
     </button>
   )
 }

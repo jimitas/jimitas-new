@@ -495,13 +495,12 @@ export const apps: AppItem[] = [
   {
     id: "masu-nuri",
     title: "せんやマスのいろぬり",
-    description: "マス目をドラッグで塗りつぶしてお絵描きしよう。PNG保存もできる",
-    grades: [1],
+    description: "10×18のマス目に、せんやマスを10色で塗ろう。「ますをぬる」「せんをひく」の2モード切替。同じ色でクリックすると消せる",
+    grades: [1, 2],
     subjects: ["図工"],
-    tags: ["お絵描き", "色塗り"],
+    tags: ["お絵描き", "色塗り", "マス目", "創作"],
     type: "app",
     path: "/masu-nuri",
-    disabled: true,
   },
   {
     id: "sangenshoku",
