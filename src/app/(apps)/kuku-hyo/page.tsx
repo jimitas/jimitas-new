@@ -164,86 +164,79 @@ export default function KukuHyoPage() {
       </div>
 
       {/* ===== 九九の表 =====
-           正方形感を保つため、テーブル全体を max-w-2xl の正方形に近い枠で囲み、
-           各セルに aspect-square を付与して列幅＝行高さになるようにする。 */}
+           CSS Grid（10×10）で正方形を保証。table の aspect-square だと
+           ブラウザによってはテーブル特有の自動レイアウトで横長になるため、
+           div + grid で各セル aspect-square を確実に効かせる。
+           最大表示サイズ 560px に制限し、画面幅に応じて縮小（最小は 1 セル ≈ 32px 程度）。 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2">
-        <div className="mx-auto" style={{ maxWidth: "min(100%, 640px)" }}>
-          <table className="w-full table-fixed border-collapse text-center">
-            <tbody>
-              {Array.from({ length: 10 }).map((_, row) => (
-                <tr key={`row-${row}`}>
-                  {Array.from({ length: 10 }).map((_, col) => {
-                    // (0,0): × （全表示トグル）
-                    if (row === 0 && col === 0) {
-                      return (
-                        <td
-                          key={`cell-${row}-${col}`}
-                          onClick={handleAllClick}
-                          className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-2xl font-bold transition-colors aspect-square ${
-                            showAll
-                              ? "bg-warm-500 text-white"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-warm-100 dark:hover:bg-warm-900"
-                          }`}
-                          style={{ width: "10%" }}
-                        >
-                          ×
-                        </td>
-                      )
-                    }
-                    // (0, c): 列ヘッダ
-                    if (row === 0) {
-                      return (
-                        <td
-                          key={`cell-${row}-${col}`}
-                          onClick={() => handleColHeaderClick(col)}
-                          className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-xl font-bold transition-colors aspect-square ${
-                            showCol[col]
-                              ? "bg-brand-500 text-white"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
-                          }`}
-                          style={{ width: "10%" }}
-                        >
-                          {col}
-                        </td>
-                      )
-                    }
-                    // (r, 0): 行ヘッダ
-                    if (col === 0) {
-                      return (
-                        <td
-                          key={`cell-${row}-${col}`}
-                          onClick={() => handleRowHeaderClick(row)}
-                          className={`border border-gray-300 dark:border-gray-600 cursor-pointer text-xl font-bold transition-colors aspect-square ${
-                            showRow[row]
-                              ? "bg-brand-500 text-white"
-                              : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
-                          }`}
-                          style={{ width: "10%" }}
-                        >
-                          {row}
-                        </td>
-                      )
-                    }
-                    // 答えセル
-                    const key = `${row}-${col}`
-                    const state = cellState[key]
-                    const visible = isAnswerVisible(row, col)
-                    const bgColor = state?.shown ? state.color : "transparent"
-                    return (
-                      <td
-                        key={`cell-${row}-${col}`}
-                        onClick={() => handleCellClick(row, col)}
-                        className="border border-gray-300 dark:border-gray-600 cursor-pointer text-lg font-bold text-red-600 dark:text-red-400 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 aspect-square"
-                        style={{ backgroundColor: bgColor, width: "10%" }}
-                      >
-                        {visible ? row * col : ""}
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
-            </tbody>
-          </table>
+        <div className="mx-auto grid grid-cols-10 gap-px bg-gray-300 dark:bg-gray-600 border border-gray-300 dark:border-gray-600" style={{ maxWidth: "min(100%, 560px)", aspectRatio: "1 / 1" }}>
+          {Array.from({ length: 10 }).flatMap((_, row) =>
+            Array.from({ length: 10 }).map((_, col) => {
+              // (0,0): × （全表示トグル）
+              if (row === 0 && col === 0) {
+                return (
+                  <button
+                    key={`cell-${row}-${col}`}
+                    onClick={handleAllClick}
+                    className={`flex items-center justify-center text-2xl font-bold transition-colors ${
+                      showAll
+                        ? "bg-warm-500 text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-warm-100 dark:hover:bg-warm-900"
+                    }`}
+                  >
+                    ×
+                  </button>
+                )
+              }
+              // (0, c): 列ヘッダ
+              if (row === 0) {
+                return (
+                  <button
+                    key={`cell-${row}-${col}`}
+                    onClick={() => handleColHeaderClick(col)}
+                    className={`flex items-center justify-center text-xl font-bold transition-colors ${
+                      showCol[col]
+                        ? "bg-brand-500 text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
+                    }`}
+                  >
+                    {col}
+                  </button>
+                )
+              }
+              // (r, 0): 行ヘッダ
+              if (col === 0) {
+                return (
+                  <button
+                    key={`cell-${row}-${col}`}
+                    onClick={() => handleRowHeaderClick(row)}
+                    className={`flex items-center justify-center text-xl font-bold transition-colors ${
+                      showRow[row]
+                        ? "bg-brand-500 text-white"
+                        : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-brand-100 dark:hover:bg-brand-900"
+                    }`}
+                  >
+                    {row}
+                  </button>
+                )
+              }
+              // 答えセル
+              const key = `${row}-${col}`
+              const state = cellState[key]
+              const visible = isAnswerVisible(row, col)
+              const bgColor = state?.shown ? state.color : "transparent"
+              return (
+                <button
+                  key={`cell-${row}-${col}`}
+                  onClick={() => handleCellClick(row, col)}
+                  className="flex items-center justify-center text-lg font-bold text-red-600 dark:text-red-400 transition-colors hover:bg-gray-50 dark:hover:bg-gray-700 bg-white dark:bg-gray-800"
+                  style={{ backgroundColor: bgColor !== "transparent" ? bgColor : undefined }}
+                >
+                  {visible ? row * col : ""}
+                </button>
+              )
+            })
+          )}
         </div>
       </div>
 
