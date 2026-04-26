@@ -5,7 +5,7 @@
 
 import { NanjiResult } from "../types"
 
-const BANGOU = ["①", "②", "③", "④", "⑤", "⑥"]
+import { BANGOU } from "../constants"
 
 export function generateNanji2(): NanjiResult {
   const problems: string[] = []

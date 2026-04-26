@@ -4,8 +4,7 @@
 
 import { CustomResult } from "../types"
 import { fracHtml, reduceFraction } from "../bunsuu"
-
-const BANGOU = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩","⑪","⑫","⑬","⑭","⑮","⑯","⑰","⑱","⑲","⑳"]
+import { BANGOU } from "../constants"
 
 export function generateBunsu2(): CustomResult {
   const problems: string[] = []

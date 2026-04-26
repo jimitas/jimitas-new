@@ -6,6 +6,7 @@
 // 元の構造: テキスト → 小問1 → 小問2(表を埋める) → テーブル → 小問3
 
 import { CustomResult } from "../types"
+import { shuffled } from "@/lib/utils"
 
 export function generateMojitoshiki(): CustomResult {
   const problems: string[] = []
@@ -84,7 +85,7 @@ export function generateMojitoshiki(): CustomResult {
   const textC = `x円のクッキー１まいと、${initialValue3}円のケーキ１こを組にして${num3}組買ったときの代金`
   const TEXT = [textA, textB, textC]
   const ANSWER = [`x+${initialValue3}×${num3}`, `x×${num3}+${initialValue3}`, `(x+${initialValue3})×${num3}`]
-  const order = shuffleArray([0, 1, 2])
+  const order = shuffled([0, 1, 2])
 
   let block3 = `<div>(３)　次のことがらを式であらわしましょう。</div>`
   block3 += `<div>　⑦ ${TEXT[order[0]]}<br>　　　　　　　　　　　　　　　　　　　式（　　　　　　　　　　　　　）<br></div>`
@@ -98,13 +99,4 @@ export function generateMojitoshiki(): CustomResult {
   answers.push(ANSWER[order[2]])
 
   return { problems, answers }
-}
-
-function shuffleArray(arr: number[]): number[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }

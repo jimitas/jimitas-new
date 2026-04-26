@@ -28,6 +28,7 @@ const NAV_ITEMS = [
   { label: "6年",   href: "#grade-6" },
   { label: "🎵 音楽・その他", href: "#tools" },
   { label: "📄 教材作成",     href: "#print" },
+  { label: "🖨️ じみぷり",    href: "/jimipri" },
 ]
 
 export default function Header() {
@@ -100,13 +101,23 @@ export default function Header() {
             <>
               {NAV_ITEMS.map((item) => (
                 <li key={item.href}>
-                  <a
-                    href={item.href}
-                    onClick={() => play(UI_SOUNDS.nav)}
-                    className="block px-3 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
-                  >
-                    {item.label}
-                  </a>
+                  {item.href.startsWith("#") ? (
+                    <a
+                      href={item.href}
+                      onClick={() => play(UI_SOUNDS.nav)}
+                      className="block px-3 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+                    >
+                      {item.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={item.href}
+                      onClick={() => play(UI_SOUNDS.nav)}
+                      className="block px-3 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
+                    >
+                      {item.label}
+                    </Link>
+                  )}
                 </li>
               ))}
 

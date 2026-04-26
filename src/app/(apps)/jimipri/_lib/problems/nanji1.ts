@@ -5,8 +5,7 @@
 
 import { NanjiResult } from "../types"
 import { duplicationCheck } from "../duplicationCheck"
-
-const BANGOU = ["①", "②", "③", "④", "⑤", "⑥"]
+import { BANGOU } from "../constants"
 
 export function generateNanji1(): NanjiResult {
   const problems: string[] = []

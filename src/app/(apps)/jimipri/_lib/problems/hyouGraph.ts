@@ -4,6 +4,7 @@
 // 元は画像+HTMLテーブルで表示 → HTML文字列で忠実に再現
 
 import { CustomResult } from "../types"
+import { shuffled } from "@/lib/utils"
 
 const ANIMAL_NAMES = ["いぬ", "かえる", "うま", "さる"]
 const ANIMAL_FILES = ["dog", "frog", "horse", "monkey"]
@@ -14,8 +15,8 @@ export function generateHyouGraph(): CustomResult {
 
   // 各動物の数をランダムに決定（2〜8、重複なし）
   const pool = [2, 3, 4, 5, 6, 7, 8]
-  const shuffled = shuffleArray(pool)
-  const counts = [shuffled[0], shuffled[1], shuffled[2], shuffled[3]]
+  const picked = shuffled(pool)
+  const counts = [picked[0], picked[1], picked[2], picked[3]]
 
   const maxCount = Math.max(...counts)
   const maxIdx = counts.indexOf(maxCount)
@@ -103,26 +104,16 @@ export function generateHyouGraph(): CustomResult {
   answers.push(`${maxCount - minCount}ひき`)
 
   // 元: answerCreate()を使わず area.innerHTML に直接流し込み
-  const answerHtml = `
-    ①　${counts[0]}
-    ②　${counts[1]}
-    ③　${counts[2]}
-    ④　${counts[3]}
-    <br/>
-    ⑤～⑧　あっているか　どうか　だれかに　みてもらいましょう。
-    <br/>
-    ⑨　${ANIMAL_NAMES[maxIdx]}
-    ⑩　${maxCount - minCount}ひき
-  `
+  const answerHtml =
+    `①　${counts[0]}　` +
+    `②　${counts[1]}　` +
+    `③　${counts[2]}　` +
+    `④　${counts[3]}` +
+    `<br/>` +
+    `⑤～⑧　あっているか　どうか　だれかに　みてもらいましょう。` +
+    `<br/>` +
+    `⑨　${ANIMAL_NAMES[maxIdx]}　` +
+    `⑩　${maxCount - minCount}ひき`
 
   return { problems, answers, answerHtml }
-}
-
-function shuffleArray(arr: number[]): number[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }

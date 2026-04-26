@@ -3,13 +3,15 @@
 // 4つの文章題（しき + こたえ）
 
 import { CustomResult } from "../types"
+import { BANGOU } from "../constants"
+import { shuffled } from "@/lib/utils"
 
 export function generateMonoHito(): CustomResult {
   const problems: string[] = []
   const answers: (number | string)[] = []
 
   // 4種の問題テンプレートをシャッフル
-  const order = shuffleArray([0, 1, 2, 3])
+  const order = shuffled([0, 1, 2, 3])
   const kigoArray = ["-", "+", "+", "-"]
   const taniArray = ["まい", "人", "人", "人"]
   const leftArray: number[] = []
@@ -46,23 +48,11 @@ export function generateMonoHito(): CustomResult {
   }
 
   // 元: answerCreate()を使わず area.innerHTML に直接流し込み（②の後で改行）
-  const answerHtml = `
-    ①　${ansArray[order[0]]}
-    ②　${ansArray[order[1]]}<br/>
-    ③　${ansArray[order[2]]}
-    ④　${ansArray[order[3]]}
-  `
+  const answerHtml =
+    `①　${ansArray[order[0]]}　　` +
+    `②　${ansArray[order[1]]}<br/>` +
+    `③　${ansArray[order[2]]}　　` +
+    `④　${ansArray[order[3]]}`
 
   return { problems, answers, answerHtml }
-}
-
-const BANGOU = ["①","②","③","④"]
-
-function shuffleArray(arr: number[]): number[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }

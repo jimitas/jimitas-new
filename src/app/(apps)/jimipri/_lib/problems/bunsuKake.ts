@@ -4,8 +4,7 @@
 
 import { CustomResult } from "../types"
 import { fracHtml, mixedFracHtml, reduceFraction, bunsuMultiplication } from "../bunsuu"
-
-const BANGOU = ["①","②","③","④","⑤","⑥","⑦","⑧","⑨","⑩"]
+import { BANGOU } from "../constants"
 
 export function generateBunsuKake(modeIndex: number): CustomResult {
   const problems: string[] = []

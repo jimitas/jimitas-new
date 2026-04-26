@@ -4,13 +4,15 @@
 // 10種のテンプレートからランダムに4問選出
 
 import { CustomResult } from "../types"
+import { BANGOU } from "../constants"
+import { shuffled } from "@/lib/utils"
 
 export function generateTasuHiku(): CustomResult {
   const problems: string[] = []
   const answers: (number | string)[] = []
 
   // 10種のテンプレートをシャッフルして4つ選ぶ
-  const order = shuffleArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4)
+  const order = shuffled([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 4)
 
   for (let i = 0; i < 4; i++) {
     const a = Math.floor(Math.random() * 9 + 2)
@@ -67,23 +69,11 @@ export function generateTasuHiku(): CustomResult {
   }
 
   // 元: answerCreate()を使わず area.innerHTML に直接流し込み（②の後で改行）
-  const answerHtml = `
-    ①　${answers[0]}
-    ②　${answers[1]}<br/>
-    ③　${answers[2]}
-    ④　${answers[3]}
-  `
+  const answerHtml =
+    `①　${answers[0]}　　` +
+    `②　${answers[1]}<br/>` +
+    `③　${answers[2]}　　` +
+    `④　${answers[3]}`
 
   return { problems, answers, answerHtml }
-}
-
-const BANGOU = ["①", "②", "③", "④"]
-
-function shuffleArray(arr: number[]): number[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }

@@ -6,13 +6,14 @@
 
 import { NanbanmeResult } from "../types"
 import { duplicationCheck } from "../duplicationCheck"
+import { shuffled } from "@/lib/utils"
 
 // nanbanme アプリと同じ10匹の動物（public/images/ 内の png）
 const ANIMALS = ["dog", "cat", "monkey", "frog", "usagi", "niwatori", "ika", "tako", "iruka", "butterfly"]
 
 export function generateNanbanme(): NanbanmeResult {
   // 10匹からランダムに6匹を選んでシャッフル
-  const selected = shuffleArray([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 6)
+  const selected = shuffled([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]).slice(0, 6)
   const animals = selected.map(i => ANIMALS[i])
 
   // 6つの位置から重複なしで5つ選ぶ
@@ -35,24 +36,14 @@ export function generateNanbanme(): NanbanmeResult {
     `ひだりから${positions[4]}ばんめ、みぎから${7 - positions[4]}ばんめ`,
   ]
 
-  // 元: answerCreate()を使わず area.innerHTML に直接流し込み
-  const answerHtml = `
-    ①　ひだりから${positions[0]}ばんめ
-    ②　みぎから${7 - positions[1]}ばんめ
-    ③　ひだりから${positions[2]}ばんめ、みぎから${7 - positions[2]}ばんめ
-    <br/>
-    ④　ひだりから${positions[3]}ばんめ、みぎから${7 - positions[3]}ばんめ
-    ⑤　ひだりから${positions[4]}ばんめ、みぎから${7 - positions[4]}ばんめ
-  `
+  // 元: answerCreate()を使わず area.innerHTML に直接流し込み（全角スペースで区切り）
+  const answerHtml =
+    `①　ひだりから${positions[0]}ばんめ　` +
+    `②　みぎから${7 - positions[1]}ばんめ　` +
+    `③　ひだりから${positions[2]}ばんめ、みぎから${7 - positions[2]}ばんめ` +
+    `<br/>` +
+    `④　ひだりから${positions[3]}ばんめ、みぎから${7 - positions[3]}ばんめ　` +
+    `⑤　ひだりから${positions[4]}ばんめ、みぎから${7 - positions[4]}ばんめ`
 
   return { animals, positions, answers, answerHtml }
-}
-
-function shuffleArray(arr: number[]): number[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }

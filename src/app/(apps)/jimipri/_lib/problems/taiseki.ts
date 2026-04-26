@@ -3,6 +3,7 @@
 // 8つの文章題（しき + こたえ）
 
 import { CustomResult } from "../types"
+import { BANGOU } from "../constants"
 
 export function generateTaiseki(): CustomResult {
   const problems: string[] = []
@@ -51,5 +52,3 @@ export function generateTaiseki(): CustomResult {
 
   return { problems, answers }
 }
-
-const BANGOU = ["①", "②", "③", "④", "⑤", "⑥", "⑦", "⑧"]

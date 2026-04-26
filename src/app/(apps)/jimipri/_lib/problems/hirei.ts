@@ -5,6 +5,7 @@
 // 表: <table style="margin-left:50px"> + <td class="graphTd"> + 先頭列 width:100px
 
 import { CustomResult } from "../types"
+import { shuffled } from "@/lib/utils"
 
 export function generateHirei(): CustomResult {
   const problems: string[] = []
@@ -111,7 +112,7 @@ export function generateHirei(): CustomResult {
   const TEXT = [textA, textB, textC, textD, textE]
   const ANSWER = ["○", "△", "○", "△", "×"]
 
-  const order = shuffleArray([0, 1, 2, 3, 4]).slice(0, 4)
+  const order = shuffled([0, 1, 2, 3, 4]).slice(0, 4)
 
   let block3 = `<div>(３)　比例…〇、反比例…△、どちらでもない…×の記号をつけましょう。</div>`
   block3 += `<div>　⑦（　　）${TEXT[order[0]]}</div>`
@@ -127,13 +128,4 @@ export function generateHirei(): CustomResult {
   answers.push(ANSWER[order[3]])
 
   return { problems, answers }
-}
-
-function shuffleArray(arr: number[]): number[] {
-  const result = [...arr]
-  for (let i = result.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1))
-    ;[result[i], result[j]] = [result[j], result[i]]
-  }
-  return result
 }
