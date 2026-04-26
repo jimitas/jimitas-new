@@ -427,13 +427,12 @@ export const apps: AppItem[] = [
   {
     id: "waaon",
     title: "和音を出そう",
-    description: "複数の音を重ねて和音を体験しよう",
+    description: "ハ長調・イ短調でよく使われる8つの和音を聴き比べよう。Web Audio で4音同時に鳴らす",
     grades: [4, 5, 6],
     subjects: ["音楽"],
-    tags: ["和音", "音"],
+    tags: ["和音", "音", "ハ長調", "イ短調"],
     type: "app",
     path: "/waaon",
-    disabled: true,
   },
   {
     id: "fushi-dukuri",
@@ -447,15 +446,24 @@ export const apps: AppItem[] = [
     disabled: true,
   },
   {
+    id: "dagakki",
+    title: "打楽器ボード",
+    description: "西洋打楽器3種（カスタネット・タンバリン・カウベル）と和太鼓5種（ドン・ドドン・カ・カカ・カコ）を演奏できる。マルチタッチ対応",
+    grades: ["全学年"],
+    subjects: ["音楽"],
+    tags: ["打楽器", "和太鼓", "リズム", "授業支援"],
+    type: "app",
+    path: "/dagakki",
+  },
+  {
     id: "metronome",
     title: "メトロノーム",
-    description: "BPMをスライダーで調整できる練習用メトロノーム（先生・生徒向け）",
+    description: "BPMをスライダーで調整できる練習用メトロノーム。1〜7拍子に対応、拍頭はアクセント音",
     grades: ["先生向け"],
     subjects: ["音楽"],
-    tags: ["メトロノーム", "授業支援"],
+    tags: ["メトロノーム", "授業支援", "BPM", "リズム"],
     type: "tool",
     path: "/metronome",
-    disabled: true,
   },
 
   // ============================================================
