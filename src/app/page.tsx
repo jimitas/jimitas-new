@@ -46,74 +46,75 @@ type SectionDef = {
   order?: string[]
 }
 
-// 学年セクションに表示する教科（算数＋国語のみ）
-const GRADE_SUBJECTS = ["算数", "国語"]
+// その学年に該当する数値が grades に含まれているか
+const hasGrade = (app: AppItem, n: number) => app.grades.includes(n as Grade)
+// 数値の学年（1〜6）が一つでも含まれているか
+const hasAnyNumericGrade = (app: AppItem) =>
+  app.grades.some((g) => typeof g === "number")
 
 const SECTIONS: SectionDef[] = [
   // 学年別（1〜6年）
-  // 算数・国語のみ表示し、print は「📄 教材作成」セクションに分離する
+  // grades に該当学年の数値が含まれていれば、教科を問わずそのセクションに表示。
+  // 例: リコーダー(grades:[3,4,5]) は3年・4年・5年に出る → 先生が学年から探しやすい
+  // print 種別だけは「📄 教材作成」に分離する。
   {
     id: "grade-1",
     title: "１ねんせい",
-    filter: (app) => app.grades.includes(1 as Grade) && app.type !== "print"
-      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+    filter: (app) => hasGrade(app, 1) && app.type !== "print",
     order: [
       "suuzu-block", "kazoeyou", "ikutu",
       "tashizan-1", "tasu-renshu", "nanbanme",
       "hikizan-1", "hiku-renshu", "tokei",
       "kazoe-bou", "okane", "katakana",
-      "sansu-note",
+      "sansu-note", "kenban-easy", "eawase", "masu-nuri",
     ],
   },
   {
     id: "grade-2",
     title: "２年生",
-    filter: (app) => app.grades.includes(2 as Grade) && app.type !== "print"
-      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+    filter: (app) => hasGrade(app, 2) && app.type !== "print",
     order: [
       "tokei", "kazoe-bou", "okane",
       "tashi-hissan", "hiki-hissan", "kuku-array",
-      "kuku-yomi", "sansu-note",
+      "kuku-yomi", "sansu-note", "kenban", "masu-nuri",
     ],
   },
   {
     id: "grade-3",
     title: "３年生",
-    filter: (app) => app.grades.includes(3 as Grade) && app.type !== "print"
-      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+    filter: (app) => hasGrade(app, 3) && app.type !== "print",
     order: [
       "tashi-hissan", "hiki-hissan", "kuku-array",
       "kuku-yomi", "kake-hissan-1", "warizan",
       "warizan2", "kake-hissan2", "romaji",
+      "recorder", "oto-dashiyo", "kyoto-ku",
     ],
   },
   {
     id: "grade-4",
     title: "４年生",
-    filter: (app) => app.grades.includes(4 as Grade) && app.type !== "print"
-      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+    filter: (app) => hasGrade(app, 4) && app.type !== "print",
+    order: ["nihon-todouhuken"],
   },
   {
     id: "grade-5",
     title: "５年生",
-    filter: (app) => app.grades.includes(5 as Grade) && app.type !== "print"
-      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+    filter: (app) => hasGrade(app, 5) && app.type !== "print",
   },
   {
     id: "grade-6",
     title: "６年生",
-    filter: (app) => app.grades.includes(6 as Grade) && app.type !== "print"
-      && app.subjects.some((s) => GRADE_SUBJECTS.includes(s)),
+    filter: (app) => hasGrade(app, 6) && app.type !== "print",
+    order: ["waaon"],
   },
 
-  // 音楽・体育・その他：算数・国語以外の教科＋先生向けツール＋その他をまとめる
+  // その他：数値学年（1〜6）に該当しないアプリをまとめる
+  // 「全学年」「先生向け」「中学」「高校」など、特定学年に紐付かないものが対象。
+  // これにより各アプリが学年セクションと重複表示されない。
   {
     id: "tools",
-    title: "🎵 音楽・体育・その他",
-    filter: (app) =>
-      app.subjects.some((s) =>
-        ["音楽", "体育", "図工", "英語", "社会", "授業支援", "その他"].includes(s)
-      ) || app.grades.includes("先生向け"),
+    title: "🎵 そのほか・先生向け",
+    filter: (app) => app.type !== "print" && !hasAnyNumericGrade(app),
   },
 
   // 教材作成（print 種別、jimipri はバナーで別表示するので除外）
