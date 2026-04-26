@@ -169,7 +169,7 @@ export default function KukuHyoPage() {
            div + grid で各セル aspect-square を確実に効かせる。
            最大表示サイズ 560px に制限し、画面幅に応じて縮小（最小は 1 セル ≈ 32px 程度）。 */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-2">
-        <div className="mx-auto grid grid-cols-10 gap-px bg-gray-300 dark:bg-gray-600 border border-gray-300 dark:border-gray-600" style={{ maxWidth: "min(100%, 560px)", aspectRatio: "1 / 1" }}>
+        <div className="mx-auto grid grid-cols-10 gap-px bg-gray-300 dark:bg-gray-600 border border-gray-300 dark:border-gray-600" style={{ maxWidth: "min(100%, 480px)", aspectRatio: "1 / 1" }}>
           {Array.from({ length: 10 }).flatMap((_, row) =>
             Array.from({ length: 10 }).map((_, col) => {
               // (0,0): × （全表示トグル）
