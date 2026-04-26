@@ -188,6 +188,7 @@ export default function FushiDukuriPage() {
   // 保存データを消して最初から作り直す
   // ────────────────────────────────────────────────
   const clearSaved = () => {
+    playSE("/sounds/reset.mp3", 0.4)
     try {
       localStorage.removeItem(STORAGE_KEY)
     } catch {
@@ -342,11 +343,21 @@ export default function FushiDukuriPage() {
 
   // ────────────────────────────────────────────────
   // 音の数変更
+  //   - 拡張（8→10など）: 既存スロットを保持し、末尾に空スロットを追加
+  //   - 縮小（10→6など）: 先頭から n 個までを保持し、残りは切り捨て
   // ────────────────────────────────────────────────
   const applyNoteCount = () => {
     const n = Math.max(MIN_NOTE_COUNT, Math.min(MAX_NOTE_COUNT, pendingNoteCount))
+    playSE("/sounds/set.mp3", 0.4)
     setNoteCount(n)
-    setSlots(makeEmptySlots(n))
+    setSlots(prev => {
+      if (n > prev.length) {
+        return [...prev, ...makeEmptySlots(n - prev.length)]
+      } else if (n < prev.length) {
+        return prev.slice(0, n)
+      }
+      return prev
+    })
     setConfirmingReset(false)
   }
 
@@ -559,7 +570,9 @@ export default function FushiDukuriPage() {
               </button>
             ) : (
               <div className="flex gap-1 items-center bg-yellow-50 dark:bg-yellow-950 rounded p-1">
-                <span className="text-xs text-yellow-800 dark:text-yellow-200 px-1">作り直す？</span>
+                <span className="text-xs text-yellow-800 dark:text-yellow-200 px-1">
+                  {pendingNoteCount > noteCount ? "ふやす？" : "へらす？"}
+                </span>
                 <button onClick={applyNoteCount} className="px-2 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold">はい</button>
                 <button onClick={() => setConfirmingReset(false)} className="px-2 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
               </div>
