@@ -90,7 +90,7 @@ const SECTIONS: SectionDef[] = [
       "tashi-hissan", "hiki-hissan", "kuku-array",
       "kuku-yomi", "kake-hissan-1", "warizan",
       "warizan2", "kake-hissan2", "romaji",
-      "recorder", "oto-dashiyo", "kyoto-ku",
+      "recorder", "recorder-play", "oto-dashiyo", "kyoto-ku",
     ],
   },
   {
