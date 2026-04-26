@@ -156,13 +156,20 @@ export default function FushiDukuriPage() {
         const pitch = PITCHES[slot.pitchIdx]
 
         // エンベロープ秒数（短い音でも最低限のADSRを確保）
-        const totalEnvSec = Math.max(noteSec - SEPARATION_SEC, noteSec * 0.5)
-        const attack  = Math.min(0.003, totalEnvSec * 0.1)
-        const decay   = Math.min(0.06,  totalEnvSec * 0.25)
-        const release = Math.min(0.05,  totalEnvSec * 0.2)
+        // ノート長から区切り用ギャップを引いた残りを実際の発音時間とする
+        const totalEnvSec = Math.max(noteSec - SEPARATION_SEC, noteSec * 0.7)
+        // Attack: 鋭く立ち上げる
+        const attack  = Math.min(0.004, totalEnvSec * 0.05)
+        // Decay: 浅めに（peak → sustain は短時間で軽くだけ落とす）
+        const decay   = Math.min(0.04,  totalEnvSec * 0.12)
+        // Release: 末尾でフェードアウトして次音との区切りに
+        const release = Math.min(0.03,  totalEnvSec * 0.15)
+        // Sustain: 残りずっと中〜高音量で「伸び」をしっかり聴かせる
         const sustainTime = Math.max(0, totalEnvSec - attack - decay - release)
-        const peak    = 0.32
-        const sustain = 0.20
+        const peak    = 0.30
+        // sustain は peak の 85%（旧 63% から大幅引き上げ）
+        // 2分音符のような長い音でも音量が衰えにくく、長さを実感できる
+        const sustain = 0.255
 
         const osc = ctx.createOscillator()
         osc.type = "triangle"
