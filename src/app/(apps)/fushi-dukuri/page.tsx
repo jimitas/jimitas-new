@@ -77,6 +77,11 @@ export default function FushiDukuriPage() {
   const [pendingNoteCount, setPendingNoteCount] = useState(DEFAULT_NOTE_COUNT)
   const [slots, setSlots] = useState<Slot[]>(makeEmptySlots(DEFAULT_NOTE_COUNT))
   const [confirmingReset, setConfirmingReset] = useState(false)
+  // カウントイン（メトロノーム風プリカウント）：再生開始前に4拍鳴らす
+  const [countIn, setCountIn] = useState(false)
+  // 視覚的カウントダウン表示（"1", "2", "3", "4", null）
+  const [countingNum, setCountingNum] = useState<number | null>(null)
+  const countTimersRef = useRef<number[]>([])
 
   const audioCtxRef = useRef<AudioContext | null>(null)
   const scheduledRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
@@ -124,6 +129,32 @@ export default function FushiDukuriPage() {
       }
     })
     scheduledRef.current = []
+    // カウントダウン表示用 setTimeout もキャンセル
+    countTimersRef.current.forEach(id => window.clearTimeout(id))
+    countTimersRef.current = []
+    setCountingNum(null)
+  }
+
+  // ────────────────────────────────────────────────
+  // カウントイン用クリック音をスケジュール
+  //   isAccent: true = 1拍目（高め・大きめ）/ false = 2〜4拍目
+  // ────────────────────────────────────────────────
+  const scheduleClick = (ctx: AudioContext, t: number, isAccent: boolean) => {
+    const osc = ctx.createOscillator()
+    osc.type = "square"
+    osc.frequency.setValueAtTime(isAccent ? 1500 : 1000, t)
+
+    const gain = ctx.createGain()
+    const peak = isAccent ? 0.18 : 0.12
+    gain.gain.setValueAtTime(0, t)
+    gain.gain.linearRampToValueAtTime(peak, t + 0.001)
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.04)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(t)
+    osc.stop(t + 0.05)
+    scheduledRef.current.push({ osc, gain })
   }
 
   // ────────────────────────────────────────────────
@@ -142,8 +173,35 @@ export default function FushiDukuriPage() {
     stopAll()
     const ctx = ensureAudioContext()
     const beatSec = 60 / tempo
-    const startTime = ctx.currentTime + 0.05
     const SEPARATION_SEC = 0.025  // 連続音の区切り（25ms ギャップ）
+
+    // カウントインが ON なら4拍分のクリックを先にスケジュールし、
+    // メロディの開始タイミングを4拍ぶん後ろにずらす
+    const COUNT_BEATS = 4
+    const preStart = ctx.currentTime + 0.05
+    let startTime = preStart
+    if (countIn) {
+      for (let i = 0; i < COUNT_BEATS; i++) {
+        scheduleClick(ctx, preStart + i * beatSec, i === 0)
+      }
+      startTime = preStart + COUNT_BEATS * beatSec
+
+      // 視覚的カウントダウン表示（1〜4を順に出す）
+      // ctx.currentTime は AudioContext 時刻、Date.now() ベースの setTimeout と
+      // 厳密同期はしないが、十分近い精度で1拍ごとに表示を切り替えられる
+      const baseDelayMs = (preStart - ctx.currentTime) * 1000
+      for (let i = 0; i < COUNT_BEATS; i++) {
+        const id = window.setTimeout(() => {
+          setCountingNum(i + 1)
+        }, baseDelayMs + i * beatSec * 1000)
+        countTimersRef.current.push(id)
+      }
+      // メロディ開始時に表示を消す
+      const clearId = window.setTimeout(() => {
+        setCountingNum(null)
+      }, baseDelayMs + COUNT_BEATS * beatSec * 1000)
+      countTimersRef.current.push(clearId)
+    }
 
     let cursor = 0
     for (const slot of slots) {
@@ -316,7 +374,16 @@ export default function FushiDukuriPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4">
+    <div className="max-w-6xl mx-auto px-4 py-4 relative">
+      {/* カウントダウン表示（再生開始前の4拍ぶん） */}
+      {countingNum !== null && (
+        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
+          <div className="text-[20vw] font-black text-warm-500/80 drop-shadow-2xl tabular-nums select-none">
+            {countingNum}
+          </div>
+        </div>
+      )}
+
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1 text-center">
         ふしづくり
       </h1>
@@ -370,6 +437,20 @@ export default function FushiDukuriPage() {
           >
             ■ 停止
           </button>
+          {/* カウントイン（メトロノーム風 4拍プリカウント） */}
+          <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg cursor-pointer text-sm font-bold border-2 transition-colors ${
+            countIn
+              ? "bg-warm-500 border-warm-600 text-white"
+              : "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
+          }`}>
+            <input
+              type="checkbox"
+              checked={countIn}
+              onChange={(e) => setCountIn(e.target.checked)}
+              className="sr-only"
+            />
+            🥁 カウント（4拍）
+          </label>
           <div className="ml-4 flex items-center gap-2">
             <span className="text-sm text-gray-700 dark:text-gray-200">音の数</span>
             <input
