@@ -18,9 +18,18 @@
 
 "use client";
 
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import Image from "next/image";
 import * as se from "@/lib/se";
+import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm";
+
+// localStorage キー（保存データの構造を変えたらバージョンを上げる）
+const STORAGE_KEY = "jimitas_sakusen_board_v1";
+
+type SavedData = {
+  positions?: Record<string, { x: number; y: number }>;
+  isRotated?: boolean;
+};
 
 // ── 作戦名の選択肢 ────────────────────────────────────
 const STRATEGY_OPTIONS = [
@@ -73,6 +82,52 @@ export default function SakusenBoardPage() {
   // ── 選手マーカーの回転フラグ ──────────────────────
   // false: 通常（丸）、true: 横向き（赤=右90°、青=左90°）
   const [isRotated, setIsRotated] = useState(false);
+
+  // ── localStorage 復元完了フラグ（復元前に書き戻しが走るのを防ぐ） ──
+  const [loaded, setLoaded] = useState(false);
+
+  // ── localStorage から復元（マウント時1回だけ） ──────
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw) as SavedData;
+        if (data.positions && typeof data.positions === "object") {
+          setPositions(data.positions);
+        }
+        if (typeof data.isRotated === "boolean") {
+          setIsRotated(data.isRotated);
+        }
+      }
+    } catch {
+      // 破損データは無視
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  // ── localStorage に自動保存（編集時に毎回書き出す） ──
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      const data: SavedData = { positions, isRotated };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // 容量超過などは無視
+    }
+  }, [loaded, positions, isRotated]);
+
+  // ── 保存データを消して最初から作り直す ──────────────
+  const handleReset = () => {
+    se.playSe(se.reset);
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // ignore
+    }
+    setPositions({});
+    setIsRotated(false);
+  };
 
   // ── ドラッグ開始 ────────────────────────────────────
   const handlePointerDown = (e: React.PointerEvent<HTMLElement>, id: string) => {
@@ -196,7 +251,7 @@ export default function SakusenBoardPage() {
         作戦ボード
       </h1>
 
-      {/* ── 作戦名セレクト + ヒント ─────────────────── */}
+      {/* ── 作戦名セレクト + リセット + ヒント ───────── */}
       <div className="flex flex-wrap items-center justify-center gap-3">
         <select
           className="text-sm font-bold text-gray-800 border-2 border-brand-500 rounded-lg px-3 py-1 bg-white cursor-pointer"
@@ -206,6 +261,12 @@ export default function SakusenBoardPage() {
             <option key={i} value={s}>{s}</option>
           ))}
         </select>
+        <BtnConfirm
+          label="リセット"
+          color="danger"
+          promptLabel="ぜんぶもどす？"
+          onConfirm={handleReset}
+        />
         <p className="text-xs text-gray-500">
           スクリーンショットをとって、ロイロノートなどに残そう
         </p>

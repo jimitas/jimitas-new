@@ -106,6 +106,17 @@ const PREFS: {
 
 const N = PREFS.length // 47
 
+// localStorage キー（保存データの構造を変えたらバージョンを上げる）
+const STORAGE_KEY = "jimitas_nihon_todouhuken_v1"
+
+type SavedData = {
+  placed?: (number | null)[]
+  results?: (string | null)[]
+  cardOrder?: number[]
+  locked?: boolean[]
+  allCorrect?: boolean
+}
+
 // ── 列レイアウト定義 ──────────────────────────────────────
 // 元アプリと同様に、地方ごとの列でドロップゾーンを整列配置。
 // left: 列の左端（% of 地図コンテナ幅）
@@ -153,24 +164,68 @@ export default function NihonTodouhukenPage() {
   const [cardOrder, setCardOrder] = useState<number[]>(
     () => PREFS.map((_, i) => i)
   )
-  // マウント後にシャッフル（hydration mismatch 防止のため useEffect で実行）
-  // queueMicrotask で非同期化して react-hooks/set-state-in-effect を回避
-  useEffect(() => {
-    queueMicrotask(() => {
-      const ids = PREFS.map((_, i) => i)
-      for (let i = ids.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [ids[i], ids[j]] = [ids[j], ids[i]]
-      }
-      setCardOrder(ids)
-    })
-  }, [])
   // 正解済みのゾーン（コイン重複防止用）
   const [locked, setLocked] = useState<boolean[]>(
     () => Array(N).fill(false)
   )
   // 全問正解フラグ
   const [allCorrect, setAllCorrect] = useState(false)
+
+  // ── localStorage 復元・自動保存 ──────────────────────
+  // 復元できたら自動シャッフルはスキップ（続きから再開できるように）
+  const [storageLoaded, setStorageLoaded] = useState(false)
+  useEffect(() => {
+    // setState を useEffect 内で直接呼ばないように、まず保存データを解析してから
+    // queueMicrotask でまとめて反映する（react-hooks/set-state-in-effect 対応）
+    let parsed: SavedData | null = null
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) parsed = JSON.parse(raw) as SavedData
+    } catch {
+      // 破損データは無視
+    }
+    queueMicrotask(() => {
+      let restoredCardOrder = false
+      if (parsed) {
+        if (Array.isArray(parsed.placed) && parsed.placed.length === N) {
+          setPlaced(parsed.placed.map(v => (typeof v === "number" || v === null) ? v : null))
+        }
+        if (Array.isArray(parsed.results) && parsed.results.length === N) {
+          setResults(parsed.results.map(v => (v === "correct" || v === "wrong") ? v : null))
+        }
+        if (Array.isArray(parsed.cardOrder) && parsed.cardOrder.length === N) {
+          const safe = parsed.cardOrder.filter(v => typeof v === "number" && v >= 0 && v < N)
+          if (safe.length === N) {
+            setCardOrder(safe)
+            restoredCardOrder = true
+          }
+        }
+        if (Array.isArray(parsed.locked) && parsed.locked.length === N) {
+          setLocked(parsed.locked.map(v => v === true))
+        }
+        if (typeof parsed.allCorrect === "boolean") setAllCorrect(parsed.allCorrect)
+      }
+      // 保存データから cardOrder を復元できなかった場合のみ自動シャッフル
+      if (!restoredCardOrder) {
+        const ids = PREFS.map((_, i) => i)
+        for (let i = ids.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [ids[i], ids[j]] = [ids[j], ids[i]]
+        }
+        setCardOrder(ids)
+      }
+      setStorageLoaded(true)
+    })
+  }, [])
+  useEffect(() => {
+    if (!storageLoaded) return
+    try {
+      const data: SavedData = { placed, results, cardOrder, locked, allCorrect }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // 容量超過などは無視
+    }
+  }, [storageLoaded, placed, results, cardOrder, locked, allCorrect])
 
   // コインシステム
   const { coins, addCoins } = useCoins()
@@ -417,6 +472,8 @@ export default function NihonTodouhukenPage() {
       [ids[i], ids[j]] = [ids[j], ids[i]]
     }
     setCardOrder(ids)
+    // localStorage の保存も消す（次回起動時に復元されないように）
+    try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
   }, [confirmReset])
 
   // ── 正解数 ────────────────────────────────────────────

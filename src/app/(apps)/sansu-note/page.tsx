@@ -117,6 +117,27 @@ type PlacedItem = {
   y: number   // ノートエリア内の top 座標
 }
 
+// localStorage キー（保存データの構造を変えたらバージョンを上げる）
+// 手書きCanvasは保存対象外（容量・undoスタックの整合が難しいため items のみ）
+const STORAGE_KEY = "jimitas_sansu_note_v1"
+
+type SavedData = {
+  items?: PlacedItem[]
+}
+
+// items 配列を厳密にバリデーションする（破損データで落ちないように）
+function isValidItem(x: unknown): x is PlacedItem {
+  if (!x || typeof x !== "object") return false
+  const it = x as Record<string, unknown>
+  return typeof it.uid === "string"
+    && typeof it.imageId === "string"
+    && typeof it.label === "string"
+    && typeof it.width === "number"
+    && typeof it.height === "number"
+    && typeof it.x === "number"
+    && typeof it.y === "number"
+}
+
 // ── ドラッグ中の情報（2種類を統合） ──────────────────────
 type DragInfo = {
   mode: "palette"    // パレットから引き出し中
@@ -325,6 +346,35 @@ export default function SansuNotePage() {
   const [items, setItems] = useState<PlacedItem[]>([])
   const itemsRef = useRef(items)
   useLayoutEffect(() => { itemsRef.current = items })
+
+  // ── localStorage：items のみ自動保存・復元 ───────────────
+  // 手書きCanvasは対象外（容量・undoスタックの整合が難しいため）
+  const [storageLoaded, setStorageLoaded] = useState(false)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const data = JSON.parse(raw) as SavedData
+        if (Array.isArray(data.items)) {
+          const safeItems = data.items.filter(isValidItem)
+          setItems(safeItems)
+        }
+      }
+    } catch {
+      // 破損データは無視
+    } finally {
+      setStorageLoaded(true)
+    }
+  }, [])
+  useEffect(() => {
+    if (!storageLoaded) return
+    try {
+      const data: SavedData = { items }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // 容量超過などは無視
+    }
+  }, [storageLoaded, items])
 
   // ── タップ配置カーソル（左上から順に整列して配置する）───
   // { x, y } = 次に配置する座標。タップのたびに右へ進み、端で折り返す
@@ -709,6 +759,8 @@ export default function SansuNotePage() {
     if (resetTimerRef.current) clearTimeout(resetTimerRef.current)
     se.playSe(se.reset)
     setItems([])
+    // localStorage の保存も消す（次回起動時に復元されないように）
+    try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
     // Canvas もクリア
     const canvas = canvasRef.current
     if (canvas) {

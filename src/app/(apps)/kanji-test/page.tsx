@@ -22,9 +22,27 @@
 //   印刷時は scale(1) に戻す（globals.css の @media print で制御）。
 // ======================================================
 
-import { useState, useRef }            from "react"
+import { useState, useRef, useEffect } from "react"
 import * as se                         from "@/lib/se"
 import { shuffled }                    from "@/lib/utils"
+
+// localStorage キー（保存データの構造を変えたらバージョンを上げる）
+const STORAGE_KEY = "jimitas_kanji_test_v1"
+
+// 保存データの型（ゆるめにバリデーション）
+type SavedData = {
+  inputText?: string
+  displayLines?: string[]
+  grade?: number | null
+  mondaisu?: number
+  fontSize?: number
+  dansu?: 1 | 2
+  titleIndex?: number
+  subTitleText?: string
+  namaeIndex?: number
+  setumeiIndex?: number
+  saveFileName?: string
+}
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -146,6 +164,65 @@ export default function KanpuriPage() {
   const [msg, setMsg]   = useState("")
   const msgTimerRef     = useRef<ReturnType<typeof setTimeout> | null>(null)
   const fileInputRef    = useRef<HTMLInputElement>(null)
+
+  // localStorage 復元完了フラグ（復元前に書き戻しが走るのを防ぐ）
+  const [loaded, setLoaded] = useState(false)
+
+  // ── localStorage から復元（マウント時1回だけ） ────────
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const data = JSON.parse(raw) as SavedData
+        if (typeof data.inputText === "string") setInputText(data.inputText)
+        if (Array.isArray(data.displayLines)) {
+          setDisplayLines(data.displayLines.filter(s => typeof s === "string"))
+        }
+        if (data.grade === null || (typeof data.grade === "number" && data.grade >= 1 && data.grade <= 6)) {
+          setGrade(data.grade)
+        }
+        if (typeof data.mondaisu === "number" && data.mondaisu >= 1 && data.mondaisu <= 20) {
+          setMondaisu(data.mondaisu)
+        }
+        if (typeof data.fontSize === "number" && data.fontSize >= 8 && data.fontSize <= 60) {
+          setFontSize(data.fontSize)
+        }
+        if (data.dansu === 1 || data.dansu === 2) setDansu(data.dansu)
+        if (typeof data.titleIndex === "number" && data.titleIndex >= 0 && data.titleIndex < DAIMEI.length) {
+          setTitleIndex(data.titleIndex)
+        }
+        if (typeof data.subTitleText === "string") setSubTitleText(data.subTitleText)
+        if (typeof data.namaeIndex === "number" && data.namaeIndex >= 0 && data.namaeIndex * 3 + 2 < NAMAE_DATA.length) {
+          setNamaeIndex(data.namaeIndex)
+        }
+        if (typeof data.setumeiIndex === "number" && data.setumeiIndex >= 0 && data.setumeiIndex < SETUMEI_DATA.length) {
+          setSetumeiIndex(data.setumeiIndex)
+        }
+        if (typeof data.saveFileName === "string") setSaveFileName(data.saveFileName)
+      }
+    } catch {
+      // 破損データは無視
+    } finally {
+      setLoaded(true)
+    }
+  }, [])
+
+  // ── localStorage に自動保存（編集時に毎回書き出す） ──
+  useEffect(() => {
+    if (!loaded) return
+    try {
+      const data: SavedData = {
+        inputText, displayLines, grade,
+        mondaisu, fontSize, dansu,
+        titleIndex, subTitleText, namaeIndex, setumeiIndex,
+        saveFileName,
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // 容量超過などは無視
+    }
+  }, [loaded, inputText, displayLines, grade, mondaisu, fontSize, dansu,
+      titleIndex, subTitleText, namaeIndex, setumeiIndex, saveFileName])
 
   // ── ヘルパー ────────────────────────────────────────
 

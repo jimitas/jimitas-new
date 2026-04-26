@@ -14,9 +14,21 @@
 // 手書きは算数ノート風の補足メモ（変化のきまり等）に活用できる。
 // ======================================================
 
-import { useState, useCallback, useRef } from "react"
+import { useState, useCallback, useRef, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
 import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
+
+// localStorage キー（保存データの構造を変えたらバージョンを上げる）
+const STORAGE_KEY = "jimitas_masu_nuri_v1"
+
+type SavedData = {
+  mode?: "cells" | "lines" | "tegaki"
+  color?: string
+  cellColors?: Record<string, string>
+  hLineColors?: Record<string, string>
+  vLineColors?: Record<string, string>
+  strokes?: { id: string; color: string; d: string }[]
+}
 
 // マス数（旧 10×18 → 14×24）
 const ROWS = 14
@@ -61,6 +73,52 @@ export default function MasuNuriPage() {
   // （memory: feedback_drag_dom_direct に従い追従遅延を防ぐ）
   const inProgressPathRef = useRef<SVGPathElement | null>(null)
   const inProgressDataRef = useRef<string>("")
+
+  // ── localStorage 復元・自動保存 ──────────────────────
+  const [storageLoaded, setStorageLoaded] = useState(false)
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const data = JSON.parse(raw) as SavedData
+        if (data.mode === "cells" || data.mode === "lines" || data.mode === "tegaki") {
+          setMode(data.mode)
+        }
+        if (typeof data.color === "string") setColor(data.color)
+        if (data.cellColors && typeof data.cellColors === "object") {
+          setCellColors(data.cellColors)
+        }
+        if (data.hLineColors && typeof data.hLineColors === "object") {
+          setHLineColors(data.hLineColors)
+        }
+        if (data.vLineColors && typeof data.vLineColors === "object") {
+          setVLineColors(data.vLineColors)
+        }
+        if (Array.isArray(data.strokes)) {
+          const safe = data.strokes.filter(s =>
+            s && typeof s === "object" &&
+            typeof s.id === "string" &&
+            typeof s.color === "string" &&
+            typeof s.d === "string"
+          )
+          setStrokes(safe)
+        }
+      }
+    } catch {
+      // 破損データは無視
+    } finally {
+      setStorageLoaded(true)
+    }
+  }, [])
+  useEffect(() => {
+    if (!storageLoaded) return
+    try {
+      const data: SavedData = { mode, color, cellColors, hLineColors, vLineColors, strokes }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // 容量超過などは無視
+    }
+  }, [storageLoaded, mode, color, cellColors, hLineColors, vLineColors, strokes])
 
   // -------------------------------------------------------
   // ますをぬる（同じ色なら消す＝トグル、置く瞬間に pi 効果音）
@@ -191,6 +249,8 @@ export default function MasuNuriPage() {
     setHLineColors({})
     setVLineColors({})
     setStrokes([])
+    // localStorage の保存も消す（次回起動時に復元されないように）
+    try { localStorage.removeItem(STORAGE_KEY) } catch { /* ignore */ }
   }
 
   return (
@@ -267,13 +327,13 @@ export default function MasuNuriPage() {
                 >
                   ↶ ひとつもどす
                 </button>
-                <button
-                  onClick={clearStrokes}
-                  className="px-3 py-2 rounded-lg bg-warm-100 dark:bg-warm-900 text-warm-800 dark:text-warm-200 text-sm hover:bg-warm-200 dark:hover:bg-warm-800"
-                  title="てがきメモをぜんぶ消す（マス・線は残ります）"
-                >
-                  🗑 てがきだけけす
-                </button>
+                <BtnConfirm
+                  label="🗑 てがきだけけす"
+                  color="warm"
+                  promptLabel="てがきだけけす？"
+                  yesColor="warm"
+                  onConfirm={clearStrokes}
+                />
               </>
             )}
             <BtnConfirm
