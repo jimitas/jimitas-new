@@ -3,15 +3,17 @@
 // ======================================================
 // せんやマスのいろぬり
 //
-// 10×18 のマス目に「せんをひく」または「ますをぬる」モードで色を塗れる。
+// 14×24 のマス目に「せんをひく」または「ますをぬる」モードで色を塗れる。
 // SVG ベースで、セル・水平線・垂直線の3レイヤを切り替え可能。
 // 旧 jimitas.com「もっと学習コンテンツ」内の masu 機能を移植。
 // ======================================================
 
 import { useState, useCallback } from "react"
+import { useSound } from "@/hooks/useSound"
 
-const ROWS = 10
-const COLS = 18
+// マス数を拡大（旧 10×18 → 14×24、約1.86倍）
+const ROWS = 14
+const COLS = 24
 
 type Mode = "cells" | "lines"
 
@@ -38,12 +40,15 @@ export default function MasuNuriPage() {
   const [hLineColors, setHLineColors] = useState<Record<string, string>>({})
   const [vLineColors, setVLineColors] = useState<Record<string, string>>({})
   const [confirmingReset, setConfirmingReset] = useState(false)
+  const { play } = useSound()
 
   // -------------------------------------------------------
   // 塗る処理（同じ色なら消す＝トグル）
+  // 元実装に合わせて、置く瞬間に pi 効果音
   // -------------------------------------------------------
   const paintCell = useCallback((r: number, c: number) => {
     if (mode !== "cells") return
+    play("/sounds/pi.mp3", 0.4)
     const key = `${r}-${c}`
     setCellColors(prev => {
       if (prev[key] === color) {
@@ -53,10 +58,11 @@ export default function MasuNuriPage() {
       }
       return { ...prev, [key]: color }
     })
-  }, [mode, color])
+  }, [mode, color, play])
 
   const paintHLine = useCallback((r: number, c: number) => {
     if (mode !== "lines") return
+    play("/sounds/pi.mp3", 0.4)
     const key = `${r}-${c}`
     setHLineColors(prev => {
       if (prev[key] === color) {
@@ -66,10 +72,11 @@ export default function MasuNuriPage() {
       }
       return { ...prev, [key]: color }
     })
-  }, [mode, color])
+  }, [mode, color, play])
 
   const paintVLine = useCallback((r: number, c: number) => {
     if (mode !== "lines") return
+    play("/sounds/pi.mp3", 0.4)
     const key = `${r}-${c}`
     setVLineColors(prev => {
       if (prev[key] === color) {
@@ -79,9 +86,15 @@ export default function MasuNuriPage() {
       }
       return { ...prev, [key]: color }
     })
-  }, [mode, color])
+  }, [mode, color, play])
+
+  // モード/色/リセット ボタン用：ひと呼吸ある set 音
+  const playSwitchSound = useCallback(() => {
+    play("/sounds/set.mp3", 0.4)
+  }, [play])
 
   const reset = () => {
+    play("/sounds/reset.mp3", 0.4)
     setCellColors({})
     setHLineColors({})
     setVLineColors({})
@@ -103,7 +116,7 @@ export default function MasuNuriPage() {
           {/* モード切替 */}
           <div className="flex gap-1">
             <button
-              onClick={() => setMode("cells")}
+              onClick={() => { playSwitchSound(); setMode("cells") }}
               className={`px-3 py-2 rounded-lg text-sm font-bold ${
                 mode === "cells"
                   ? "bg-brand-500 text-white"
@@ -113,7 +126,7 @@ export default function MasuNuriPage() {
               ますをぬる
             </button>
             <button
-              onClick={() => setMode("lines")}
+              onClick={() => { playSwitchSound(); setMode("lines") }}
               className={`px-3 py-2 rounded-lg text-sm font-bold ${
                 mode === "lines"
                   ? "bg-brand-500 text-white"
@@ -129,7 +142,7 @@ export default function MasuNuriPage() {
             {COLORS.map(c => (
               <button
                 key={c.value}
-                onClick={() => setColor(c.value)}
+                onClick={() => { playSwitchSound(); setColor(c.value) }}
                 title={c.label}
                 aria-label={c.label}
                 className={`w-9 h-9 rounded-md border-2 transition-all ${
@@ -146,7 +159,7 @@ export default function MasuNuriPage() {
           <div className="ml-auto">
             {!confirmingReset ? (
               <button
-                onClick={() => setConfirmingReset(true)}
+                onClick={() => { playSwitchSound(); setConfirmingReset(true) }}
                 className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-red-100 dark:hover:bg-red-900"
               >
                 リセット
