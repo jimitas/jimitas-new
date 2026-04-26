@@ -23,8 +23,8 @@ import { useState, useRef, useCallback, useEffect } from "react"
 // ── 音符・休符パレット定義 ─────────────────────────────
 // factor: 4分音符を1とした相対長さ
 // isRest: 休符フラグ
+// durationIdx は常にこの配列のインデックス（0..5）として扱う
 type DurationDef = {
-  idx: number
   label: string
   image: string
   factor: number
@@ -32,12 +32,12 @@ type DurationDef = {
 }
 
 const DURATIONS: DurationDef[] = [
-  { idx: 1, label: "2分音ぷ",     image: "2buo", factor: 2,    isRest: false },
-  { idx: 2, label: "4分音ぷ",     image: "4buo", factor: 1,    isRest: false },
-  { idx: 3, label: "付点4分音ぷ", image: "f4bo", factor: 1.5,  isRest: false },
-  { idx: 4, label: "8分音ぷ",     image: "8buo", factor: 0.5,  isRest: false },
-  { idx: 5, label: "4分休ふ",     image: "4kyu", factor: 1,    isRest: true },
-  { idx: 6, label: "8分休ふ",     image: "8kyu", factor: 0.5,  isRest: true },
+  { label: "2分音ぷ",     image: "2buo", factor: 2,    isRest: false },  // 0
+  { label: "4分音ぷ",     image: "4buo", factor: 1,    isRest: false },  // 1
+  { label: "付点4分音ぷ", image: "f4bo", factor: 1.5,  isRest: false },  // 2
+  { label: "8分音ぷ",     image: "8buo", factor: 0.5,  isRest: false },  // 3
+  { label: "4分休ふ",     image: "4kyu", factor: 1,    isRest: true },   // 4
+  { label: "8分休ふ",     image: "8kyu", factor: 0.5,  isRest: true },   // 5
 ]
 
 // ── 音高（高い順に並べる：上が高音、下が低音）──────────
@@ -211,12 +211,13 @@ export default function FushiDukuriPage() {
 
   // ────────────────────────────────────────────────
   // ドラッグ開始（パレット）：ゴースト要素を作って fixed 配置
+  // durationIdx は DURATIONS 配列の 0..5 インデックスをそのまま渡す
   // ────────────────────────────────────────────────
   const onPalettePointerDown = (e: React.PointerEvent<HTMLDivElement>, durationIdx: number) => {
     const target = e.currentTarget
     target.setPointerCapture(e.pointerId)
 
-    const dur = DURATIONS.find(d => d.idx === durationIdx)
+    const dur = DURATIONS[durationIdx]
     if (!dur) return
 
     // ゴースト DOM を作って body に追加
@@ -271,7 +272,7 @@ export default function FushiDukuriPage() {
         const isRestRow = cell.dataset.rest === "true"
         const pitchIdx = parseInt(cell.dataset.pitch || "-1", 10)
 
-        const dur = DURATIONS.find(d => d.idx === drag.durationIdx)
+        const dur = DURATIONS[drag.durationIdx]
         if (Number.isFinite(slotIdx) && dur) {
           if (dur.isRest) {
             // 休符はどこにドロップしても、休符行の動作になる
@@ -406,10 +407,10 @@ export default function FushiDukuriPage() {
           🎵 音符・休符パレット（ドラッグして下のグリッドに置こう）
         </div>
         <div className="flex flex-wrap gap-3 justify-center">
-          {DURATIONS.map(dur => (
+          {DURATIONS.map((dur, durIdx) => (
             <div
-              key={dur.idx}
-              onPointerDown={(e) => onPalettePointerDown(e, dur.idx)}
+              key={durIdx}
+              onPointerDown={(e) => onPalettePointerDown(e, durIdx)}
               onPointerMove={onPalettePointerMove}
               onPointerUp={onPalettePointerUp}
               onPointerCancel={onPalettePointerUp}
@@ -456,7 +457,7 @@ export default function FushiDukuriPage() {
                       {slot.type === "note" && slot.pitchIdx === pIdx ? (
                         // eslint-disable-next-line @next/next/no-img-element
                         <img
-                          src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx - 1].image}.png`}
+                          src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
                           alt=""
                           className="h-8 mx-auto pointer-events-none"
                           draggable={false}
@@ -485,7 +486,7 @@ export default function FushiDukuriPage() {
                     {slot.type === "rest" ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
-                        src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx - 1].image}.png`}
+                        src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
                         alt=""
                         className="h-8 mx-auto pointer-events-none"
                         draggable={false}
