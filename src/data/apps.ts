@@ -540,6 +540,16 @@ export const apps: AppItem[] = [
     type: "tool",
     path: "/koch-curve",
   },
+  {
+    id: "triangle-ratio",
+    title: "三角比 (sin / cos / tan)",
+    description: "高校数学の三角比を視覚的に学習しよう。3モード（比率・辺・角度）でSVG三角形がリアルタイムに変化",
+    grades: ["中学", "高校"],
+    subjects: ["その他"],
+    tags: ["数学", "三角比", "sin", "cos", "tan", "中高向け"],
+    type: "app",
+    path: "/triangle-ratio",
+  },
 
   // ============================================================
   // 先生向けツール
