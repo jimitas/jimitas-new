@@ -10,9 +10,50 @@
 
 旧 WordPress(さくらレンタルサーバ)で運用していた `jimitas.com` を、新 Next.js プロジェクト `jimitas-new` (Vercel) に移行完了。Google Search Console の登録・サイトマップ送信まで完了。旧 WordPress データはさくらサーバ上に温存(将来削除予定)。
 
+その後、Claude Code セッションで残課題を順次解消（後述「0. 追加対応」参照）。
+
 ---
 
-## 1. 完了済みタスク
+## 0. 追加対応の記録（Claude Code セッション、2026-04-26）
+
+claude.ai でこの記録を作成した後、Claude Code で以下を順次実施・完了した。
+
+### Phase 1: 静的HTMLパスのリダイレクト追加（next.config.ts）
+
+motto-gakushu.netlify.app の調査で、旧さくらサーバー上に追加の静的HTMLが4つあったことが判明。`next.config.ts` の `redirects()` に追加:
+
+- `/round-off` → `/shishagonyu`（四捨五入アプリに対応）
+- `/fushidukuri` → `/`（未移植）
+- `/eawase` → `/`（未移植）
+- `/nandemo` → `/`（未移植）
+
+### Phase 2: 三角比アプリの移植
+
+- 旧 `triangle-ratio.vercel.app`（vanilla HTML/JS）を `/triangle-ratio` として jimitas-new に移植
+- 3モード（比率・辺・角度）+ SVG 三角形の React + Tailwind 実装
+- `apps.ts` に追加（subjects: ["その他"]、grades: ["中学", "高校"]）
+- `layout.tsx` で `getAppMetadata` / `getAppJsonLd` を使い SEO・JSON-LD も既存パターンと統一
+
+### Phase 3: 個別デプロイ22件にソフト誘導バナーを設置
+
+旧 `jimitas.com` に紐付いていた個別デプロイ（Vercel/Netlify）に、ソフト誘導バナーを設置。301リダイレクトではなく、旧アプリは引き続き動作させたまま、ページ最上部に「jimitas.com に集約しました」と案内する黄色いバナー（HTML スニペット or React コンポーネント）を追加。
+
+| 種別 | 件数 | 編集対象 |
+|---|---|---|
+| 静的HTML（Netlify/Vercel） | 19件 | `index.html` の `<body>` 直後 |
+| Next.js Pages Router | 3件 | `src/pages/_app.tsx` に `MigrationBanner` 追加 |
+| 合計 | **22件** | |
+
+各バナーは「将来削除予定」と添えて段階的撤去を予告。具体的な日付はぼかしてある。
+
+### 除外したもの
+
+- **`motto-gakushu`**: ランディング集約ページ。jimitas-new に未移植のため放置（メモリ参照: `project_unported_apps_todo.md`）
+- **`jimitas.vercel.app`**: 旧 jimitas.com がブログだった時代のアプリ用短縮URL。jimitas.com が新サイトになり役目を終えたため、ユーザーが Vercel ダッシュボードから直接プロジェクト削除予定
+
+---
+
+## 1. 完了済みタスク（claude.ai セッション時点）
 
 ### 1.1 Vercel 側
 
