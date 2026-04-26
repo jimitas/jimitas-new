@@ -857,9 +857,10 @@ export default function FushiDukuriPage() {
         </div>
       </section>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 mb-3 text-center">
-        💡 配置済みの音符・休符をタップすると消せるよ。
-      </p>
+      <div className="mt-3 mb-3 space-y-1 text-xs text-gray-500 dark:text-gray-400 text-center">
+        <p>💡 配置済みの音符・休符は、もう一度ドラッグで移動／タップで削除できるよ。</p>
+        <p>🎨 左の階名（ド・レ・ミ…）をタップすると、その行が <span className="bg-yellow-200 dark:bg-yellow-700 text-yellow-900 dark:text-yellow-100 px-1 rounded font-bold">こんな黄色</span> になるよ。「使う音」を絞るときの目印に。</p>
+      </div>
 
       {/* 音符パレット（下から上へドラッグ） */}
       <section className="bg-purple-50 dark:bg-purple-950 rounded-xl border-2 border-purple-300 dark:border-purple-700 p-3">
