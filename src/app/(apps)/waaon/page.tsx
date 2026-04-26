@@ -185,7 +185,7 @@ export default function WaaonPage() {
       <div className="flex justify-center">
         <button
           onClick={stopAll}
-          className="px-8 py-3 rounded-full bg-gray-500 hover:bg-gray-600 text-white font-bold shadow-md transition-all"
+          className="px-8 py-3 rounded-full bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white font-bold shadow-md transition-all"
         >
           ■ とめる
         </button>

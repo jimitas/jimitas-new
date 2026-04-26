@@ -43,3 +43,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# Playwright スクリーンショット（ローカル確認用・容量大きいので追跡しない）
+/screenshots/
+/playwright-report/
+/test-results/
+

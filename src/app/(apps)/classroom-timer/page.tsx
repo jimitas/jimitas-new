@@ -387,7 +387,7 @@ export default function ClassroomTimerPage() {
           {phase !== "running" && (
             <button
               onClick={handleStart}
-              className="px-6 py-3 rounded-xl bg-green-500 hover:bg-green-600 active:translate-y-0.5
+              className="px-6 py-3 rounded-xl bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5
                          text-white font-bold text-lg shadow-md transition-colors"
             >
               {phase === "paused" ? "▶️ 再開" : "▶️ スタート"}
@@ -419,7 +419,7 @@ export default function ClassroomTimerPage() {
           {/* リセット（常に表示） */}
           <button
             onClick={handleReset}
-            className="px-6 py-3 rounded-xl bg-gray-500 hover:bg-gray-600 active:translate-y-0.5
+            className="px-6 py-3 rounded-xl bg-danger-400 hover:bg-danger-500 active:bg-danger-600 active:translate-y-0.5
                        text-white font-bold text-lg shadow-md transition-colors"
           >
             🔄 リセット

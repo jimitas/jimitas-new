@@ -249,7 +249,7 @@ export default function GakutenPage() {
         style={{ display: "none" }}
         className="fixed inset-0 flex items-center justify-center z-50 pointer-events-none"
       >
-        <div className="bg-green-500 text-white text-4xl font-bold px-10 py-6 rounded-2xl shadow-2xl">
+        <div className="bg-brand-500 text-white text-4xl font-bold px-10 py-6 rounded-2xl shadow-2xl">
           せいかい！🎉
         </div>
       </div>

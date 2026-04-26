@@ -463,12 +463,12 @@ export default function KanpuriPage() {
             />
             <button
               onClick={handleSave}
-              className="px-3 py-1 rounded-lg bg-gray-500 hover:bg-gray-600 active:translate-y-0.5
+              className="px-3 py-1 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
                          text-white text-sm font-bold shadow transition-colors"
             >
               💾 保存
             </button>
-            <label className="px-3 py-1 rounded-lg bg-gray-400 hover:bg-gray-500 active:translate-y-0.5
+            <label className="px-3 py-1 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
                               text-white text-sm font-bold shadow transition-colors cursor-pointer">
               📂 読込
               <input

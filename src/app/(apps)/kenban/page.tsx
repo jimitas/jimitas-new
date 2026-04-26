@@ -288,8 +288,8 @@ export default function KenbanPage() {
           onClick={handleToggleKeyboard}
           className={`px-6 py-2 rounded-lg font-bold border-2 transition-colors text-sm
             ${isKeyboardEnabled
-              ? "bg-green-500 text-white border-green-500"
-              : "bg-gray-200 text-gray-600 border-gray-300 hover:bg-gray-300"
+              ? "bg-brand-500 text-white border-brand-500"
+              : "bg-white text-brand-600 border-brand-300 hover:bg-brand-100 dark:bg-gray-800 dark:text-brand-300 dark:border-brand-700 dark:hover:bg-brand-900"
             }`}
         >
           ⌨️ キーボード入力 {isKeyboardEnabled ? "ON" : "OFF"}
