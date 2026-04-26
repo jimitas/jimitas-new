@@ -446,7 +446,7 @@ export const apps: AppItem[] = [
   {
     id: "dagakki",
     title: "打楽器ボード",
-    description: "ボタンをタップすると、いろいろな打楽器の音が出せるあそびボード。マルチタッチ対応",
+    description: "カスタネット・タンバリン・カウベルの音が出せるあそびボード。マルチタッチ対応で複数本指で同時に演奏可能",
     grades: ["全学年"],
     subjects: ["音楽"],
     tags: ["打楽器", "あそび", "音"],
