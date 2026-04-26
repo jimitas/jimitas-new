@@ -59,11 +59,68 @@ const PLAYER_NUMS = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 // ── ドラッグ開始時に記録する情報 ─────────────────────
 type DragInfo = {
   id: string;
+  el: HTMLElement;  // ドラッグ中のピース要素（document リスナーから DOM を直接更新するため）
   startPx: number; // ポインターのクライアント座標（開始時）
   startPy: number;
   startOx: number; // ピースのオフセット座標（開始時）
   startOy: number;
 };
+
+// ── ピース共通の props 型 ──────────────────────────────
+// pieceProps(id) の戻り値（style + onPointerDown）をまとめて受け取る
+type PieceCommonProps = {
+  style: React.CSSProperties;
+  onPointerDown: (e: React.PointerEvent<HTMLElement>) => void;
+};
+
+// ── 選手マーカー（丸に番号） ──────────────────────────
+// ※ 関数の外で定義することで、親の再レンダリング時に DOM が再マウントされるのを防ぐ。
+//    （内部定義だと dragInfo.current.el が古い要素を指してしまい追従できなくなる）
+function PlayerCircle({
+  num, team, pieceProps, rotationStyle,
+}: {
+  num: number;
+  team: "red" | "blue";
+  pieceProps: PieceCommonProps;
+  rotationStyle: React.CSSProperties;
+}) {
+  return (
+    <div {...pieceProps}>
+      <div style={{
+        ...rotationStyle,
+        width: "min(5vw, 30px)",
+        height: "min(5vw, 30px)",
+        fontSize: "min(3vw, 14px)",
+        lineHeight: "min(5vw, 30px)",
+        backgroundColor: team === "red" ? "#DC2626" : "#1D4ED8",
+        borderRadius: "50%",
+        border: "2px solid white",
+        textAlign: "center",
+        color: "white",
+        fontWeight: 600,
+        margin: 2,
+      }}>
+        {num}
+      </div>
+    </div>
+  );
+}
+
+// ── 矢印ピース ────────────────────────────────────────
+function ArrowPiece({ type, pieceProps }: { type: number; pieceProps: PieceCommonProps }) {
+  return (
+    <div {...pieceProps}>
+      <Image
+        src={`/images/sakusen-board/arrow_${type}.png`}
+        alt={`矢印${type}`}
+        width={30}
+        height={30}
+        draggable={false}
+        style={{ width: "min(5vw, 30px)", height: "min(5vw, 30px)" }}
+      />
+    </div>
+  );
+}
 
 // ── ページ本体 ────────────────────────────────────────
 export default function SakusenBoardPage() {
@@ -129,18 +186,19 @@ export default function SakusenBoardPage() {
     setIsRotated(false);
   };
 
-  // ── ドラッグ開始 ────────────────────────────────────
+  // ── ドラッグ開始（要素の onPointerDown） ───────────
+  // pointermove / pointerup は document レベルで処理する（さんすうノートと同じ方式）。
+  // 理由: マウスで速く動かすと setPointerCapture がテキスト選択等で破られて
+  //       ピースが置き去りになる事象を回避するため。
   const handlePointerDown = (e: React.PointerEvent<HTMLElement>, id: string) => {
     e.preventDefault();
-    // このポインターをこの要素に「捕捉」する。
-    // 指が要素の外にはみ出しても onPointerMove が届くようになる。
-    e.currentTarget.setPointerCapture(e.pointerId);
     // ドラッグ中は最前面に出す（React state ではなく DOM を直接操作）
     e.currentTarget.style.zIndex = "50";
     se.playSe(se.move1);
     const cur = positions[id] ?? { x: 0, y: 0 };
     dragInfo.current = {
       id,
+      el: e.currentTarget,
       startPx: e.clientX,
       startPy: e.clientY,
       startOx: cur.x,
@@ -149,30 +207,40 @@ export default function SakusenBoardPage() {
     setDraggingId(id);
   };
 
-  // ── ドラッグ中（指/カーソルが動くたびに呼ばれる） ──
-  const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
-    if (!dragInfo.current) return;
-    const { startPx, startPy, startOx, startOy } = dragInfo.current;
-    const x = startOx + (e.clientX - startPx);
-    const y = startOy + (e.clientY - startPy);
-    // ポイント: setPositions（React state）は呼ばない。
-    // DOM の style を直接書き換えることで React の再レンダリングを起こさず、
-    // 37個のピースを毎フレーム再描画するコストをゼロにする。
-    e.currentTarget.style.transform = `translate(${x}px, ${y}px)`;
-  };
+  // ── document レベルの pointermove / pointerup ──────────
+  // passive: false で preventDefault が効くため、テキスト選択や画像ドラッグを抑止できる。
+  useEffect(() => {
+    const handleMove = (e: PointerEvent) => {
+      const drag = dragInfo.current;
+      if (!drag) return;
+      e.preventDefault();
+      const x = drag.startOx + (e.clientX - drag.startPx);
+      const y = drag.startOy + (e.clientY - drag.startPy);
+      // DOM 直接更新で 37 個のピース再描画コストをゼロにする
+      drag.el.style.transform = `translate(${x}px, ${y}px)`;
+    };
 
-  // ── ドラッグ終了 ────────────────────────────────────
-  const handlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
-    if (!dragInfo.current) return;
-    se.playSe(se.move2);
-    const { id, startPx, startPy, startOx, startOy } = dragInfo.current;
-    const x = startOx + (e.clientX - startPx);
-    const y = startOy + (e.clientY - startPy);
-    // ドロップ時に1回だけ React state を更新して位置を確定させる
-    setPositions(prev => ({ ...prev, [id]: { x, y } }));
-    dragInfo.current = null;
-    setDraggingId(null);
-  };
+    const handleUp = (e: PointerEvent) => {
+      const drag = dragInfo.current;
+      if (!drag) return;
+      se.playSe(se.pi);
+      const x = drag.startOx + (e.clientX - drag.startPx);
+      const y = drag.startOy + (e.clientY - drag.startPy);
+      // ドロップ時に1回だけ React state を更新して位置を確定させる
+      setPositions(prev => ({ ...prev, [drag.id]: { x, y } }));
+      dragInfo.current = null;
+      setDraggingId(null);
+    };
+
+    document.addEventListener("pointermove", handleMove, { passive: false });
+    document.addEventListener("pointerup", handleUp);
+    document.addEventListener("pointercancel", handleUp);
+    return () => {
+      document.removeEventListener("pointermove", handleMove);
+      document.removeEventListener("pointerup", handleUp);
+      document.removeEventListener("pointercancel", handleUp);
+    };
+  }, []);
 
   // ── ピース共通のスタイル・イベントハンドラを返す ───
   // 各ピースの JSX でスプレッド（{...pieceProps(id)}）して使う
@@ -186,13 +254,14 @@ export default function SakusenBoardPage() {
         zIndex: draggingId === id ? 50 : 1,
         // touch-action:none でブラウザのスクロール・ズームより先にポインターイベントを受け取る
         touchAction: "none" as const,
+        // マウスで速くドラッグしてもテキスト選択を起こさない（capture 破れ防止）
+        userSelect: "none" as const,
+        WebkitUserSelect: "none" as const,
         cursor: draggingId === id ? "grabbing" : "grab",
         position: "relative" as const,
         display: "inline-block",
       },
       onPointerDown: (e: React.PointerEvent<HTMLElement>) => handlePointerDown(e, id),
-      onPointerMove: handlePointerMove,
-      onPointerUp: handlePointerUp,
     };
   };
 
@@ -203,45 +272,6 @@ export default function SakusenBoardPage() {
       : team === "red" ? "rotate(90deg)"
       : "rotate(-90deg)",
   });
-
-  // ── 選手マーカー（丸に番号） ─────────────────────────
-  const PlayerCircle = ({ num, team }: { num: number; team: "red" | "blue" }) => {
-    const id = `${team}-${num}`;
-    return (
-      <div {...pieceProps(id)}>
-        <div style={{
-          ...playerRotationStyle(team),
-          width: "min(5vw, 30px)",
-          height: "min(5vw, 30px)",
-          fontSize: "min(3vw, 14px)",
-          lineHeight: "min(5vw, 30px)",
-          backgroundColor: team === "red" ? "#DC2626" : "#1D4ED8",
-          borderRadius: "50%",
-          border: "2px solid white",
-          textAlign: "center",
-          color: "white",
-          fontWeight: 600,
-          margin: 2,
-        }}>
-          {num}
-        </div>
-      </div>
-    );
-  };
-
-  // ── 矢印ピース ────────────────────────────────────────
-  const ArrowPiece = ({ type, uid }: { type: number; uid: string }) => (
-    <div {...pieceProps(uid)}>
-      <Image
-        src={`/images/sakusen-board/arrow_${type}.png`}
-        alt={`矢印${type}`}
-        width={30}
-        height={30}
-        draggable={false}
-        style={{ width: "min(5vw, 30px)", height: "min(5vw, 30px)" }}
-      />
-    </div>
-  );
 
   return (
     <div className="w-full px-2 py-4 space-y-3">
@@ -348,14 +378,24 @@ export default function SakusenBoardPage() {
         {/* 赤プレイヤー（1〜10） */}
         <div className="flex flex-wrap" style={{ width: "min(21vw, 210px)" }}>
           {PLAYER_NUMS.map(num => (
-            <PlayerCircle key={`red-${num}`} num={num} team="red" />
+            <PlayerCircle
+              key={`red-${num}`}
+              num={num}
+              team="red"
+              pieceProps={pieceProps(`red-${num}`)}
+              rotationStyle={playerRotationStyle("red")}
+            />
           ))}
         </div>
 
         {/* ピンク矢印（1〜4 を各2枚） */}
         <div className="flex flex-wrap" style={{ width: "min(21vw, 210px)" }}>
           {PINK_ARROWS.map((type, i) => (
-            <ArrowPiece key={`pink-${i}`} type={type} uid={`pink-arrow-${i}`} />
+            <ArrowPiece
+              key={`pink-${i}`}
+              type={type}
+              pieceProps={pieceProps(`pink-arrow-${i}`)}
+            />
           ))}
         </div>
 
@@ -397,14 +437,24 @@ export default function SakusenBoardPage() {
         {/* 青矢印（5〜8 を各2枚） */}
         <div className="flex flex-wrap" style={{ width: "min(21vw, 210px)" }}>
           {BLUE_ARROWS.map((type, i) => (
-            <ArrowPiece key={`blue-${i}`} type={type} uid={`blue-arrow-${i}`} />
+            <ArrowPiece
+              key={`blue-${i}`}
+              type={type}
+              pieceProps={pieceProps(`blue-arrow-${i}`)}
+            />
           ))}
         </div>
 
         {/* 青プレイヤー（1〜10） */}
         <div className="flex flex-wrap" style={{ width: "min(21vw, 210px)" }}>
           {PLAYER_NUMS.map(num => (
-            <PlayerCircle key={`blue-${num}`} num={num} team="blue" />
+            <PlayerCircle
+              key={`blue-${num}`}
+              num={num}
+              team="blue"
+              pieceProps={pieceProps(`blue-${num}`)}
+              rotationStyle={playerRotationStyle("blue")}
+            />
           ))}
         </div>
 
