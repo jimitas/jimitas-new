@@ -416,13 +416,12 @@ export const apps: AppItem[] = [
   {
     id: "oto-dashiyo",
     title: "音を出そう",
-    description: "音の高さ・周波数のちがいを聴いて確かめよう",
-    grades: [4, 5, 6],
-    subjects: ["音楽"],
-    tags: ["音", "周波数"],
+    description: "3年理科「音のふしぎ」で使える周波数（10〜2000Hz）と4種類の波形を切り替えられる音発生器。ドレミの早押しボタンも",
+    grades: [3, 4, 5, 6],
+    subjects: ["理科", "音楽"],
+    tags: ["音", "周波数", "波形", "理科", "音のふしぎ"],
     type: "app",
     path: "/oto-dashiyo",
-    disabled: true,
   },
   {
     id: "waaon",
