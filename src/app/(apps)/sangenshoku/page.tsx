@@ -397,7 +397,7 @@ export default function SangenshokuPage() {
             />
             <button
               onClick={applyRgbInput}
-              className="text-sm px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 font-bold transition-colors"
+              className="text-sm px-4 py-2 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold transition-colors"
             >
               適用
             </button>

@@ -482,28 +482,28 @@ export default function TashiHissanPage() {
         <select
           value={typeIndex}
           onChange={e => setTypeIndex(Number(e.target.value))}
-          className="text-sm font-bold p-2 border-2 border-brand-400 rounded text-gray-700"
+          className="text-sm font-bold p-2 border-2 border-brand-500 rounded text-gray-700 dark:text-gray-200 dark:bg-gray-700"
         >
           {TYPE_DATA.map((t, i) => <option key={i} value={i}>{t}</option>)}
         </select>
         <button
           onClick={shutudai}
-          className="px-4 py-2 rounded font-bold bg-brand-500 text-white
-                     hover:bg-brand-600 text-sm active:scale-95 transition-all"
+          className="px-4 py-2 rounded font-bold bg-brand-400 text-white
+                     hover:bg-brand-500 active:bg-brand-600 text-sm active:scale-95 transition-all"
         >
           もんだい
         </button>
         <button
           onClick={mondaiSet}
-          className="px-4 py-2 rounded font-bold bg-accent-500 text-white
-                     hover:bg-accent-600 text-sm active:scale-95 transition-all"
+          className="px-4 py-2 rounded font-bold bg-accent-400 text-white
+                     hover:bg-accent-500 active:bg-accent-600 text-sm active:scale-95 transition-all"
         >
           セット
         </button>
         <button
           onClick={showAnswer}
-          className="px-4 py-2 rounded font-bold bg-warm-500 text-white
-                     hover:bg-warm-600 text-sm active:scale-95 transition-all"
+          className="px-4 py-2 rounded font-bold bg-warm-400 text-white
+                     hover:bg-warm-500 active:bg-warm-600 text-sm active:scale-95 transition-all"
         >
           こたえ
         </button>

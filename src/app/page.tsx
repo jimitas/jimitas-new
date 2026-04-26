@@ -52,6 +52,17 @@ const hasGrade = (app: AppItem, n: number) => app.grades.includes(n as Grade)
 const hasAnyNumericGrade = (app: AppItem) =>
   app.grades.some((g) => typeof g === "number")
 
+// 学年セクション内のカード並び順（教科優先）
+// 算数を主軸として、左上から右下に向かって、よく使う順に配置する
+const SUBJECT_ORDER = [
+  "算数", "国語", "英語", "音楽", "体育",
+  "社会", "理科", "図工", "生活", "その他",
+]
+const subjectIndex = (app: AppItem) => {
+  const i = SUBJECT_ORDER.indexOf(app.subjects[0])
+  return i === -1 ? SUBJECT_ORDER.length : i
+}
+
 const SECTIONS: SectionDef[] = [
   // 学年別（1〜6年）
   // grades に該当学年の数値が含まれていれば、教科を問わずそのセクションに表示。
@@ -97,12 +108,13 @@ const SECTIONS: SectionDef[] = [
     id: "grade-4",
     title: "４年生",
     filter: (app) => hasGrade(app, 4) && app.type !== "print",
-    order: ["nihon-todouhuken"],
+    order: ["kake-hissan2", "wari-hissan", "shishagonyu", "nihon-todouhuken"],
   },
   {
     id: "grade-5",
     title: "５年生",
     filter: (app) => hasGrade(app, 5) && app.type !== "print",
+    order: ["kake-hissan2", "wari-hissan"],
   },
   {
     id: "grade-6",
@@ -149,18 +161,25 @@ export default function HomePage() {
       {SECTIONS.map((section) => {
         // フィルタ後のアプリ一覧（disabled なアプリは除外）
         const filtered = apps.filter(a => !a.disabled && section.filter(a))
-        // order が指定されている場合はその順に並べ替える
-        // order に含まれないアプリは末尾に追加される
-        const sorted = section.order
-          ? [...filtered].sort((a, b) => {
-              const ai = section.order!.indexOf(a.id)
-              const bi = section.order!.indexOf(b.id)
-              if (ai === -1 && bi === -1) return 0
-              if (ai === -1) return 1
-              if (bi === -1) return -1
-              return ai - bi
-            })
-          : filtered
+        // ソート規則:
+        //   1. 教科優先（SUBJECT_ORDER）
+        //   2. 同じ教科内では section.order を尊重（指定があれば）
+        //   3. それ以外は apps.ts の並び順を維持
+        const sorted = [...filtered].sort((a, b) => {
+          // 1. 教科順
+          const subDiff = subjectIndex(a) - subjectIndex(b)
+          if (subDiff !== 0) return subDiff
+          // 2. 同じ教科内では section.order が指定されていればそれを尊重
+          if (section.order) {
+            const ai = section.order.indexOf(a.id)
+            const bi = section.order.indexOf(b.id)
+            if (ai === -1 && bi === -1) return 0
+            if (ai === -1) return 1
+            if (bi === -1) return -1
+            return ai - bi
+          }
+          return 0
+        })
 
         return (
           <div key={section.id}>

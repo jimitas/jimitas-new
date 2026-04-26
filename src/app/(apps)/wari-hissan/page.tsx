@@ -1003,7 +1003,7 @@ export default function WariHissanPage() {
             selectModeRef.current = v
             se.playSe(se.move2)
           }}
-          className="text-sm font-bold p-2 border-2 border-brand-400 rounded text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-brand-600"
+          className="text-sm font-bold p-2 border-2 border-brand-500 rounded text-gray-700 dark:text-gray-200 dark:bg-gray-800 dark:border-brand-600"
         >
           <option value="">問題の種類をえらんでください</option>
           {GROUPS.map(group => (
@@ -1044,7 +1044,7 @@ export default function WariHissanPage() {
         </button>
         <button
           onClick={showHint}
-          className="px-3 py-2 rounded font-bold bg-sky-400 text-white hover:bg-sky-500 text-sm active:scale-95 transition-all"
+          className="px-3 py-2 rounded font-bold bg-warm-400 hover:bg-warm-500 active:bg-warm-600 text-white text-sm active:scale-95 transition-all"
         >
           ヒント
         </button>

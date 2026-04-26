@@ -26,17 +26,14 @@ const nextConfig: NextConfig = {
       { source: "/round-off",  destination: "/shishagonyu", permanent: true },
       { source: "/round-off/", destination: "/shishagonyu", permanent: true },
 
-      // /fushidukuri/ → トップ（ふしづくり、jimitas-new 未移植）
-      { source: "/fushidukuri",  destination: "/", permanent: true },
-      { source: "/fushidukuri/", destination: "/", permanent: true },
+      // /fushidukuri/ → 新 /fushi-dukuri（ふしづくり、移植済み）
+      // 旧URL（ハイフンなし）から新URL（ハイフンあり）へ誘導
+      { source: "/fushidukuri",  destination: "/fushi-dukuri", permanent: true },
+      { source: "/fushidukuri/", destination: "/fushi-dukuri", permanent: true },
 
-      // /eawase/ → トップ（絵合わせゲーム、jimitas-new 未移植）
-      { source: "/eawase",  destination: "/", permanent: true },
-      { source: "/eawase/", destination: "/", permanent: true },
-
-      // /nandemo/ → トップ（なんでもトランプ、jimitas-new 未移植）
-      { source: "/nandemo",  destination: "/", permanent: true },
-      { source: "/nandemo/", destination: "/", permanent: true },
+      // 注意: /eawase /nandemo は jimitas-new と同じ URL で移植済みのため
+      //       リダイレクト設定は不要（残しておくと自分自身のページが
+      //       永久リダイレクトで「/」に飛ばされてアクセス不能になる）
     ];
   },
 };

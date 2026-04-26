@@ -20,6 +20,7 @@ import { Block } from "@/components/parts/block/Block"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnNum } from "@/components/parts/buttons/BtnNum"
+import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { PutText } from "@/components/parts/displays/PutText"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
@@ -113,8 +114,8 @@ export default function SuuzuBlockPage() {
   }
 
   // 問題を出す（mode 2・3 共通）
+  // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
   const giveQuestion = () => {
-    se.playSe(se.pi)
     const { min, max } = getRange()
     const n = Math.floor(Math.random() * (max - min + 1) + min)
     setQuestionNum(n)
@@ -314,7 +315,7 @@ export default function SuuzuBlockPage() {
               <div className="p-4 md:p-6 pt-0">
                 <button
                   onClick={closeToast}
-                  className="w-full py-3 bg-blue-500 hover:bg-blue-600 active:translate-y-0.5
+                  className="w-full py-3 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5
                              text-white font-bold text-lg rounded-xl shadow-md transition-colors"
                 >
                   はじめる！
@@ -351,7 +352,7 @@ export default function SuuzuBlockPage() {
                 </button>
                 <button
                   onClick={handleResetSubmit}
-                  className="flex-1 py-2 rounded-xl bg-blue-500 hover:bg-blue-600 active:translate-y-0.5
+                  className="flex-1 py-2 rounded-xl bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
                              text-white font-bold transition-colors"
                 >
                   こたえる
@@ -366,21 +367,35 @@ export default function SuuzuBlockPage() {
           {MODE_LABELS.map(({ label, mode: m }) => {
             // しゅうちゅうモード中は他のモードボタンを非表示にする
             if (mode === 4 && m !== 4) return null
+
+            // しゅうちゅう（4）は「再押下で解除」する特殊な動作のため
+            // BtnMode（同値再押下＝無音）では表現できない。独立 button として実装。
+            // 配色は accent（特別なモード切替を示すため）。
+            if (m === 4) {
+              return (
+                <button
+                  key={m}
+                  onClick={() => { se.playSe(se.set); changeMode(mode === 4 ? 1 : 4) }}
+                  className="font-bold px-4 py-2 rounded-lg text-sm md:text-base
+                             bg-accent-400 hover:bg-accent-500 active:bg-accent-600
+                             text-white border-2 border-accent-400
+                             active:translate-y-0.5 transition-colors shadow-sm"
+                >
+                  {mode === 4 ? "かいじょする" : label}
+                </button>
+              )
+            }
+
+            // 通常の3モード（1〜3）は BtnMode（brand）で統一
             return (
-              <button
+              <BtnMode<Mode>
                 key={m}
-                onClick={() => changeMode(m === 4 && mode === 4 ? 1 : m)}
-                className={`font-bold px-3 py-2 rounded-lg border-2 text-sm md:text-base transition-colors
-                  ${mode === m && m !== 4
-                    ? "bg-blue-500 text-white border-blue-500"         // 選択中
-                    : m === 4
-                    ? "bg-purple-500 text-white border-purple-500 hover:bg-purple-600" // しゅうちゅうボタン
-                    : "bg-white text-blue-500 border-blue-300 hover:bg-blue-50"        // 未選択
-                  }`}
+                value={m}
+                current={mode}
+                onChange={changeMode}
               >
-                {/* しゅうちゅう中は「かいじょする」と表示 */}
-                {m === 4 && mode === 4 ? "かいじょする" : label}
-              </button>
+                {label}
+              </BtnMode>
             )
           })}
         </div>

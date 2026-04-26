@@ -105,7 +105,7 @@ export default function KazoeyouPage() {
     const mv = maxValueRef.current
     const newAns = Math.floor(Math.random() * mv + 1)  // 1〜mv のランダム
 
-    se.playSe(se.set)
+    // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
     setAnswer(newAns)
     setAnimalSrc(ANIMALS[mv - 5])   // セレクト値 5→index0（apple）〜10→index5（dog）
     setDisplayCount(newAns)

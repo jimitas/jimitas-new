@@ -672,13 +672,13 @@ export default function FushiDukuriPage() {
         <div className="flex flex-wrap items-center justify-center gap-2">
           <button
             onClick={handlePlay}
-            className="px-5 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
+            className="px-5 py-2 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold"
           >
             ▶ 再生
           </button>
           <button
             onClick={handleStop}
-            className="px-5 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold"
+            className="px-5 py-2 rounded-lg bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white font-bold"
           >
             ■ 停止
           </button>
@@ -708,19 +708,19 @@ export default function FushiDukuriPage() {
             />
             <BtnConfirm
               label="セット"
-              buttonClassName="px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold text-sm"
+              color="brand"
               guard={() => pendingNoteCount !== noteCount}
               promptLabel={pendingNoteCount > noteCount ? "ふやす？" : "へらす？"}
-              yesColor="yellow"
+              yesColor="warm"
               onConfirm={applyNoteCount}
             />
           </div>
           {/* 全消去（保存データもクリア） */}
           <BtnConfirm
             label="リセット"
-            buttonClassName="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-red-100 dark:hover:bg-red-900"
+            color="danger"
             promptLabel="ぜんぶ消す？"
-            yesColor="red"
+            yesColor="danger"
             onConfirm={clearSaved}
           />
         </div>

@@ -352,21 +352,21 @@ export default function KanpuriPage() {
           <div className="flex flex-wrap gap-2">
             <button
               onClick={handleCheck}
-              className="px-4 py-2 rounded-lg bg-accent-500 hover:bg-accent-600 active:translate-y-0.5
+              className="px-4 py-2 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
                          text-white font-bold text-sm shadow transition-colors"
             >
               ✅ 作　成
             </button>
             <button
               onClick={handleShuffle}
-              className="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 active:translate-y-0.5
+              className="px-4 py-2 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5
                          text-white font-bold text-sm shadow transition-colors"
             >
               🔀 シャッフル
             </button>
             <button
               onClick={() => { se.playSe(se.pi); window.print() }}
-              className="px-4 py-2 rounded-lg bg-warm-500 hover:bg-warm-600 active:translate-y-0.5
+              className="px-4 py-2 rounded-lg bg-warm-400 hover:bg-warm-500 active:bg-warm-600 active:translate-y-0.5
                          text-white font-bold text-sm shadow transition-colors"
             >
               🖨️ 印　刷
@@ -438,8 +438,8 @@ export default function KanpuriPage() {
                 <select
                   value={mondaisu}
                   onChange={e => { se.playSe(se.pi); setMondaisu(Number(e.target.value)) }}
-                  className="border border-gray-300 rounded px-1 py-0.5 text-sm
-                             dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="border border-brand-500 rounded px-1 py-0.5 text-sm
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-gray-100"
                 >
                   {Array.from({ length: 16 }, (_, i) => i + 5).map(n => (
                     <option key={n} value={n}>{n}</option>
@@ -451,8 +451,8 @@ export default function KanpuriPage() {
                 <select
                   value={fontSize}
                   onChange={e => { se.playSe(se.pi); setFontSize(Number(e.target.value)) }}
-                  className="border border-gray-300 rounded px-1 py-0.5 text-sm
-                             dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="border border-brand-500 rounded px-1 py-0.5 text-sm
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-gray-100"
                 >
                   {Array.from({ length: 44 }, (_, i) => i + 6).map(n => (
                     <option key={n} value={n}>{n}</option>
@@ -464,8 +464,8 @@ export default function KanpuriPage() {
                 <select
                   value={dansu}
                   onChange={e => { se.playSe(se.pi); setDansu(Number(e.target.value) as 1 | 2) }}
-                  className="border border-gray-300 rounded px-1 py-0.5 text-sm
-                             dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="border border-brand-500 rounded px-1 py-0.5 text-sm
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-gray-100"
                 >
                   <option value={1}>1だん</option>
                   <option value={2}>2だん</option>
@@ -480,8 +480,8 @@ export default function KanpuriPage() {
                 <select
                   value={titleIndex}
                   onChange={e => { se.playSe(se.pi); setTitleIndex(Number(e.target.value)) }}
-                  className="border border-gray-300 rounded px-1 py-0.5 text-sm
-                             dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="border border-brand-500 rounded px-1 py-0.5 text-sm
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-gray-100"
                 >
                   {DAIMEI.map((d, i) => (
                     <option key={i} value={i}>{d}</option>
@@ -508,8 +508,8 @@ export default function KanpuriPage() {
                 <select
                   value={namaeIndex}
                   onChange={e => { se.playSe(se.pi); setNamaeIndex(Number(e.target.value)) }}
-                  className="border border-gray-300 rounded px-1 py-0.5 text-sm
-                             dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="border border-brand-500 rounded px-1 py-0.5 text-sm
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-gray-100"
                 >
                   {[0, 1, 2].map(i => (
                     <option key={i} value={i}>
@@ -523,8 +523,8 @@ export default function KanpuriPage() {
                 <select
                   value={setumeiIndex}
                   onChange={e => { se.playSe(se.pi); setSetumeiIndex(Number(e.target.value)) }}
-                  className="border border-gray-300 rounded px-1 py-0.5 text-sm w-full max-w-md
-                             dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+                  className="border border-brand-500 rounded px-1 py-0.5 text-sm w-full max-w-md
+                             dark:bg-gray-700 dark:border-brand-600 dark:text-gray-100"
                 >
                   {SETUMEI_DATA.map((s, i) => (
                     <option key={i} value={i}>{s}</option>

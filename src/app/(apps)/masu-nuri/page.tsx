@@ -278,8 +278,9 @@ export default function MasuNuriPage() {
             )}
             <BtnConfirm
               label="リセット"
+              color="danger"
               promptLabel="もどす？"
-              yesColor="red"
+              yesColor="danger"
               onConfirm={reset}
             />
           </div>

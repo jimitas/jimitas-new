@@ -7,6 +7,8 @@
 
 "use client"
 
+import * as se from "@/lib/se"
+
 interface BtnQuestionProps {
   handleEvent: () => void
   btnText?: string
@@ -16,12 +18,13 @@ export function BtnQuestion({ handleEvent, btnText = "もんだい" }: BtnQuesti
   return (
     <div className="flex flex-wrap justify-center">
       <button
-        onClick={handleEvent}
+        onClick={() => { se.playSe(se.pi); handleEvent() }}
         className="flex justify-center items-center gap-1 font-bold m-2 p-2
                    w-24 md:w-32 text-sm md:text-base
-                   border-brand-300 bg-white border-2 text-brand-600
-                   hover:bg-brand-500 hover:text-white active:translate-y-1
-                   rounded-lg shadow-lg"
+                   bg-brand-400 hover:bg-brand-500 active:bg-brand-600
+                   text-white border-2 border-brand-400
+                   active:translate-y-0.5 transition-colors
+                   rounded-lg shadow-sm"
       >
         {/* Font Awesome CDN: はてなマークアイコン */}
         <i className="fa-solid fa-question w-4 h-4 md:w-6 md:h-6" />

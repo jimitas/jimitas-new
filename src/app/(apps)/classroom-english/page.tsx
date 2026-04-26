@@ -279,7 +279,7 @@ export default function ClassroomEnglishPage() {
                 <button
                   onClick={handlePlayQuizAudio}
                   disabled={isLoading}
-                  className="w-20 h-20 bg-blue-500 hover:bg-blue-600 active:bg-blue-700
+                  className="w-20 h-20 bg-accent-400 hover:bg-accent-500 active:bg-accent-600
                     text-white text-4xl rounded-full shadow-lg transition-all active:scale-95
                     disabled:opacity-40"
                 >

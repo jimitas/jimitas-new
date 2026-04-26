@@ -773,8 +773,8 @@ export default function KazoeBouPage() {
               />
               <button
                 onClick={handleFreeSet}
-                className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold
-                             hover:bg-accent-600 transition-colors text-sm"
+                className="px-3 py-2 bg-accent-400 text-white rounded-lg font-bold
+                             hover:bg-accent-500 active:bg-accent-600 transition-colors text-sm"
               >
                 ならべる
               </button>
@@ -784,15 +784,15 @@ export default function KazoeBouPage() {
           {/* もんだいボタン */}
           {mode === "narabe" && (
             <button onClick={handleNarabeQuestion}
-              className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold
-                           hover:bg-accent-600 transition-colors text-sm">
+              className="px-3 py-2 bg-accent-400 text-white rounded-lg font-bold
+                           hover:bg-accent-500 active:bg-accent-600 transition-colors text-sm">
               もんだい
             </button>
           )}
           {mode === "ikutsu" && (
             <button onClick={handleIkutsuQuestion}
-              className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold
-                           hover:bg-accent-600 transition-colors text-sm">
+              className="px-3 py-2 bg-accent-400 text-white rounded-lg font-bold
+                           hover:bg-accent-500 active:bg-accent-600 transition-colors text-sm">
               もんだい
             </button>
           )}
@@ -813,8 +813,8 @@ export default function KazoeBouPage() {
 
           {/* けいさん / こたえあわせ */}
           <button onClick={handleCalc}
-            className="px-3 py-2 bg-brand-500 text-white rounded-lg font-bold
-                         hover:bg-brand-600 transition-colors text-sm">
+            className="px-3 py-2 bg-brand-400 text-white rounded-lg font-bold
+                         hover:bg-brand-500 active:bg-brand-600 transition-colors text-sm">
             {mode === "free" ? "いくつ？" : "こたえあわせ"}
           </button>
 
@@ -822,16 +822,16 @@ export default function KazoeBouPage() {
           {!confirmReset ? (
             <button
               onClick={() => { se.playSe(se.alertSound); setConfirmReset(true); }}
-              className="px-3 py-2 bg-gray-400 text-white rounded-lg font-bold
-                           hover:bg-gray-500 transition-colors text-sm">
+              className="px-3 py-2 bg-danger-400 text-white rounded-lg font-bold
+                           hover:bg-danger-500 active:bg-danger-600 transition-colors text-sm">
               リセット
             </button>
           ) : (
             <div className="flex items-center gap-1.5">
               <span className="text-sm font-bold text-gray-700 dark:text-gray-300">ほんとうに？</span>
               <button onClick={handleReset}
-                className="px-2 py-1.5 bg-red-500 text-white rounded-lg font-bold
-                             hover:bg-red-600 transition-colors text-sm">はい</button>
+                className="px-2 py-1.5 bg-danger-400 text-white rounded-lg font-bold
+                             hover:bg-danger-500 active:bg-danger-600 transition-colors text-sm">はい</button>
               <button onClick={() => setConfirmReset(false)}
                 className="px-2 py-1.5 bg-gray-300 text-gray-700 rounded-lg font-bold
                              hover:bg-gray-400 transition-colors text-sm">いいえ</button>

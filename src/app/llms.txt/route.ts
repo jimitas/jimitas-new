@@ -59,10 +59,12 @@ export function GET() {
   ]
 
   // 教科ごとにアプリ一覧を出力
+  // seoDescription があれば長文で、なければ description にフォールバック（AI向けには長文の方が良い）
   for (const [subject, subjectApps] of bySubject) {
     lines.push(`## ${subject}`)
     for (const app of subjectApps) {
-      lines.push(`- ${app.title}（${gradeText(app.grades)}）: ${app.description} → https://jimitas.com${app.path}`)
+      const desc = app.seoDescription ?? app.description
+      lines.push(`- ${app.title}（${gradeText(app.grades)}）: ${desc} → https://jimitas.com${app.path}`)
     }
     lines.push("")
   }

@@ -133,8 +133,9 @@ export default function KukuHyoPage() {
           <div className="ml-auto">
             <BtnConfirm
               label="リセット"
+              color="danger"
               promptLabel="もどす？"
-              yesColor="red"
+              yesColor="danger"
               onConfirm={reset}
             />
           </div>

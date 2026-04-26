@@ -622,7 +622,7 @@ export default function KakeHissan2Page() {
             selectIdxRef.current = v
             se.playSe(se.move2)
           }}
-          className="text-sm font-bold p-2 border-2 border-brand-400 rounded text-gray-700"
+          className="text-sm font-bold p-2 border-2 border-brand-500 rounded text-gray-700 dark:text-gray-200 dark:bg-gray-700"
         >
           <option value={-1}>問題の種類をえらんでください</option>
           {QUESTION_LABELS.map((label, i) => (
@@ -631,13 +631,13 @@ export default function KakeHissan2Page() {
         </select>
         <button
           onClick={questionCreate}
-          className="px-4 py-2 rounded font-bold bg-brand-500 text-white hover:bg-brand-600 text-sm active:scale-95 transition-all"
+          className="px-4 py-2 rounded font-bold bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white text-sm active:scale-95 transition-all"
         >
           もんだい
         </button>
         <button
           onClick={checkAnswer}
-          className="px-4 py-2 rounded font-bold bg-accent-500 text-white hover:bg-accent-600 text-sm active:scale-95 transition-all"
+          className="px-4 py-2 rounded font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white text-sm active:scale-95 transition-all"
         >
           答え合わせ
         </button>
@@ -647,7 +647,7 @@ export default function KakeHissan2Page() {
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={showAnswer}
-          className="px-3 py-2 rounded font-bold bg-warm-500 text-white hover:bg-warm-600 text-sm active:scale-95 transition-all"
+          className="px-3 py-2 rounded font-bold bg-warm-400 hover:bg-warm-500 active:bg-warm-600 text-white text-sm active:scale-95 transition-all"
         >
           答えを見る
         </button>
@@ -659,7 +659,7 @@ export default function KakeHissan2Page() {
         </button>
         <button
           onClick={toggleHint}
-          className="px-3 py-2 rounded font-bold bg-sky-400 text-white hover:bg-sky-500 text-sm active:scale-95 transition-all"
+          className="px-3 py-2 rounded font-bold bg-warm-400 hover:bg-warm-500 active:bg-warm-600 text-white text-sm active:scale-95 transition-all"
         >
           ヒント
         </button>

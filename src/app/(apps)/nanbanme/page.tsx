@@ -100,7 +100,7 @@ export default function NanbanmePage() {
   // ── もんだい1：動物クリックで答える ──────────────
 
   const giveQuestion1 = useCallback(() => {
-    se.playSe(se.set)
+    // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
     setMode(1)
     setFlag(true)
     hasAnsweredRef.current = false
@@ -143,7 +143,7 @@ export default function NanbanmePage() {
   // ── もんだい2：セレクトで番号を答える ────────────
 
   const giveQuestion2 = useCallback(() => {
-    se.playSe(se.set)
+    // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
     setMode(2)
     setFlag(true)
     hasAnsweredRef.current = false

@@ -266,7 +266,7 @@ export default function WarizanPage() {
           <span>人でわける</span>
           <button
             onClick={handleSet}
-            className="ml-2 px-4 py-1 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
+            className="ml-2 px-4 py-1 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold"
           >
             セット
           </button>
@@ -290,7 +290,7 @@ export default function WarizanPage() {
             <span className="text-warm-600 dark:text-warm-400">{showAnswer ? remainder : "?"}</span>
             <button
               onClick={handleAnswer}
-              className="ml-2 px-3 py-1 rounded-lg bg-warm-500 hover:bg-warm-600 text-white text-sm font-bold"
+              className="ml-2 px-3 py-1 rounded-lg bg-warm-400 hover:bg-warm-500 active:bg-warm-600 text-white text-sm font-bold"
             >
               こたえ
             </button>

@@ -90,8 +90,8 @@ export default function Hikizan1Page() {
   }
 
   // 「もんだい」ボタン：難易度に応じてランダムな問題を生成する
+  // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
   const giveQuestion = () => {
-    se.playSe(se.pi)
     setHasProblem(true)
     hasAnsweredRef.current = false
     if (el_text.current)   el_text.current.innerHTML   = ""
@@ -161,7 +161,7 @@ export default function Hikizan1Page() {
       return
     }
 
-    se.playSe(se.pi)
+    // 効果音は BtnSet 側で鳴るため、ここでは鳴らさない
     setHasProblem(true)
     hasAnsweredRef.current = false
     answerRef.current = lv - rv

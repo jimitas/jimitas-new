@@ -119,16 +119,16 @@ export default function NandemoPage() {
       <div className="flex flex-wrap gap-2 mb-4">
         <BtnConfirm
           label="リセット"
-          buttonClassName="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold"
+          color="danger"
           disabled={cardNums.length === 0}
           promptLabel="ぜんぶ裏に戻す？"
-          yesColor="red"
+          yesColor="danger"
           onConfirm={reset}
         />
 
         <BtnConfirm
           label="セット"
-          buttonClassName="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
+          color="brand"
           promptLabel="カードをならべる？"
           yesColor="brand"
           onConfirm={setCards}
@@ -174,10 +174,20 @@ function Card({
   isRevealed: boolean
   onFlip: () => void
 }) {
+  // <button> 内では transform-style: preserve-3d が効かないブラウザがあるため
+  // <div role="button"> でクリック・キーボード操作を扱う
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onFlip}
-      className="relative w-[68px] h-[96px] sm:w-[80px] sm:h-[112px]"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onFlip()
+        }
+      }}
+      className="relative w-[68px] h-[96px] sm:w-[80px] sm:h-[112px] select-none"
       style={{ perspective: 1000 }}
       aria-label={isRevealed ? `カード${num} 表` : "カード 裏"}
     >
@@ -213,6 +223,6 @@ function Card({
           />
         </div>
       </div>
-    </button>
+    </div>
   )
 }

@@ -329,7 +329,7 @@ export default function TokeiPage() {
             <select
               value={type}
               onChange={e => { se.playSe(se.set); handleTypeChange(e.target.value as ProblemType) }}
-              className="px-3 py-2 border-2 border-gray-300 rounded-lg text-sm bg-white"
+              className="px-3 py-2 border-2 border-brand-500 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="yomu">しらべる</option>
               <option value="nanji">なんじなんふん？</option>
@@ -339,7 +339,7 @@ export default function TokeiPage() {
             <select
               value={mode}
               onChange={e => { se.playSe(se.set); handleModeChange(e.target.value as Difficulty) }}
-              className="px-3 py-2 border-2 border-gray-300 rounded-lg text-sm bg-white"
+              className="px-3 py-2 border-2 border-brand-500 rounded-lg text-sm bg-white dark:bg-gray-700 dark:text-gray-100"
             >
               <option value="easy">15分ごと</option>
               <option value="normal">5分ごと</option>

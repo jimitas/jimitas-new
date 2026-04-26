@@ -321,7 +321,7 @@ export default function ShashagonyuPage() {
       <div className="flex justify-center gap-3 flex-wrap">
         <button
           onClick={generateQuestion}
-          className="px-6 py-2.5 bg-brand-500 hover:bg-brand-600 text-white font-bold
+          className="px-6 py-2.5 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold
                      rounded-xl shadow-md active:scale-95 transition-all"
         >
           問題を出す
@@ -329,7 +329,7 @@ export default function ShashagonyuPage() {
         <button
           onClick={handleHint}
           disabled={!hasProblem}
-          className="px-6 py-2.5 bg-accent-500 hover:bg-accent-600 text-white font-bold
+          className="px-6 py-2.5 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white font-bold
                      rounded-xl shadow disabled:opacity-40 disabled:cursor-not-allowed
                      active:scale-95 transition-all min-w-[9rem]"
         >
@@ -338,7 +338,7 @@ export default function ShashagonyuPage() {
         <button
           onClick={handleShowAnswer}
           disabled={!hasProblem}
-          className="px-6 py-2.5 bg-warm-500 hover:bg-warm-600 text-white font-bold
+          className="px-6 py-2.5 bg-warm-400 hover:bg-warm-500 active:bg-warm-600 text-white font-bold
                      rounded-xl shadow disabled:opacity-40 disabled:cursor-not-allowed
                      active:scale-95 transition-all"
         >

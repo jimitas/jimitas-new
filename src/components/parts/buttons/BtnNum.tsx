@@ -7,6 +7,8 @@
 
 "use client"
 
+import * as se from "@/lib/se"
+
 interface BtnNumProps {
   /** 表示する数字の配列（例: [0,1,2,...,10]） */
   ITEM: number[]
@@ -21,13 +23,14 @@ export function BtnNum({ ITEM, handleEvent }: BtnNumProps) {
         <button
           key={num}
           value={num}
-          onClick={() => handleEvent(num)}
+          onClick={() => { se.playSe(se.pi); handleEvent(num) }}
           className="m-0.5 sm:m-1 p-1 font-bold
                      w-7 sm:w-10 md:w-12
                      text-sm sm:text-base md:text-xl
-                     border-accent-600 bg-white border-2 text-accent-700
-                     hover:bg-accent-700 hover:text-white active:translate-y-1
-                     rounded-lg shadow-lg"
+                     bg-accent-400 hover:bg-accent-500 active:bg-accent-600
+                     text-white border-2 border-accent-400
+                     active:translate-y-0.5 transition-colors
+                     rounded-lg shadow-sm"
         >
           {num}
         </button>

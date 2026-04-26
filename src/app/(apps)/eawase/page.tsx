@@ -10,7 +10,7 @@
 // 旧 jimitas.com/eawase/ から移植（ペア判定なしの単純フリップ式）。
 // ======================================================
 
-import { useState, useCallback } from "react"
+import { useState, useCallback, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
 import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
@@ -28,12 +28,20 @@ function shuffle(): number[] {
 
 export default function EawasePage() {
   // 各位置のカードに割り当てられた番号（0..9）。番号は 1.png〜10.png に対応
-  const [cardOrder, setCardOrder] = useState<number[]>(shuffle())
+  // 初期値は固定（昇順）にして hydration 不一致を回避し、マウント後にシャッフル
+  const [cardOrder, setCardOrder] = useState<number[]>(
+    () => Array.from({ length: NUM_CARDS }, (_, i) => i)
+  )
   // 各位置の表/裏。true = 表（くだものが見える）
   const [revealed, setRevealed] = useState<boolean[]>(Array(NUM_CARDS).fill(false))
   // ひだり/みぎラベルの色（true で赤、false で透明）
   const [hintOn, setHintOn] = useState(false)
   const { play } = useSound()
+
+  // マウント後にクライアント側でシャッフル（SSR 結果と CSR 結果が一致するように）
+  useEffect(() => {
+    setCardOrder(shuffle())
+  }, [])
 
   // ----- カードクリックでひっくり返す -----
   const flipCard = useCallback((pos: number) => {
@@ -83,27 +91,28 @@ export default function EawasePage() {
       <div className="flex flex-wrap gap-2 mb-4">
         <BtnConfirm
           label="りせっと"
-          buttonClassName="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold"
+          color="danger"
           promptLabel="さいしょから？"
-          yesColor="red"
+          yesColor="danger"
           onConfirm={reset}
         />
 
         <BtnConfirm
           label="せっと"
-          buttonClassName="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
+          color="brand"
           promptLabel="カードをならべる？"
           yesColor="brand"
           onConfirm={setCards}
         />
 
-        {/* ひんと */}
+        {/* ひんと: OFF時は brand（緑、開始系）、ON時は warm（オレンジ、補助系） */}
         <button
           onClick={toggleHint}
-          className={`px-4 py-2 rounded-lg font-bold transition-colors ${
+          className={`px-3 py-2 font-bold text-sm rounded-lg shadow-sm
+                      active:translate-y-0.5 transition-colors text-white border-2 ${
             hintOn
-              ? "bg-warm-500 hover:bg-warm-600 text-white"
-              : "bg-green-500 hover:bg-green-600 text-white"
+              ? "bg-warm-400 hover:bg-warm-500 active:bg-warm-600 border-warm-400"
+              : "bg-brand-400 hover:bg-brand-500 active:bg-brand-600 border-brand-400"
           }`}
         >
           ひんと
@@ -111,7 +120,8 @@ export default function EawasePage() {
       </div>
 
       {/* ===== ひだり / みぎ ラベル ===== */}
-      <div className="flex justify-between items-center px-2 mb-2 max-w-3xl">
+      {/* カードと同じ横幅で左右両端に配置（max-w を外して全幅で揃える） */}
+      <div className="flex justify-between items-center px-2 mb-2">
         <h3 className={`text-2xl font-bold transition-colors ${hintOn ? "text-red-500" : "text-transparent select-none"}`}>
           ひだり
         </h3>
@@ -121,7 +131,9 @@ export default function EawasePage() {
       </div>
 
       {/* ===== カードエリア ===== */}
-      <div className="flex flex-wrap gap-2">
+      {/* 「左から何番目」の練習のため、必ず10枚を横一列に並べる */}
+      {/* flex-1 で10等分・aspect-[5/7] でアスペクト比維持・flex-wrap なし */}
+      <div className="flex gap-1 sm:gap-2">
         {cardOrder.map((cardNum, pos) => (
           <Card
             key={pos}
@@ -149,10 +161,21 @@ function Card({
 }) {
   // cardNum は 0..9、画像ファイル名は 1.png〜10.png
   const imageIndex = cardNum + 1
+  // <button> 内では transform-style: preserve-3d が効かないブラウザがあるため
+  // <div role="button"> でクリック・キーボード操作を扱う
   return (
-    <button
+    <div
+      role="button"
+      tabIndex={0}
       onClick={onFlip}
-      className="relative w-20 h-28 sm:w-24 sm:h-32"
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault()
+          onFlip()
+        }
+      }}
+      // flex-1 で10等分・aspect-[5/7] でカードのアスペクト比を維持・min-w-0 で flex 内で縮小可能に
+      className="relative flex-1 min-w-0 aspect-[5/7] select-none"
       style={{ perspective: 1000 }}
       aria-label={isRevealed ? `カード${imageIndex} 表` : "カード 裏"}
     >
@@ -190,6 +213,6 @@ function Card({
           />
         </div>
       </div>
-    </button>
+    </div>
   )
 }

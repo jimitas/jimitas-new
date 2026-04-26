@@ -575,8 +575,8 @@ export default function NihonTodouhukenPage() {
             className={`mt-2 w-full px-3 py-1.5 text-xs font-bold rounded border-2 transition-colors
               active:translate-y-0.5
               ${confirmReset
-                ? "border-red-400 bg-red-500 text-white"
-                : "border-warm-300 bg-white text-warm-600 hover:bg-warm-500 hover:text-white"
+                ? "border-danger-400 bg-danger-400 text-white hover:bg-danger-500"
+                : "border-danger-300 bg-white text-danger-600 hover:bg-danger-400 hover:text-white"
               }`}
           >
             {confirmReset ? "ほんとうにリセットする？" : "リセット"}

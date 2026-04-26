@@ -85,8 +85,8 @@ export default function IkutuPage() {
   }
 
   // 「もんだい」ボタン：ランダムに問題を生成する
+  // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
   const giveQuestion = () => {
-    se.playSe(se.pi)
     setHasProblem(true)
     hasAnsweredRef.current = false
 

@@ -334,7 +334,7 @@ export default function BarnsleyFernPage() {
             <select
               value={theme}
               onChange={(e) => setTheme(e.target.value as ThemeKey)}
-              className="text-sm border border-gray-300 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-brand-400"
+              className="text-sm border-2 border-brand-500 rounded-lg px-3 py-1.5 bg-white text-gray-700 focus:outline-none focus:border-brand-600"
             >
               {(Object.entries(THEMES) as [ThemeKey, typeof THEMES[ThemeKey]][]).map(([key, t]) => (
                 <option key={key} value={key}>{t.label}</option>

@@ -22,6 +22,7 @@ import { shuffled } from "@/lib/utils";
 import { useCoins } from "@/hooks/useCoins";
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay";
 import { ArrayDots } from "@/components/parts/displays/ArrayDots";
+import { BtnMode } from "@/components/parts/buttons/BtnMode";
 
 // ── 九九の読み方データ ──────────────────────────────────
 //
@@ -117,18 +118,16 @@ export default function KukuYomiPage() {
   const hasCompletedRef = useRef(false);
 
   // ── 段変更（練習中は無効） ────────────────────────────
+  // 効果音は BtnMode 側で鳴るため、ここでは鳴らさない
   const handleDanChange = (n: number) => {
-    if (phase === "practice") return;
-    se.playSe(se.set);
     setDan(n);
     hasCompletedRef.current = false;
     setPhase("ready");
   };
 
   // ── モード変更（練習中は無効） ─────────────────────────
+  // 効果音は BtnMode 側で鳴るため、ここでは鳴らさない
   const handleModeChange = (m: Mode) => {
-    if (phase === "practice") return;
-    se.playSe(se.set);
     setMode(m);
     hasCompletedRef.current = false;
     setPhase("ready");
@@ -180,10 +179,6 @@ export default function KukuYomiPage() {
   const product = dan * mult;                    // 積
   const progress = Math.floor(step / 2) + 1;     // 現在の問題番号（1〜9）
 
-  // ── ボタンクラスのヘルパー ─────────────────────────────
-  const activeBtnCls = "bg-brand-500 text-white";
-  const inactiveBtnCls = "bg-white border border-brand-300 text-brand-600 hover:bg-brand-100";
-
   return (
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
@@ -193,20 +188,21 @@ export default function KukuYomiPage() {
       </h1>
 
       {/* ── 段選択（練習中は押せない） ──────────────────── */}
+      {/* BtnMode は効果音(set)・active 状態管理を内蔵。サイズだけ独自指定 */}
       <div className="space-y-1">
         <p className="text-sm text-gray-500">だんをえらぶ</p>
         <div className="flex flex-wrap gap-1">
           {[1, 2, 3, 4, 5, 6, 7, 8, 9].map(n => (
-            <button
+            <BtnMode
               key={n}
-              onClick={() => handleDanChange(n)}
+              value={n}
+              current={dan}
+              onChange={handleDanChange}
               disabled={phase === "practice"}
-              className={`w-10 h-10 rounded text-sm font-bold transition-all active:scale-95
-                ${dan === n ? activeBtnCls : inactiveBtnCls}
-                disabled:opacity-40 disabled:cursor-not-allowed`}
+              className="w-10 h-10 px-0 py-0"
             >
               {n}
-            </button>
+            </BtnMode>
           ))}
         </div>
       </div>
@@ -216,16 +212,15 @@ export default function KukuYomiPage() {
         <p className="text-sm text-gray-500">れんしゅうのしかた</p>
         <div className="flex flex-wrap gap-2">
           {MODES.map(({ value, label }) => (
-            <button
+            <BtnMode
               key={value}
-              onClick={() => handleModeChange(value)}
+              value={value}
+              current={mode}
+              onChange={handleModeChange}
               disabled={phase === "practice"}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95
-                ${mode === value ? activeBtnCls : inactiveBtnCls}
-                disabled:opacity-40 disabled:cursor-not-allowed`}
             >
               {label}
-            </button>
+            </BtnMode>
           ))}
         </div>
       </div>
@@ -235,8 +230,8 @@ export default function KukuYomiPage() {
         <div className="flex justify-center pt-2">
           <button
             onClick={handleStart}
-            className="px-10 py-3 bg-accent-500 text-white font-bold text-xl
-                       rounded-xl hover:bg-accent-600 active:scale-95 transition-all shadow-md"
+            className="px-10 py-3 bg-accent-400 text-white font-bold text-xl
+                       rounded-xl hover:bg-accent-500 active:bg-accent-600 active:scale-95 transition-all shadow-md"
           >
             スタート
           </button>
@@ -294,8 +289,8 @@ export default function KukuYomiPage() {
               <div className="flex justify-center">
                 <button
                   onClick={handleNext}
-                  className="px-10 py-3 bg-brand-500 text-white font-bold text-xl
-                             rounded-xl hover:bg-brand-600 active:scale-95 transition-all shadow-md"
+                  className="px-10 py-3 bg-brand-400 text-white font-bold text-xl
+                             rounded-xl hover:bg-brand-500 active:bg-brand-600 active:scale-95 transition-all shadow-md"
                 >
                   つぎ
                 </button>
@@ -347,8 +342,8 @@ export default function KukuYomiPage() {
           </p>
           <button
             onClick={handleReset}
-            className="px-10 py-3 bg-accent-500 text-white font-bold text-xl
-                       rounded-xl hover:bg-accent-600 active:scale-95 transition-all shadow-md"
+            className="px-10 py-3 bg-accent-400 text-white font-bold text-xl
+                       rounded-xl hover:bg-accent-500 active:bg-accent-600 active:scale-95 transition-all shadow-md"
           >
             もういちど
           </button>

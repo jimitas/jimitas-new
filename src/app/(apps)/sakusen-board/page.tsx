@@ -199,7 +199,7 @@ export default function SakusenBoardPage() {
       {/* ── 作戦名セレクト + ヒント ─────────────────── */}
       <div className="flex flex-wrap items-center justify-center gap-3">
         <select
-          className="text-sm font-bold text-gray-800 border border-brand-400 rounded-lg px-3 py-1 bg-white cursor-pointer"
+          className="text-sm font-bold text-gray-800 border-2 border-brand-500 rounded-lg px-3 py-1 bg-white cursor-pointer"
           onChange={() => se.playSe(se.piron)} // 作戦名を変えたとき
         >
           {STRATEGY_OPTIONS.map((s, i) => (

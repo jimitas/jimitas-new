@@ -40,6 +40,8 @@
   --color-accent-50:  #eff6ff;
   --color-accent-100: #dbeafe;
   --color-accent-200: #bfdbfe;
+  --color-accent-300: #93c5fd;
+  --color-accent-400: #60a5fa;  /* 基準濃度（-400 ベース白抜きで使用） */
   --color-accent-500: #3b82f6;
   --color-accent-600: #2563eb;
   --color-accent-700: #1d4ed8;
@@ -58,9 +60,24 @@
   --color-warm-50:  #fff7ed;
   --color-warm-100: #ffedd5;
   --color-warm-200: #fed7aa;
-  --color-warm-400: #fb923c;
+  --color-warm-300: #fdba74;
+  --color-warm-400: #fb923c;  /* 基準濃度（-400 ベース白抜きで使用） */
   --color-warm-500: #f97316;
   --color-warm-600: #ea580c;
+
+  /* ===== danger（リセット・停止・破壊的アクション） =====
+     現状は rose と同値（赤系・UD配慮で青と組み合わせて識別可能）。
+     後で「やはりオレンジに戻したい」と思ったらここの値だけ書き換えれば
+     全アプリのリセット・停止ボタンが一気に変わる。
+     詳細は docs/06_配色設計.md 参照 */
+  --color-danger-50:  #fff1f2;
+  --color-danger-100: #ffe4e6;
+  --color-danger-200: #fecdd3;
+  --color-danger-300: #fda4af;
+  --color-danger-400: #fb7185;  /* 基準濃度（-400 ベース白抜きで使用） */
+  --color-danger-500: #f43f5e;
+  --color-danger-600: #e11d48;
+  --color-danger-700: #be123c;
 }
 
 /* -------------------------------------------------------
@@ -105,6 +122,24 @@ body {
 input, textarea {
   user-select: text;
   -webkit-user-select: text;
+}
+
+/* -------------------------------------------------------
+   クリック可能要素には指マーク（cursor: pointer）を表示する
+   Tailwind CSS v4 の preflight は button のデフォルト
+   cursor: pointer を消してしまうため、ここで一括復活させる。
+   これにより、全アプリで「押せる場所には指マーク」が
+   一貫して表示される。
+   ※ disabled なボタンは対象外（操作不可なので指マークを出さない）
+   ------------------------------------------------------- */
+button:not(:disabled),
+[role="button"]:not([aria-disabled="true"]),
+a[href],
+label[for],
+summary,
+select,
+[data-clickable] {
+  cursor: pointer;
 }
 
 /* -------------------------------------------------------

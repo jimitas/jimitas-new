@@ -42,8 +42,9 @@ export default function GradeSection({ title, apps, id }: Props) {
       </h2>
 
       {/* ===== アプリカードのグリッド ===== */}
-      {/* SP:2列 / タブレット:3列 / PC:4列 */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
+      {/* SP:2列 / タブレット以上:3列 */}
+      {/* PC は 4列にすると1カード幅が狭く説明が読みにくいため3列で統一 */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {/* apps 配列をループしてカードを1枚ずつ表示する */}
         {apps.map((app) => (
           // key は React がリストの変化を検知するために必要な一意の値

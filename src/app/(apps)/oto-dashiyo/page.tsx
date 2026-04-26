@@ -218,7 +218,7 @@ export default function OtoDashiyoPage() {
           className={`px-8 py-3 rounded-full font-bold text-lg shadow-md transition-all ${
             isPlaying
               ? "bg-gray-400 text-white cursor-not-allowed"
-              : "bg-brand-500 hover:bg-brand-600 text-white"
+              : "bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white"
           }`}
         >
           ▶ 音を鳴らす
@@ -229,7 +229,7 @@ export default function OtoDashiyoPage() {
           className={`px-8 py-3 rounded-full font-bold text-lg shadow-md transition-all ${
             !isPlaying
               ? "bg-gray-400 text-white cursor-not-allowed"
-              : "bg-red-500 hover:bg-red-600 text-white"
+              : "bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white"
           }`}
         >
           ■ 音を止める

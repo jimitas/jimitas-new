@@ -259,14 +259,14 @@ export default function GakutenPage() {
         <button
           onClick={initFlash}
           className="px-6 py-2 rounded-full font-bold text-white shadow-md
-            bg-brand-500 hover:bg-brand-600 active:translate-y-0.5 transition-all"
+            bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5 transition-all"
         >
           📇 フラッシュカード
         </button>
         <button
           onClick={initQuiz}
           className="px-6 py-2 rounded-full font-bold text-white shadow-md
-            bg-accent-500 hover:bg-accent-600 active:translate-y-0.5 transition-all"
+            bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5 transition-all"
         >
           🎯 クイズ
         </button>
@@ -344,7 +344,7 @@ export default function GakutenPage() {
               onClick={handleFlashPrev}
               disabled={flashIndex === 0 && !flashRevealed}
               className="px-5 py-2 rounded-full font-bold text-white shadow
-                bg-brand-500 hover:bg-brand-600 disabled:opacity-40
+                bg-brand-400 hover:bg-brand-500 active:bg-brand-600 disabled:opacity-40
                 active:translate-y-0.5 transition-all"
             >
               ⬅️ もどる
@@ -352,14 +352,14 @@ export default function GakutenPage() {
             <button
               onClick={handleFlashShuffle}
               className="px-5 py-2 rounded-full font-bold text-white shadow
-                bg-warm-500 hover:bg-warm-600 active:translate-y-0.5 transition-all"
+                bg-warm-400 hover:bg-warm-500 active:bg-warm-600 active:translate-y-0.5 transition-all"
             >
               🔀 シャッフル
             </button>
             <button
               onClick={handleFlashNext}
               className="px-5 py-2 rounded-full font-bold text-white shadow
-                bg-brand-500 hover:bg-brand-600 active:translate-y-0.5 transition-all"
+                bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5 transition-all"
             >
               {flashRevealed ? "つぎへ ➡️" : "こたえをみる 👁️"}
             </button>
@@ -477,21 +477,21 @@ export default function GakutenPage() {
             <button
               onClick={handleQuizPrev}
               className="px-5 py-2 rounded-full font-bold text-white shadow
-                bg-brand-500 hover:bg-brand-600 active:translate-y-0.5 transition-all"
+                bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5 transition-all"
             >
               ⬅️ もどる
             </button>
             <button
               onClick={handleQuizShuffle}
               className="px-5 py-2 rounded-full font-bold text-white shadow
-                bg-warm-500 hover:bg-warm-600 active:translate-y-0.5 transition-all"
+                bg-warm-400 hover:bg-warm-500 active:bg-warm-600 active:translate-y-0.5 transition-all"
             >
               🔀 シャッフル
             </button>
             <button
               onClick={handleQuizNext}
               className="px-5 py-2 rounded-full font-bold text-white shadow
-                bg-brand-500 hover:bg-brand-600 active:translate-y-0.5 transition-all"
+                bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5 transition-all"
             >
               つぎへ ➡️
             </button>

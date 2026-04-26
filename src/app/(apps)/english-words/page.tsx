@@ -234,8 +234,8 @@ export default function EnglishWordsPage() {
         <select
           value={categoryIdx}
           onChange={e => handleCategoryChange(Number(e.target.value))}
-          className="w-full px-3 py-2 border-2 border-gray-300 rounded-lg text-sm font-bold
-            bg-white focus:border-brand-400 focus:outline-none"
+          className="w-full px-3 py-2 border-2 border-brand-500 rounded-lg text-sm font-bold
+            bg-white dark:bg-gray-700 dark:text-gray-100 focus:border-brand-600 focus:outline-none"
         >
           {ENGLISH_WORDS.map((cat, i) => (
             <option key={cat.id} value={i}>{cat.title}</option>

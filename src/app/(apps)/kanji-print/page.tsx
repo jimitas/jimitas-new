@@ -635,14 +635,14 @@ export default function KanjiPrintPage() {
             <div className="flex flex-wrap gap-2">
               <button
                 onClick={() => { se.playSe(se.set); window.print(); }}
-                className="px-5 py-2 rounded-lg bg-warm-500 hover:bg-warm-600 active:translate-y-0.5
+                className="px-5 py-2 rounded-lg bg-warm-400 hover:bg-warm-500 active:bg-warm-600 active:translate-y-0.5
                          text-white font-bold text-sm shadow transition-colors"
               >
                 🖨️ 印　刷
               </button>
               <button
                 onClick={() => { se.playSe(se.reset); location.reload(); }}
-                className="px-5 py-2 rounded-lg bg-gray-500 hover:bg-gray-600 active:translate-y-0.5
+                className="px-5 py-2 rounded-lg bg-danger-400 hover:bg-danger-500 active:bg-danger-600 active:translate-y-0.5
                          text-white font-bold text-sm shadow transition-colors"
               >
                 🔄 リセット

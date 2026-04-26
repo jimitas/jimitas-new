@@ -39,13 +39,18 @@ function buildGradeText(grades: AppItem["grades"]): string {
  * アプリIDから metadata を生成する
  * apps.ts の title と description を使って、各ページ固有の
  * タイトル・説明文・OGPを自動設定する
+ *
+ * description の選択優先順:
+ *   1. seoDescription があればそれを使う（長文・SEO向け）
+ *   2. なければ description にフォールバック（カード用の短文）
  */
 export function getAppMetadata(appId: string): Metadata {
   const app = apps.find(a => a.id === appId && !a.disabled)
   if (!app) return {}
 
   const gradeText = buildGradeText(app.grades)
-  const description = `${app.description}（${gradeText}向け・無料）`
+  const baseText = app.seoDescription ?? app.description
+  const description = `${baseText}（${gradeText}向け・無料）`
 
   return {
     title: app.title,
@@ -71,12 +76,14 @@ export function getAppJsonLd(appId: string): object | null {
   if (!app) return null
 
   const gradeText = buildGradeText(app.grades)
+  // seoDescription があればそれを使う（長文・SEO向け）。なければ description にフォールバック。
+  const baseText = app.seoDescription ?? app.description
 
   return {
     "@context": "https://schema.org",
     "@type": "WebApplication",
     "name": app.title,
-    "description": `${app.description}（${gradeText}向け・無料）`,
+    "description": `${baseText}（${gradeText}向け・無料）`,
     "url": `${SITE_URL}${app.path}`,
     "applicationCategory": "EducationalApplication",
     "operatingSystem": "Web browser",

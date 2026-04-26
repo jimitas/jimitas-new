@@ -398,7 +398,7 @@ export default function ClassroomTimerPage() {
           {phase === "running" && (
             <button
               onClick={handlePause}
-              className="px-6 py-3 rounded-xl bg-yellow-500 hover:bg-yellow-600 active:translate-y-0.5
+              className="px-6 py-3 rounded-xl bg-warm-400 hover:bg-warm-500 active:bg-warm-600 active:translate-y-0.5
                          text-white font-bold text-lg shadow-md transition-colors"
             >
               ⏸️ 一時停止
@@ -409,7 +409,7 @@ export default function ClassroomTimerPage() {
           {phase !== "idle" && (
             <button
               onClick={handleStop}
-              className="px-6 py-3 rounded-xl bg-red-500 hover:bg-red-600 active:translate-y-0.5
+              className="px-6 py-3 rounded-xl bg-danger-400 hover:bg-danger-500 active:bg-danger-600 active:translate-y-0.5
                          text-white font-bold text-lg shadow-md transition-colors"
             >
               ⏹️ ストップ
