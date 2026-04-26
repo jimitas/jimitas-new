@@ -6,10 +6,13 @@
 // BPM スライダー＋数値入力＋プリセットボタン、拍子（1〜7）選択。
 // アクセント（拍頭）は高音、それ以外は低音。
 // 旧 jimitas.com「もっと学習コンテンツ」内の metr 機能を移植。
+//
+// クリック音は Web Audio API の square 波で生成（ふしづくりの
+// バックグラウンド・メトロノームと同じ仕様）。MP3 より歯切れがよく、
+// AudioContext 時刻ベースで再生されるため遅延・タイミング精度も安定。
 // ======================================================
 
-import { useState, useEffect, useRef } from "react"
-import { useSound } from "@/hooks/useSound"
+import { useState, useEffect, useRef, useCallback } from "react"
 
 const BEAT_OPTIONS = [1, 2, 3, 4, 5, 6, 7]
 const BPM_MIN = 10
@@ -34,36 +37,79 @@ export default function MetronomePage() {
   const [bpmInputText, setBpmInputText] = useState("84")
   const intervalRef = useRef<number | null>(null)
   const counterRef = useRef(0)
-  const { play } = useSound()
 
-  // -------------------------------------------------------
+  // Web Audio コンテキスト（クリック音の生成用）
+  const audioCtxRef = useRef<AudioContext | null>(null)
+
+  // ────────────────────────────────────────────────
+  // AudioContext を必要なときに用意（初回操作時に解放）
+  // ────────────────────────────────────────────────
+  const ensureAudioContext = useCallback(() => {
+    if (!audioCtxRef.current) {
+      audioCtxRef.current = new AudioContext()
+    }
+    if (audioCtxRef.current.state === "suspended") {
+      audioCtxRef.current.resume()
+    }
+    return audioCtxRef.current
+  }, [])
+
+  // ────────────────────────────────────────────────
+  // クリック音をスケジュール（ふしづくりと同じ仕様）
+  //   isAccent=true  → 1500Hz・peak 0.18（拍頭の高音）
+  //   isAccent=false → 1000Hz・peak 0.12（通常の低音）
+  //   約 40ms で指数減衰してすっきりした「ピッ」音に
+  // ────────────────────────────────────────────────
+  const scheduleClick = (ctx: AudioContext, t: number, isAccent: boolean) => {
+    const osc = ctx.createOscillator()
+    osc.type = "square"
+    osc.frequency.setValueAtTime(isAccent ? 1500 : 1000, t)
+
+    const gain = ctx.createGain()
+    const peak = isAccent ? 0.18 : 0.12
+    gain.gain.setValueAtTime(0, t)
+    gain.gain.linearRampToValueAtTime(peak, t + 0.001)
+    gain.gain.exponentialRampToValueAtTime(0.0001, t + 0.04)
+
+    osc.connect(gain)
+    gain.connect(ctx.destination)
+    osc.start(t)
+    osc.stop(t + 0.05)
+  }
+
+  // ────────────────────────────────────────────────
   // bpm が外部から変わったとき、入力欄も同期
-  // -------------------------------------------------------
+  // ────────────────────────────────────────────────
   useEffect(() => {
     setBpmInputText(String(bpm))
   }, [bpm])
 
-  // -------------------------------------------------------
+  // ────────────────────────────────────────────────
   // 再生制御
-  //   1拍ごとに lo（pi.mp3）、拍頭（counter===0）で hi（set.mp3）も鳴らす
-  //   単一 setInterval で hi/lo を統合し、original のドリフト問題を回避
-  // -------------------------------------------------------
+  //   1拍ごとにクリック音をスケジュール。拍頭（counter===0）はアクセント。
+  //   ミュート設定は localStorage の jimitas_mute を参照
+  // ────────────────────────────────────────────────
   useEffect(() => {
     if (!isPlaying) return
 
+    const ctx = ensureAudioContext()
     const tickMs = (60 / bpm) * 1000
     counterRef.current = 0
 
-    // 開始直後に拍頭を鳴らす
-    play("/sounds/set.mp3", 0.5)
-    play("/sounds/pi.mp3", 0.4)
+    const fire = () => {
+      // ミュート中はスキップ（ヘッダーのミュートボタンに連動）
+      if (localStorage.getItem("jimitas_mute") === "true") return
+      const t = ctx.currentTime + 0.005
+      const isAccent = counterRef.current === 0
+      scheduleClick(ctx, t, isAccent)
+    }
+
+    // 開始直後に1拍目（アクセント）を鳴らす
+    fire()
 
     intervalRef.current = window.setInterval(() => {
       counterRef.current = (counterRef.current + 1) % beat
-      if (counterRef.current === 0) {
-        play("/sounds/set.mp3", 0.5)
-      }
-      play("/sounds/pi.mp3", 0.4)
+      fire()
     }, tickMs)
 
     return () => {
@@ -72,11 +118,20 @@ export default function MetronomePage() {
         intervalRef.current = null
       }
     }
-  }, [isPlaying, bpm, beat, play])
+  }, [isPlaying, bpm, beat, ensureAudioContext])
 
-  // -------------------------------------------------------
+  // ────────────────────────────────────────────────
+  // アンマウント時に AudioContext を閉じる
+  // ────────────────────────────────────────────────
+  useEffect(() => {
+    return () => {
+      audioCtxRef.current?.close()
+    }
+  }, [])
+
+  // ────────────────────────────────────────────────
   // 数値入力のコミット（フォーカス外し or Enter）
-  // -------------------------------------------------------
+  // ────────────────────────────────────────────────
   const commitBpmInput = () => {
     const parsed = parseInt(bpmInputText, 10)
     if (isNaN(parsed)) {
@@ -100,7 +155,7 @@ export default function MetronomePage() {
       {/* ===== 拍子選択 ===== */}
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-4">
         <label className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
-          拍子（1拍ごとに「ピ」、拍頭で「セット」）
+          拍子（1拍ごとに低音「ピッ」、拍頭で高音「ピッ」）
         </label>
         <div className="flex flex-wrap gap-2">
           {BEAT_OPTIONS.map(b => (
