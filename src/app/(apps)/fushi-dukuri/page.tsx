@@ -71,6 +71,17 @@ function makeEmptySlots(n: number): Slot[] {
   return Array.from({ length: n }, () => ({ type: "empty" }))
 }
 
+// localStorage キー（slot の構造を変えたらバージョンを上げる）
+const STORAGE_KEY = "jimitas_fushi_dukuri_v1"
+
+// 保存データの型（ゆるめにバリデーション）
+type SavedData = {
+  tempo?: number
+  noteCount?: number
+  slots?: Slot[]
+  withCount?: boolean
+}
+
 export default function FushiDukuriPage() {
   const [tempo, setTempo] = useState(120)
   const [noteCount, setNoteCount] = useState(DEFAULT_NOTE_COUNT)
@@ -80,6 +91,9 @@ export default function FushiDukuriPage() {
   // バックグラウンド・メトロノーム：メロディと一緒に1拍ごとのクリックを鳴らす
   // 1拍目はアクセント（高音）、2〜4拍目は通常音（低音）の4/4拍子パターン
   const [withCount, setWithCount] = useState(false)
+  // localStorage 復元完了フラグ（復元前に書き戻しが走るのを防ぐ）
+  const [loaded, setLoaded] = useState(false)
+  const [confirmingClear, setConfirmingClear] = useState(false)
 
   const audioCtxRef = useRef<AudioContext | null>(null)
   const scheduledRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
@@ -103,6 +117,78 @@ export default function FushiDukuriPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // ────────────────────────────────────────────────
+  // localStorage から復元（マウント時1回だけ）
+  // SSR 後の hydration 完了を待ってクライアント側で読み込む
+  // ────────────────────────────────────────────────
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY)
+      if (raw) {
+        const data = JSON.parse(raw) as SavedData
+        if (typeof data.tempo === "number" && data.tempo >= MIN_TEMPO && data.tempo <= MAX_TEMPO) {
+          setTempo(data.tempo)
+        }
+        if (typeof data.noteCount === "number" && data.noteCount >= MIN_NOTE_COUNT && data.noteCount <= MAX_NOTE_COUNT) {
+          setNoteCount(data.noteCount)
+          setPendingNoteCount(data.noteCount)
+        }
+        if (Array.isArray(data.slots)) {
+          // 念のためスロット数を noteCount に合わせる
+          const targetLen = (typeof data.noteCount === "number") ? data.noteCount : data.slots.length
+          const safeSlots: Slot[] = []
+          for (let i = 0; i < targetLen; i++) {
+            const s = data.slots[i]
+            if (s && (s.type === "empty" || s.type === "note" || s.type === "rest")) {
+              safeSlots.push(s)
+            } else {
+              safeSlots.push({ type: "empty" })
+            }
+          }
+          setSlots(safeSlots)
+        }
+        if (typeof data.withCount === "boolean") {
+          setWithCount(data.withCount)
+        }
+      }
+    } catch {
+      // 破損データは無視
+    } finally {
+      setLoaded(true)
+    }
+  }, [])
+
+  // ────────────────────────────────────────────────
+  // localStorage に自動保存（編集時に毎回書き出す）
+  // 復元完了前は書き出さない（初期値で上書きしてしまうのを防ぐ）
+  // ────────────────────────────────────────────────
+  useEffect(() => {
+    if (!loaded) return
+    try {
+      const data: SavedData = { tempo, noteCount, slots, withCount }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch {
+      // 容量超過などは無視（実害なし、次回保存時に再試行）
+    }
+  }, [loaded, tempo, noteCount, slots, withCount])
+
+  // ────────────────────────────────────────────────
+  // 保存データを消して最初から作り直す
+  // ────────────────────────────────────────────────
+  const clearSaved = () => {
+    try {
+      localStorage.removeItem(STORAGE_KEY)
+    } catch {
+      // ignore
+    }
+    setTempo(120)
+    setNoteCount(DEFAULT_NOTE_COUNT)
+    setPendingNoteCount(DEFAULT_NOTE_COUNT)
+    setSlots(makeEmptySlots(DEFAULT_NOTE_COUNT))
+    setWithCount(false)
+    setConfirmingClear(false)
+  }
 
   const ensureAudioContext = useCallback(() => {
     if (!audioCtxRef.current) {
@@ -365,7 +451,7 @@ export default function FushiDukuriPage() {
         ふしづくり
       </h1>
       <p className="text-sm text-gray-500 dark:text-gray-400 mb-4 text-center">
-        上の音ぷ・休ふをドラッグして、下のグリッドに置こう。たて方向は音の高さ、よこ方向は時間の流れ。
+        下の音ぷ・休ふをドラッグして、上のグリッドに置こう。たて方向は音の高さ、よこ方向は時間の流れ。作業内容は自動で保存されるよ。
       </p>
 
       {/* テンポコントロール */}
@@ -456,39 +542,25 @@ export default function FushiDukuriPage() {
               </div>
             )}
           </div>
-        </div>
-      </section>
-
-      {/* 音符パレット（ドラッグ元） */}
-      <section className="bg-purple-50 dark:bg-purple-950 rounded-xl border-2 border-purple-300 dark:border-purple-700 p-3 mb-3">
-        <div className="text-xs font-bold text-purple-700 dark:text-purple-300 mb-2">
-          🎵 音符・休符パレット（ドラッグして下のグリッドに置こう）
-        </div>
-        <div className="flex flex-wrap gap-3 justify-center">
-          {DURATIONS.map((dur, durIdx) => (
-            <div
-              key={durIdx}
-              onPointerDown={(e) => onPalettePointerDown(e, durIdx)}
-              onPointerMove={onPalettePointerMove}
-              onPointerUp={onPalettePointerUp}
-              onPointerCancel={onPalettePointerUp}
-              className="touch-none cursor-grab active:cursor-grabbing select-none flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-purple-200 dark:border-purple-800 p-2 hover:border-purple-400"
-              style={{ touchAction: "none" }}
+          {/* 全消去（保存データもクリア） */}
+          {!confirmingClear ? (
+            <button
+              onClick={() => setConfirmingClear(true)}
+              className="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-red-100 dark:hover:bg-red-900"
             >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/images/fushi-dukuri/${dur.image}.png`}
-                alt={dur.label}
-                className="h-12 w-12 object-contain pointer-events-none"
-                draggable={false}
-              />
-              <span className="text-xs mt-1 text-gray-700 dark:text-gray-300">{dur.label}</span>
+              リセット
+            </button>
+          ) : (
+            <div className="flex gap-1 items-center bg-red-50 dark:bg-red-950 rounded-lg p-1">
+              <span className="text-xs text-red-700 dark:text-red-300 px-1">ぜんぶ消す？</span>
+              <button onClick={clearSaved} className="px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-bold">はい</button>
+              <button onClick={() => setConfirmingClear(false)} className="px-2 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
             </div>
-          ))}
+          )}
         </div>
       </section>
 
-      {/* シーケンサー・グリッド */}
+      {/* シーケンサー・グリッド（上） */}
       <section className="overflow-x-auto">
         <div className="inline-block min-w-full">
           <table className="border-collapse mx-auto">
@@ -569,9 +641,38 @@ export default function FushiDukuriPage() {
         </div>
       </section>
 
-      <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 text-center">
+      <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 mb-3 text-center">
         💡 配置済みの音符・休符をタップすると消せるよ。
       </p>
+
+      {/* 音符パレット（下から上へドラッグ） */}
+      <section className="bg-purple-50 dark:bg-purple-950 rounded-xl border-2 border-purple-300 dark:border-purple-700 p-3">
+        <div className="text-xs font-bold text-purple-700 dark:text-purple-300 mb-2">
+          🎵 音符・休符パレット（ドラッグして上のグリッドに置こう）
+        </div>
+        <div className="flex flex-wrap gap-3 justify-center">
+          {DURATIONS.map((dur, durIdx) => (
+            <div
+              key={durIdx}
+              onPointerDown={(e) => onPalettePointerDown(e, durIdx)}
+              onPointerMove={onPalettePointerMove}
+              onPointerUp={onPalettePointerUp}
+              onPointerCancel={onPalettePointerUp}
+              className="touch-none cursor-grab active:cursor-grabbing select-none flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-purple-200 dark:border-purple-800 p-2 hover:border-purple-400"
+              style={{ touchAction: "none" }}
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/images/fushi-dukuri/${dur.image}.png`}
+                alt={dur.label}
+                className="h-12 w-12 object-contain pointer-events-none"
+                draggable={false}
+              />
+              <span className="text-xs mt-1 text-gray-700 dark:text-gray-300">{dur.label}</span>
+            </div>
+          ))}
+        </div>
+      </section>
     </div>
   )
 }
