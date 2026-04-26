@@ -216,13 +216,12 @@ export const apps: AppItem[] = [
   {
     id: "warizan2",
     title: "わり算の考え方②",
-    description: "別の場面でわり算の考え方を練習しよう",
+    description: "クッキーを○こずつ袋に分ける場面でわり算の意味を学ぼう。クッキーをドラッグで袋に配り、何袋できるかを考えてからこたえで確認",
     grades: [3],
     subjects: ["算数"],
-    tags: ["わり算", "概念理解"],
+    tags: ["わり算", "概念理解", "ドラッグ操作"],
     type: "app",
     path: "/warizan2",
-    disabled: true,
   },
   {
     id: "shishagonyu",
