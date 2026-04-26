@@ -18,15 +18,6 @@ import { useSound } from "@/hooks/useSound"
 //   スペード 1〜13、クラブ 14〜26、ダイヤ 27〜39、ハート 40〜52、ジョーカー 53/54
 type SuitKey = "spade" | "club" | "diamond" | "heart" | "joker1" | "joker2"
 
-const SUITS: { key: SuitKey; label: string; range: number[] }[] = [
-  { key: "spade",   label: "スペード",   range: rangeOf(1, 13) },
-  { key: "club",    label: "クラブ",     range: rangeOf(14, 26) },
-  { key: "diamond", label: "ダイヤ",     range: rangeOf(27, 39) },
-  { key: "heart",   label: "ハート",     range: rangeOf(40, 52) },
-  { key: "joker1",  label: "ジョーカー1", range: [53] },
-  { key: "joker2",  label: "ジョーカー2", range: [54] },
-]
-
 function rangeOf(start: number, end: number) {
   return Array.from({ length: end - start + 1 }, (_, i) => start + i)
 }
@@ -39,6 +30,15 @@ function shuffle<T>(arr: T[]): T[] {
   }
   return a
 }
+
+const SUITS: { key: SuitKey; label: string; range: number[] }[] = [
+  { key: "spade",   label: "スペード",   range: rangeOf(1, 13) },
+  { key: "club",    label: "クラブ",     range: rangeOf(14, 26) },
+  { key: "diamond", label: "ダイヤ",     range: rangeOf(27, 39) },
+  { key: "heart",   label: "ハート",     range: rangeOf(40, 52) },
+  { key: "joker1",  label: "ジョーカー1", range: [53] },
+  { key: "joker2",  label: "ジョーカー2", range: [54] },
+]
 
 export default function NandemoPage() {
   // どのスートを使うか（初期値：すべて on）
