@@ -99,13 +99,20 @@ export default function FushiDukuriPage() {
   const scheduledRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
 
   // ── ドラッグ管理（ゴースト要素を fixed で動かす）─────────
+  // ドラッグ元はパレット または 配置済みスロット の2系統
+  type DragSource =
+    | { kind: "palette"; durationIdx: number }
+    | { kind: "slot"; slotIdx: number; durationIdx: number }
   const dragGhostRef = useRef<HTMLDivElement | null>(null)
   const dragRef = useRef<{
-    durationIdx: number
+    source: DragSource
     pointerId: number
-    offsetX: number
-    offsetY: number
+    startX: number
+    startY: number
+    hasDragged: boolean
   } | null>(null)
+  // 5px 以上動いたらドラッグとみなす（クリック=削除と区別するための閾値）
+  const DRAG_THRESHOLD_PX = 5
 
   // ────────────────────────────────────────────────
   // クリーンアップ
@@ -340,109 +347,115 @@ export default function FushiDukuriPage() {
   }
 
   // ────────────────────────────────────────────────
-  // ドラッグ開始（パレット）：ゴースト要素を作って fixed 配置
-  // durationIdx は DURATIONS 配列の 0..5 インデックスをそのまま渡す
+  // ドラッグ統一処理（パレット・配置済み両方をサポート）
+  //   - PointerDown: ソース情報を記録（まだゴーストは作らない）
+  //   - PointerMove: 5px 以上動いたら hasDragged=true でゴースト表示開始
+  //   - PointerUp:
+  //     - hasDragged=true → ドロップ先を判定して配置
+  //     - hasDragged=false → クリック扱い（slot 由来なら削除）
   // ────────────────────────────────────────────────
-  const onPalettePointerDown = (e: React.PointerEvent<HTMLDivElement>, durationIdx: number) => {
+  const startDrag = (e: React.PointerEvent<HTMLElement>, source: DragSource) => {
     const target = e.currentTarget
     target.setPointerCapture(e.pointerId)
-
-    const dur = DURATIONS[durationIdx]
-    if (!dur) return
-
-    // ゴースト DOM を作って body に追加
-    const ghost = document.createElement("div")
-    ghost.style.position = "fixed"
-    ghost.style.zIndex = "10000"
-    ghost.style.pointerEvents = "none"
-    ghost.style.transition = "none"
-    ghost.style.opacity = "0.85"
-    ghost.style.width = "48px"
-    ghost.style.height = "48px"
-    ghost.innerHTML = `<img src="/images/fushi-dukuri/${dur.image}.png" alt="" style="width:100%;height:100%;object-fit:contain;" draggable="false" />`
-    document.body.appendChild(ghost)
-    dragGhostRef.current = ghost
-
-    const offsetX = 24
-    const offsetY = 24
-    ghost.style.left = `${e.clientX - offsetX}px`
-    ghost.style.top = `${e.clientY - offsetY}px`
-
     dragRef.current = {
-      durationIdx,
+      source,
       pointerId: e.pointerId,
-      offsetX,
-      offsetY,
+      startX: e.clientX,
+      startY: e.clientY,
+      hasDragged: false,
     }
   }
 
-  const onPalettePointerMove = (e: React.PointerEvent<HTMLDivElement>) => {
+  const handlePointerMove = (e: React.PointerEvent<HTMLElement>) => {
     const drag = dragRef.current
-    const ghost = dragGhostRef.current
-    if (!drag || !ghost || drag.pointerId !== e.pointerId) return
-    ghost.style.left = `${e.clientX - drag.offsetX}px`
-    ghost.style.top = `${e.clientY - drag.offsetY}px`
-  }
-
-  const onPalettePointerUp = (e: React.PointerEvent<HTMLDivElement>) => {
-    const drag = dragRef.current
-    const ghost = dragGhostRef.current
     if (!drag || drag.pointerId !== e.pointerId) return
 
-    // 一時的に ghost を非表示にしてドロップ先を判定
-    if (ghost) ghost.style.display = "none"
-    const below = document.elementFromPoint(e.clientX, e.clientY)
-    if (ghost) ghost.style.display = ""
+    const dx = e.clientX - drag.startX
+    const dy = e.clientY - drag.startY
+    const dist = Math.sqrt(dx * dx + dy * dy)
 
-    let placed = false
-    if (below) {
-      const cell = (below as HTMLElement).closest('[data-cell]') as HTMLElement | null
-      if (cell) {
-        const slotIdx = parseInt(cell.dataset.slot || "", 10)
-        const isRestRow = cell.dataset.rest === "true"
-        const pitchIdx = parseInt(cell.dataset.pitch || "-1", 10)
-
-        const dur = DURATIONS[drag.durationIdx]
-        if (Number.isFinite(slotIdx) && dur) {
-          if (dur.isRest) {
-            // 休符はどこにドロップしても、休符行の動作になる
-            setSlots(prev => prev.map((s, i) =>
-              i === slotIdx ? { type: "rest", durationIdx: drag.durationIdx } : s
-            ))
-            placed = true
-          } else if (!isRestRow && Number.isFinite(pitchIdx) && pitchIdx >= 0) {
-            // 音符はピッチ行にのみ配置
-            setSlots(prev => prev.map((s, i) =>
-              i === slotIdx ? { type: "note", durationIdx: drag.durationIdx, pitchIdx } : s
-            ))
-            placed = true
-          }
-        }
+    // 閾値を超えたタイミングでゴースト要素を作って表示開始
+    if (!drag.hasDragged && dist >= DRAG_THRESHOLD_PX) {
+      drag.hasDragged = true
+      const dur = DURATIONS[drag.source.durationIdx]
+      if (dur) {
+        const ghost = document.createElement("div")
+        ghost.style.position = "fixed"
+        ghost.style.zIndex = "10000"
+        ghost.style.pointerEvents = "none"
+        ghost.style.transition = "none"
+        ghost.style.opacity = "0.85"
+        ghost.style.width = "48px"
+        ghost.style.height = "48px"
+        ghost.innerHTML = `<img src="/images/fushi-dukuri/${dur.image}.png" alt="" style="width:100%;height:100%;object-fit:contain;" draggable="false" />`
+        document.body.appendChild(ghost)
+        dragGhostRef.current = ghost
       }
     }
 
-    // ゴースト削除
+    // ゴーストをポインタ位置に追従させる
+    if (drag.hasDragged && dragGhostRef.current) {
+      dragGhostRef.current.style.left = `${e.clientX - 24}px`
+      dragGhostRef.current.style.top = `${e.clientY - 24}px`
+    }
+  }
+
+  const handlePointerUp = (e: React.PointerEvent<HTMLElement>) => {
+    const drag = dragRef.current
+    if (!drag || drag.pointerId !== e.pointerId) return
+
+    if (drag.hasDragged) {
+      // ── ドラッグ完了：ドロップ先を判定 ──
+      const ghost = dragGhostRef.current
+      if (ghost) ghost.style.display = "none"
+      const below = document.elementFromPoint(e.clientX, e.clientY)
+      if (ghost) ghost.style.display = ""
+
+      if (below) {
+        const cell = (below as HTMLElement).closest('[data-cell]') as HTMLElement | null
+        if (cell) {
+          const targetSlot = parseInt(cell.dataset.slot || "", 10)
+          const isRestRow = cell.dataset.rest === "true"
+          const targetPitch = parseInt(cell.dataset.pitch || "-1", 10)
+          const dur = DURATIONS[drag.source.durationIdx]
+
+          if (Number.isFinite(targetSlot) && dur) {
+            setSlots(prev => {
+              const next = [...prev]
+              // slot 由来なら元の位置を空にしてから新しい位置に置く
+              // （1スロット1音の制約を維持）
+              if (drag.source.kind === "slot") {
+                next[drag.source.slotIdx] = { type: "empty" }
+              }
+              if (isRestRow || dur.isRest) {
+                next[targetSlot] = { type: "rest", durationIdx: drag.source.durationIdx }
+              } else if (Number.isFinite(targetPitch) && targetPitch >= 0) {
+                next[targetSlot] = { type: "note", durationIdx: drag.source.durationIdx, pitchIdx: targetPitch }
+              }
+              return next
+            })
+          }
+        }
+      }
+    } else {
+      // ── ただのタップ（移動なし）：slot 由来なら削除 ──
+      if (drag.source.kind === "slot") {
+        const sIdx = drag.source.slotIdx
+        setSlots(prev => prev.map((s, i) => (i === sIdx ? { type: "empty" } : s)))
+      }
+    }
+
+    // ゴースト削除と pointer capture 解放
+    const ghost = dragGhostRef.current
     if (ghost && ghost.parentNode) {
       ghost.parentNode.removeChild(ghost)
     }
     dragGhostRef.current = null
     dragRef.current = null
 
-    // pointer capture 解放（要素が DOM 上に残っていれば）
-    const captureTarget = e.currentTarget
-    if (captureTarget.hasPointerCapture(e.pointerId)) {
-      captureTarget.releasePointerCapture(e.pointerId)
+    if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+      e.currentTarget.releasePointerCapture(e.pointerId)
     }
-
-    // 配置できなかったときの軽いフィードバック（特になし）
-    void placed
-  }
-
-  // ────────────────────────────────────────────────
-  // 配置済みノートをクリックで削除
-  // ────────────────────────────────────────────────
-  const removeSlot = (slotIdx: number) => {
-    setSlots(prev => prev.map((s, i) => (i === slotIdx ? { type: "empty" } : s)))
   }
 
   return (
@@ -571,30 +584,37 @@ export default function FushiDukuriPage() {
                   <th className="border border-gray-300 dark:border-gray-600 bg-blue-50 dark:bg-blue-950 px-2 py-1 text-xs font-bold text-blue-800 dark:text-blue-200 sticky left-0">
                     {pitch.label}
                   </th>
-                  {slots.map((slot, sIdx) => (
-                    <td
-                      key={`p-${pIdx}-s-${sIdx}`}
-                      data-cell="true"
-                      data-pitch={pIdx}
-                      data-slot={sIdx}
-                      className="border border-gray-300 dark:border-gray-600 w-12 h-10 text-center align-middle bg-white dark:bg-gray-800 hover:bg-blue-50 dark:hover:bg-blue-950 cursor-pointer"
-                      onClick={() => {
-                        if (slot.type === "note" && slot.pitchIdx === pIdx) {
-                          removeSlot(sIdx)
-                        }
-                      }}
-                    >
-                      {slot.type === "note" && slot.pitchIdx === pIdx ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
-                          alt=""
-                          className="h-8 mx-auto pointer-events-none"
-                          draggable={false}
-                        />
-                      ) : null}
-                    </td>
-                  ))}
+                  {slots.map((slot, sIdx) => {
+                    const hasNoteHere = slot.type === "note" && slot.pitchIdx === pIdx
+                    return (
+                      <td
+                        key={`p-${pIdx}-s-${sIdx}`}
+                        data-cell="true"
+                        data-pitch={pIdx}
+                        data-slot={sIdx}
+                        onPointerDown={hasNoteHere ? (e) => startDrag(e, { kind: "slot", slotIdx: sIdx, durationIdx: slot.durationIdx }) : undefined}
+                        onPointerMove={hasNoteHere ? handlePointerMove : undefined}
+                        onPointerUp={hasNoteHere ? handlePointerUp : undefined}
+                        onPointerCancel={hasNoteHere ? handlePointerUp : undefined}
+                        className={`border border-gray-300 dark:border-gray-600 w-12 h-10 text-center align-middle hover:bg-blue-50 dark:hover:bg-blue-950 ${
+                          hasNoteHere
+                            ? "bg-white dark:bg-gray-800 cursor-grab active:cursor-grabbing touch-none"
+                            : "bg-white dark:bg-gray-800 cursor-pointer"
+                        }`}
+                        style={hasNoteHere ? { touchAction: "none" } : undefined}
+                      >
+                        {hasNoteHere ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
+                            alt=""
+                            className="h-8 mx-auto pointer-events-none select-none"
+                            draggable={false}
+                          />
+                        ) : null}
+                      </td>
+                    )
+                  })}
                 </tr>
               ))}
               {/* 休符行 */}
@@ -602,28 +622,37 @@ export default function FushiDukuriPage() {
                 <th className="border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-2 py-1 text-xs font-bold text-gray-700 dark:text-gray-300 sticky left-0">
                   休符
                 </th>
-                {slots.map((slot, sIdx) => (
-                  <td
-                    key={`r-s-${sIdx}`}
-                    data-cell="true"
-                    data-rest="true"
-                    data-slot={sIdx}
-                    className="border border-gray-300 dark:border-gray-600 w-12 h-10 text-center align-middle bg-gray-50 dark:bg-gray-900 hover:bg-yellow-50 dark:hover:bg-yellow-950 cursor-pointer"
-                    onClick={() => {
-                      if (slot.type === "rest") removeSlot(sIdx)
-                    }}
-                  >
-                    {slot.type === "rest" ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
-                        alt=""
-                        className="h-8 mx-auto pointer-events-none"
-                        draggable={false}
-                      />
-                    ) : null}
-                  </td>
-                ))}
+                {slots.map((slot, sIdx) => {
+                  const hasRestHere = slot.type === "rest"
+                  return (
+                    <td
+                      key={`r-s-${sIdx}`}
+                      data-cell="true"
+                      data-rest="true"
+                      data-slot={sIdx}
+                      onPointerDown={hasRestHere ? (e) => startDrag(e, { kind: "slot", slotIdx: sIdx, durationIdx: slot.durationIdx }) : undefined}
+                      onPointerMove={hasRestHere ? handlePointerMove : undefined}
+                      onPointerUp={hasRestHere ? handlePointerUp : undefined}
+                      onPointerCancel={hasRestHere ? handlePointerUp : undefined}
+                      className={`border border-gray-300 dark:border-gray-600 w-12 h-10 text-center align-middle hover:bg-yellow-50 dark:hover:bg-yellow-950 ${
+                        hasRestHere
+                          ? "bg-gray-50 dark:bg-gray-900 cursor-grab active:cursor-grabbing touch-none"
+                          : "bg-gray-50 dark:bg-gray-900 cursor-pointer"
+                      }`}
+                      style={hasRestHere ? { touchAction: "none" } : undefined}
+                    >
+                      {hasRestHere ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
+                          alt=""
+                          className="h-8 mx-auto pointer-events-none select-none"
+                          draggable={false}
+                        />
+                      ) : null}
+                    </td>
+                  )
+                })}
               </tr>
               {/* スロット番号 */}
               <tr>
@@ -654,10 +683,10 @@ export default function FushiDukuriPage() {
           {DURATIONS.map((dur, durIdx) => (
             <div
               key={durIdx}
-              onPointerDown={(e) => onPalettePointerDown(e, durIdx)}
-              onPointerMove={onPalettePointerMove}
-              onPointerUp={onPalettePointerUp}
-              onPointerCancel={onPalettePointerUp}
+              onPointerDown={(e) => startDrag(e, { kind: "palette", durationIdx: durIdx })}
+              onPointerMove={handlePointerMove}
+              onPointerUp={handlePointerUp}
+              onPointerCancel={handlePointerUp}
               className="touch-none cursor-grab active:cursor-grabbing select-none flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-purple-200 dark:border-purple-800 p-2 hover:border-purple-400"
               style={{ touchAction: "none" }}
             >
