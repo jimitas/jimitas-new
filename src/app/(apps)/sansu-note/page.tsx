@@ -950,8 +950,8 @@ export default function SansuNotePage() {
           }}
           className={`px-3 py-1 text-xs rounded border-2 active:translate-y-0.5
             transition-colors font-bold ${drawingMode
-              ? "border-yellow-400 bg-yellow-400 text-gray-800"
-              : "border-gray-300 bg-white text-gray-600 hover:bg-gray-100"
+              ? "bg-brand-500 text-white border-brand-500"
+              : "bg-white text-brand-600 border-brand-300 hover:bg-brand-100 dark:bg-gray-800 dark:text-brand-300 dark:border-brand-700 dark:hover:bg-brand-900"
             }`}
         >
           ✏️ 手書き
@@ -1004,8 +1004,9 @@ export default function SansuNotePage() {
         {/* スクリーンショット保存 */}
         <button
           onClick={handleScreenshot}
-          className="px-3 py-1 text-xs rounded border-2 border-accent-300
-            bg-white text-accent-600 hover:bg-accent-500 hover:text-white
+          className="px-3 py-1 text-xs rounded border-2
+            bg-accent-400 hover:bg-accent-500 active:bg-accent-600
+            text-white border-accent-400
             active:translate-y-0.5 transition-colors"
         >
           保存
@@ -1015,9 +1016,9 @@ export default function SansuNotePage() {
         <button
           onClick={handleReset}
           className={`px-3 py-1 text-xs rounded border-2 active:translate-y-0.5
-            transition-colors ${resetConfirm
-              ? "border-red-400 bg-red-500 text-white animate-pulse"
-              : "border-warm-300 bg-white text-warm-600 hover:bg-warm-500 hover:text-white"
+            transition-colors text-white ${resetConfirm
+              ? "border-danger-500 bg-danger-500 hover:bg-danger-600 animate-pulse"
+              : "border-danger-400 bg-danger-400 hover:bg-danger-500"
             }`}
         >
           {resetConfirm ? "ほんとうに？" : "リセット"}

@@ -25,6 +25,7 @@ import Image from "next/image";
 import * as se from "@/lib/se";
 import { useCoins } from "@/hooks/useCoins";
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay";
+import { BtnMode } from "@/components/parts/buttons/BtnMode";
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -388,6 +389,7 @@ export default function KazoeBouPage() {
 
   // ── モード選択 ────────────────────────────────────
 
+  // モード切替（効果音は BtnMode 側で内蔵。ここでは鳴らさない）
   const selectMode = (m: Mode) => {
     clearTable();
     setMode(m);
@@ -396,7 +398,6 @@ export default function KazoeBouPage() {
     setIkutsuAnswer("");
     hasAnswered.current = false;
     setConfirmReset(false);
-    se.playSe(se.set);
     showMsg(MODE_DESC[m], 3000);
   };
 
@@ -560,16 +561,14 @@ export default function KazoeBouPage() {
         <div className="flex items-center gap-2 flex-wrap mb-3 p-2
                         bg-gray-100 dark:bg-gray-800 rounded-lg">
           {(["free", "narabe", "ikutsu"] as Mode[]).map(m => (
-            <button
+            <BtnMode<Mode>
               key={m}
-              onClick={() => selectMode(m)}
-              className={`px-3 py-1.5 rounded-lg font-bold text-sm transition-colors
-                ${mode === m
-                  ? "bg-brand-500 text-white"
-                  : "bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border"}`}
+              value={m}
+              current={mode}
+              onChange={selectMode}
             >
               {MODE_LABEL[m]}
-            </button>
+            </BtnMode>
           ))}
           <span className="text-sm font-bold text-green-600 dark:text-green-400">
             ← モードをえらぼう

@@ -24,6 +24,7 @@ import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { NumPad } from "@/components/parts/buttons/NumPad"
+import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { useKeyboardInput } from "@/hooks/useKeyboardInput"
 
 // ── 定数 ─────────────────────────────────────────────
@@ -338,9 +339,9 @@ export default function OkanePage() {
 
   // ── モード切り替え ────────────────────────────────────
 
+  // 効果音は BtnMode 側で内蔵（set）。ここでは鳴らさない。
   const changeMode = (newMode: Mode) => {
     if (newMode === mode) return
-    se.playSe(se.set)
     setMode(newMode)
     clearTable()
     refillWallet()
@@ -518,17 +519,14 @@ export default function OkanePage() {
       {/* モード選択ボタン */}
       <div className="flex justify-center items-center gap-2 mb-3">
         {(["set", "narabeyou", "mondai"] as Mode[]).map((m) => (
-          <button
+          <BtnMode<Mode>
             key={m}
-            onClick={() => changeMode(m)}
-            className={`px-4 py-2 rounded-lg font-bold text-sm md:text-base border-2 transition-colors
-              ${mode === m
-                ? "bg-brand-500 text-white border-brand-600"
-                : "bg-white text-gray-700 border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-500"
-              }`}
+            value={m}
+            current={mode}
+            onChange={changeMode}
           >
             {m === "set" ? "セット" : m === "narabeyou" ? "ならべよう" : "いくらかな"}
-          </button>
+          </BtnMode>
         ))}
         <span className="text-sm font-bold text-brand-500 whitespace-nowrap">
           ← モードをえらぼう
@@ -591,26 +589,26 @@ export default function OkanePage() {
             />
             <span className="font-bold text-gray-700 dark:text-gray-300">円</span>
             <button onClick={handleSet}
-              className="px-3 py-2 bg-brand-500 text-white rounded-lg font-bold hover:bg-brand-600 transition-colors"
+              className="px-3 py-2 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white rounded-lg font-bold transition-colors"
             >セット</button>
             <button onClick={handleIkura}
-              className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold hover:bg-accent-600 transition-colors"
+              className="px-3 py-2 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white rounded-lg font-bold transition-colors"
             >いくら？</button>
             <button onClick={handleResetSet}
-              className="px-3 py-2 bg-gray-400 text-white rounded-lg font-bold hover:bg-gray-500 transition-colors"
+              className="px-3 py-2 bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white rounded-lg font-bold transition-colors"
             >リセット</button>
           </>)}
           {mode === "narabeyou" && (<>
             <button onClick={handleNarabeyouQuestion}
-              className="px-3 py-2 bg-brand-500 text-white rounded-lg font-bold hover:bg-brand-600 transition-colors"
+              className="px-3 py-2 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white rounded-lg font-bold transition-colors"
             >もんだい</button>
             <button onClick={handleNarabeyouCheck}
-              className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold hover:bg-accent-600 transition-colors"
+              className="px-3 py-2 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white rounded-lg font-bold transition-colors"
             >こたえあわせ</button>
           </>)}
           {mode === "mondai" && (<>
             <button onClick={handleMondaiQuestion}
-              className="px-3 py-2 bg-brand-500 text-white rounded-lg font-bold hover:bg-brand-600 transition-colors"
+              className="px-3 py-2 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white rounded-lg font-bold transition-colors"
             >もんだい</button>
             <input
               ref={el_answer}
@@ -621,7 +619,7 @@ export default function OkanePage() {
             />
             <span className="font-bold text-gray-700 dark:text-gray-300">円</span>
             <button onClick={handleMondaiCheck}
-              className="px-3 py-2 bg-accent-500 text-white rounded-lg font-bold hover:bg-accent-600 transition-colors"
+              className="px-3 py-2 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white rounded-lg font-bold transition-colors"
             >こたえあわせ</button>
           </>)}
         </div>

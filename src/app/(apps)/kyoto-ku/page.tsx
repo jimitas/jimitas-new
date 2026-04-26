@@ -454,8 +454,8 @@ export default function KyotoKuPage() {
             onClick={handleReset}
             className="mt-2 px-3 py-1.5 text-xs font-bold rounded border-2 transition-colors
               active:translate-y-0.5
-              border-warm-300 bg-white text-warm-600
-              hover:bg-warm-500 hover:text-white"
+              bg-danger-400 hover:bg-danger-500 active:bg-danger-600
+              text-white border-danger-400"
           >
             リセット
           </button>

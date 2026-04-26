@@ -28,6 +28,9 @@ import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useAnswerCheck } from "@/hooks/useAnswerCheck"
 import { drawClock, type HintLevel } from "@/lib/clockDrawing"
+import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
+import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
+import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
 
 // ── 型定義 ──────────────────────────────────────────────
 type ProblemType = "nanji" | "ugokasu" | "yomu"
@@ -123,8 +126,8 @@ export default function TokeiPage() {
   }, [])
 
   // ── 問題を出題 ──────────────────────────────────────────
+  // 効果音は BtnQuestion 側で内蔵（pi）。ここでは鳴らさない。
   const handleQuestion = useCallback(() => {
-    se.playSe(se.set)
     hasAnsweredRef.current = false
     setHasProblem(true)
     setHint("")
@@ -281,9 +284,9 @@ export default function TokeiPage() {
           <button
             onClick={() => applyRange(rangeValue - step)}
             className="px-5 py-2 text-xl font-bold shrink-0
-                       border-2 border-brand-300 bg-white text-brand-600
-                       hover:bg-brand-500 hover:text-white
-                       active:translate-y-0.5 rounded-lg shadow transition-all"
+                       bg-brand-400 hover:bg-brand-500 active:bg-brand-600
+                       text-white border-2 border-brand-400
+                       active:translate-y-0.5 rounded-lg shadow-sm transition-colors"
           >
             −
           </button>
@@ -299,9 +302,9 @@ export default function TokeiPage() {
           <button
             onClick={() => applyRange(rangeValue + step)}
             className="px-5 py-2 text-xl font-bold shrink-0
-                       border-2 border-brand-300 bg-white text-brand-600
-                       hover:bg-brand-500 hover:text-white
-                       active:translate-y-0.5 rounded-lg shadow transition-all"
+                       bg-brand-400 hover:bg-brand-500 active:bg-brand-600
+                       text-white border-2 border-brand-400
+                       active:translate-y-0.5 rounded-lg shadow-sm transition-colors"
           >
             ＋
           </button>
@@ -350,41 +353,10 @@ export default function TokeiPage() {
           {/* メインボタン（もんだい / こたえあわせ / こたえをみる）
               yomu モードでは問題を出題しないため非表示 */}
           {type !== "yomu" && (
-            <div className="flex flex-wrap gap-2">
-              <button
-                onClick={handleQuestion}
-                className="flex items-center gap-1 px-4 py-2 font-bold
-                           border-2 border-accent-300 bg-white text-accent-600
-                           hover:bg-accent-500 hover:text-white
-                           active:translate-y-0.5 rounded-lg shadow transition-all"
-              >
-                <i className="fa-solid fa-question" />
-                もんだい
-              </button>
-              <button
-                onClick={handleCheck}
-                disabled={!hasProblem}
-                className="flex items-center gap-1 px-4 py-2 font-bold
-                           border-2 border-brand-300 bg-white text-brand-600
-                           hover:bg-brand-500 hover:text-white
-                           active:translate-y-0.5 rounded-lg shadow transition-all
-                           disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <i className="fa-solid fa-circle-check" />
-                こたえあわせ
-              </button>
-              <button
-                onClick={handleShowAnswer}
-                disabled={!hasProblem}
-                className="flex items-center gap-1 px-4 py-2 font-bold
-                           border-2 border-warm-200 bg-white text-warm-600
-                           hover:bg-warm-500 hover:text-white
-                           active:translate-y-0.5 rounded-lg shadow transition-all
-                           disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <i className="fa-solid fa-eye" />
-                こたえをみる
-              </button>
+            <div className="flex flex-wrap items-center">
+              <BtnQuestion handleEvent={handleQuestion} />
+              <BtnCheck handleEvent={handleCheck} disabled={!hasProblem} />
+              <BtnShowAnswer handleEvent={handleShowAnswer} disabled={!hasProblem} />
             </div>
           )}
 

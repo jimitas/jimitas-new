@@ -310,8 +310,8 @@ export default function RomajiPage() {
           onClick={handleCaps}
           className={`px-5 py-3 rounded-xl text-base font-bold active:scale-95 transition-all border-2 ${
             capsFlag
-              ? "bg-purple-500 text-white border-purple-600"
-              : "bg-white text-purple-600 border-purple-300 hover:bg-purple-50"
+              ? "bg-brand-500 text-white border-brand-500"
+              : "bg-white text-brand-600 border-brand-300 hover:bg-brand-100 dark:bg-gray-800 dark:text-brand-300 dark:border-brand-700 dark:hover:bg-brand-900"
           }`}
         >
           {capsFlag ? "A→a" : "a→A"}
