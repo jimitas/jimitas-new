@@ -170,6 +170,14 @@ export default function MasuNuriPage() {
     setStrokes(prev => prev.slice(0, -1))
   }
 
+  // 「てがきだけけす」：ストロークすべてクリア（cells / lines は残す）
+  // ぬり絵は残したまま、ノート風メモだけ書き直したい時に使う
+  const clearStrokes = () => {
+    if (strokes.length === 0) return
+    play("/sounds/reset.mp3", 0.4)
+    setStrokes([])
+  }
+
   // モード/色/リセット ボタン用
   const playSwitchSound = useCallback(() => {
     play("/sounds/set.mp3", 0.4)
@@ -248,15 +256,24 @@ export default function MasuNuriPage() {
             ))}
           </div>
 
-          {/* 右側：てがきモード時の「ひとつもどす」＋ リセット */}
+          {/* 右側：てがきモード時の「ひとつもどす」「てがきだけけす」＋ リセット */}
           <div className="ml-auto flex items-center gap-2">
             {mode === "tegaki" && strokes.length > 0 && (
-              <button
-                onClick={undoStroke}
-                className="px-3 py-2 rounded-lg bg-warm-100 dark:bg-warm-900 text-warm-800 dark:text-warm-200 text-sm hover:bg-warm-200 dark:hover:bg-warm-800"
-              >
-                ↶ ひとつもどす
-              </button>
+              <>
+                <button
+                  onClick={undoStroke}
+                  className="px-3 py-2 rounded-lg bg-warm-100 dark:bg-warm-900 text-warm-800 dark:text-warm-200 text-sm hover:bg-warm-200 dark:hover:bg-warm-800"
+                >
+                  ↶ ひとつもどす
+                </button>
+                <button
+                  onClick={clearStrokes}
+                  className="px-3 py-2 rounded-lg bg-warm-100 dark:bg-warm-900 text-warm-800 dark:text-warm-200 text-sm hover:bg-warm-200 dark:hover:bg-warm-800"
+                  title="てがきメモをぜんぶ消す（マス・線は残ります）"
+                >
+                  🗑 てがきだけけす
+                </button>
+              </>
             )}
             {!confirmingReset ? (
               <button
