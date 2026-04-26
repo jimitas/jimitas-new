@@ -77,11 +77,9 @@ export default function FushiDukuriPage() {
   const [pendingNoteCount, setPendingNoteCount] = useState(DEFAULT_NOTE_COUNT)
   const [slots, setSlots] = useState<Slot[]>(makeEmptySlots(DEFAULT_NOTE_COUNT))
   const [confirmingReset, setConfirmingReset] = useState(false)
-  // カウントイン（メトロノーム風プリカウント）：再生開始前に4拍鳴らす
-  const [countIn, setCountIn] = useState(false)
-  // 視覚的カウントダウン表示（"1", "2", "3", "4", null）
-  const [countingNum, setCountingNum] = useState<number | null>(null)
-  const countTimersRef = useRef<number[]>([])
+  // バックグラウンド・メトロノーム：メロディと一緒に1拍ごとのクリックを鳴らす
+  // 1拍目はアクセント（高音）、2〜4拍目は通常音（低音）の4/4拍子パターン
+  const [withCount, setWithCount] = useState(false)
 
   const audioCtxRef = useRef<AudioContext | null>(null)
   const scheduledRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
@@ -129,10 +127,6 @@ export default function FushiDukuriPage() {
       }
     })
     scheduledRef.current = []
-    // カウントダウン表示用 setTimeout もキャンセル
-    countTimersRef.current.forEach(id => window.clearTimeout(id))
-    countTimersRef.current = []
-    setCountingNum(null)
   }
 
   // ────────────────────────────────────────────────
@@ -174,33 +168,25 @@ export default function FushiDukuriPage() {
     const ctx = ensureAudioContext()
     const beatSec = 60 / tempo
     const SEPARATION_SEC = 0.025  // 連続音の区切り（25ms ギャップ）
+    const startTime = ctx.currentTime + 0.05
 
-    // カウントインが ON なら4拍分のクリックを先にスケジュールし、
-    // メロディの開始タイミングを4拍ぶん後ろにずらす
-    const COUNT_BEATS = 4
-    const preStart = ctx.currentTime + 0.05
-    let startTime = preStart
-    if (countIn) {
-      for (let i = 0; i < COUNT_BEATS; i++) {
-        scheduleClick(ctx, preStart + i * beatSec, i === 0)
-      }
-      startTime = preStart + COUNT_BEATS * beatSec
+    // ── メロディの総再生時間（秒）を計算 ──────────────
+    // バックグラウンド・メトロノームをかぶせる長さの算出に使う
+    let totalDuration = 0
+    for (const slot of slots) {
+      if (slot.type === "empty") continue
+      totalDuration += beatSec * DURATIONS[slot.durationIdx].factor
+    }
 
-      // 視覚的カウントダウン表示（1〜4を順に出す）
-      // ctx.currentTime は AudioContext 時刻、Date.now() ベースの setTimeout と
-      // 厳密同期はしないが、十分近い精度で1拍ごとに表示を切り替えられる
-      const baseDelayMs = (preStart - ctx.currentTime) * 1000
-      for (let i = 0; i < COUNT_BEATS; i++) {
-        const id = window.setTimeout(() => {
-          setCountingNum(i + 1)
-        }, baseDelayMs + i * beatSec * 1000)
-        countTimersRef.current.push(id)
+    // ── バックグラウンド・メトロノーム ─────────────────
+    // メロディと同時に、1拍ごとにクリックを鳴らす（4/4 拍子）
+    // 1拍目はアクセント（高音）、2〜4拍目は通常音
+    if (withCount && totalDuration > 0) {
+      const totalBeats = Math.ceil(totalDuration / beatSec)
+      for (let i = 0; i < totalBeats; i++) {
+        const isAccent = i % 4 === 0
+        scheduleClick(ctx, startTime + i * beatSec, isAccent)
       }
-      // メロディ開始時に表示を消す
-      const clearId = window.setTimeout(() => {
-        setCountingNum(null)
-      }, baseDelayMs + COUNT_BEATS * beatSec * 1000)
-      countTimersRef.current.push(clearId)
     }
 
     let cursor = 0
@@ -374,16 +360,7 @@ export default function FushiDukuriPage() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-4 relative">
-      {/* カウントダウン表示（再生開始前の4拍ぶん） */}
-      {countingNum !== null && (
-        <div className="fixed inset-0 flex items-center justify-center pointer-events-none z-50">
-          <div className="text-[20vw] font-black text-warm-500/80 drop-shadow-2xl tabular-nums select-none">
-            {countingNum}
-          </div>
-        </div>
-      )}
-
+    <div className="max-w-6xl mx-auto px-4 py-4">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-1 text-center">
         ふしづくり
       </h1>
@@ -437,19 +414,19 @@ export default function FushiDukuriPage() {
           >
             ■ 停止
           </button>
-          {/* カウントイン（メトロノーム風 4拍プリカウント） */}
+          {/* バックグラウンド・メトロノーム（メロディと同時に1拍ごとクリック） */}
           <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg cursor-pointer text-sm font-bold border-2 transition-colors ${
-            countIn
+            withCount
               ? "bg-warm-500 border-warm-600 text-white"
               : "bg-gray-100 dark:bg-gray-700 border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300"
           }`}>
             <input
               type="checkbox"
-              checked={countIn}
-              onChange={(e) => setCountIn(e.target.checked)}
+              checked={withCount}
+              onChange={(e) => setWithCount(e.target.checked)}
               className="sr-only"
             />
-            🥁 カウント（4拍）
+            🥁 カウント
           </label>
           <div className="ml-4 flex items-center gap-2">
             <span className="text-sm text-gray-700 dark:text-gray-200">音の数</span>
