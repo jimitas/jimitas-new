@@ -11,23 +11,32 @@ const nextConfig: NextConfig = {
   // 方針:
   //   - 旧WordPress記事URL（日本語エンコード済みの長いスラッグ）は
   //     原則404でよい（指名検索で来る人はトップページに着地するため）
-  //   - ただし、さくらサーバー上で実アプリとして動いていた静的HTML
-  //     （/kanji/）は jimitas-new の対応アプリへ転送する
+  //   - さくらサーバー上で実アプリとして動いていた静的HTMLは
+  //     jimitas-new の対応アプリ、または対応がなければトップページへ
   // -----------------------------------------------------------
   async redirects() {
     return [
-      // 旧 /kanji/（さくらサーバー上の静的HTML漢字テスト作成ツール）
-      // → 新 /kanji-test（jimitas-new に移植済み）
-      {
-        source: "/kanji",
-        destination: "/kanji-test",
-        permanent: true,
-      },
-      {
-        source: "/kanji/",
-        destination: "/kanji-test",
-        permanent: true,
-      },
+      // ===== さくらサーバー上の静的HTMLアプリ =====
+
+      // /kanji/ → 新 /kanji-test（漢字テスト作成ツール）
+      { source: "/kanji",  destination: "/kanji-test", permanent: true },
+      { source: "/kanji/", destination: "/kanji-test", permanent: true },
+
+      // /round-off/ → 新 /shishagonyu（四捨五入の練習・「がい数」アプリ）
+      { source: "/round-off",  destination: "/shishagonyu", permanent: true },
+      { source: "/round-off/", destination: "/shishagonyu", permanent: true },
+
+      // /fushidukuri/ → トップ（ふしづくり、jimitas-new 未移植）
+      { source: "/fushidukuri",  destination: "/", permanent: true },
+      { source: "/fushidukuri/", destination: "/", permanent: true },
+
+      // /eawase/ → トップ（絵合わせゲーム、jimitas-new 未移植）
+      { source: "/eawase",  destination: "/", permanent: true },
+      { source: "/eawase/", destination: "/", permanent: true },
+
+      // /nandemo/ → トップ（なんでもトランプ、jimitas-new 未移植）
+      { source: "/nandemo",  destination: "/", permanent: true },
+      { source: "/nandemo/", destination: "/", permanent: true },
     ];
   },
 };
