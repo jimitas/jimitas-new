@@ -63,6 +63,22 @@ type Slot =
   | { type: "note"; durationIdx: number; pitchIdx: number }
   | { type: "rest"; durationIdx: number }
 
+// ── 音符を休符に変換するときの画像マッピング ──────────
+// 音符（durationIdx 0..3）をそのまま休符として置いた場合、
+// 対応する休符画像で表示する。付点4分休符は専用画像がないため
+// 4分休符画像 + 付点を合成して描画する（needDot フラグ）。
+function getRestRenderInfo(durationIdx: number): { image: string; needDot: boolean } {
+  switch (DURATIONS[durationIdx]?.image) {
+    case "2buo": return { image: "2kyu", needDot: false }   // 2分音符 → 2分休符
+    case "4buo": return { image: "4kyu", needDot: false }   // 4分音符 → 4分休符
+    case "f4bo": return { image: "4kyu", needDot: true }    // 付点4分音符 → 付点4分休符（4分休符＋付点）
+    case "8buo": return { image: "8kyu", needDot: false }   // 8分音符 → 8分休符
+    case "4kyu": return { image: "4kyu", needDot: false }   // 4分休符そのまま
+    case "8kyu": return { image: "8kyu", needDot: false }   // 8分休符そのまま
+    default:     return { image: "4kyu", needDot: false }
+  }
+}
+
 const DEFAULT_NOTE_COUNT = 8
 const MIN_NOTE_COUNT = 4
 const MAX_NOTE_COUNT = 16
@@ -701,12 +717,16 @@ export default function FushiDukuriPage() {
                 )
               })}
               {/* 休符行 */}
+              {/* 休符として保存された slot は、ドロップ時の音符長さを保ったまま
+                  対応する休符画像（2分休符/4分休符/8分休符）に変換して表示する。
+                  付点4分休符は専用画像がないため、4分休符＋付点で合成描画。 */}
               <tr>
                 <th className="border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-2 py-1 text-xs font-bold text-gray-700 dark:text-gray-300 sticky left-0">
                   休符
                 </th>
                 {slots.map((slot, sIdx) => {
                   const hasRestHere = slot.type === "rest"
+                  const rest = hasRestHere ? getRestRenderInfo(slot.durationIdx) : null
                   return (
                     <td
                       key={`r-s-${sIdx}`}
@@ -724,14 +744,22 @@ export default function FushiDukuriPage() {
                       }`}
                       style={hasRestHere ? { touchAction: "none" } : undefined}
                     >
-                      {hasRestHere ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
-                          alt=""
-                          className="h-8 mx-auto pointer-events-none select-none"
-                          draggable={false}
-                        />
+                      {rest ? (
+                        <span className="inline-flex items-center justify-center gap-0.5">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={`/images/fushi-dukuri/${rest.image}.png`}
+                            alt=""
+                            className="h-8 pointer-events-none select-none"
+                            draggable={false}
+                          />
+                          {rest.needDot && (
+                            <span
+                              aria-hidden="true"
+                              className="inline-block w-1.5 h-1.5 rounded-full bg-gray-700 dark:bg-gray-200 pointer-events-none"
+                            />
+                          )}
+                        </span>
                       ) : null}
                     </td>
                   )
