@@ -20,6 +20,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
+import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
 // ── 音符・休符パレット定義 ─────────────────────────────
 // factor: 4分音符を1とした相対長さ
@@ -88,16 +89,18 @@ export default function FushiDukuriPage() {
   const [noteCount, setNoteCount] = useState(DEFAULT_NOTE_COUNT)
   const [pendingNoteCount, setPendingNoteCount] = useState(DEFAULT_NOTE_COUNT)
   const [slots, setSlots] = useState<Slot[]>(makeEmptySlots(DEFAULT_NOTE_COUNT))
-  const [confirmingReset, setConfirmingReset] = useState(false)
   // バックグラウンド・メトロノーム：メロディと一緒に1拍ごとのクリックを鳴らす
   // 1拍目はアクセント（高音）、2〜4拍目は通常音（低音）の4/4拍子パターン
   const [withCount, setWithCount] = useState(false)
   // localStorage 復元完了フラグ（復元前に書き戻しが走るのを防ぐ）
   const [loaded, setLoaded] = useState(false)
-  const [confirmingClear, setConfirmingClear] = useState(false)
 
   // ドロップ時の効果音（メロディ再生は Web Audio、SE は Howler/useSound）
   const { play: playSE } = useSound()
+
+  // テンポの数値入力欄（バックスペースで一旦空欄にしても異常値にしないため
+  // 入力中の文字列を別 state で保持し、確定時に clamp する）
+  const [tempoInputText, setTempoInputText] = useState(String(120))
 
   const audioCtxRef = useRef<AudioContext | null>(null)
   const scheduledRef = useRef<{ osc: OscillatorNode; gain: GainNode }[]>([])
@@ -128,6 +131,23 @@ export default function FushiDukuriPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
+
+  // tempo 状態が外側（リストア・スライダー）から変わったときに入力欄も追従
+  useEffect(() => {
+    setTempoInputText(String(tempo))
+  }, [tempo])
+
+  // 入力欄の確定（フォーカスアウト or Enter）：範囲外は自動 clamp
+  const commitTempoInput = () => {
+    const parsed = parseInt(tempoInputText, 10)
+    if (isNaN(parsed)) {
+      setTempoInputText(String(tempo))
+      return
+    }
+    const clamped = Math.max(MIN_TEMPO, Math.min(MAX_TEMPO, parsed))
+    setTempo(clamped)
+    setTempoInputText(String(clamped))
+  }
 
   // ────────────────────────────────────────────────
   // localStorage から復元（マウント時1回だけ）
@@ -199,7 +219,6 @@ export default function FushiDukuriPage() {
     setPendingNoteCount(DEFAULT_NOTE_COUNT)
     setSlots(makeEmptySlots(DEFAULT_NOTE_COUNT))
     setWithCount(false)
-    setConfirmingClear(false)
   }
 
   const ensureAudioContext = useCallback(() => {
@@ -358,7 +377,6 @@ export default function FushiDukuriPage() {
       }
       return prev
     })
-    setConfirmingReset(false)
   }
 
   // ────────────────────────────────────────────────
@@ -513,9 +531,23 @@ export default function FushiDukuriPage() {
           >
             ＋
           </button>
-          <span className="ml-2 text-2xl font-bold text-warm-600 dark:text-warm-400 tabular-nums w-16 text-center">
-            {tempo}
-          </span>
+          <input
+            type="number"
+            min={MIN_TEMPO}
+            max={MAX_TEMPO}
+            step={1}
+            value={tempoInputText}
+            onChange={(e) => setTempoInputText(e.target.value)}
+            onBlur={commitTempoInput}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                commitTempoInput()
+                ;(e.target as HTMLInputElement).blur()
+              }
+            }}
+            className="ml-2 w-20 px-2 py-1 text-2xl font-bold text-center text-warm-600 dark:text-warm-400 tabular-nums bg-transparent border-b-2 border-warm-300 dark:border-warm-700 focus:outline-none focus:border-warm-500"
+            aria-label="テンポ 数値入力"
+          />
         </div>
       </section>
 
@@ -558,41 +590,23 @@ export default function FushiDukuriPage() {
               onChange={e => setPendingNoteCount(Number(e.target.value))}
               className="w-20 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-center"
             />
-            {!confirmingReset ? (
-              <button
-                onClick={() => {
-                  if (pendingNoteCount === noteCount) return
-                  setConfirmingReset(true)
-                }}
-                className="px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold text-sm"
-              >
-                セット
-              </button>
-            ) : (
-              <div className="flex gap-1 items-center bg-yellow-50 dark:bg-yellow-950 rounded p-1">
-                <span className="text-xs text-yellow-800 dark:text-yellow-200 px-1">
-                  {pendingNoteCount > noteCount ? "ふやす？" : "へらす？"}
-                </span>
-                <button onClick={applyNoteCount} className="px-2 py-1 rounded bg-yellow-500 hover:bg-yellow-600 text-white text-xs font-bold">はい</button>
-                <button onClick={() => setConfirmingReset(false)} className="px-2 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
-              </div>
-            )}
+            <BtnConfirm
+              label="セット"
+              buttonClassName="px-3 py-2 rounded-lg bg-green-500 hover:bg-green-600 text-white font-bold text-sm"
+              guard={() => pendingNoteCount !== noteCount}
+              promptLabel={pendingNoteCount > noteCount ? "ふやす？" : "へらす？"}
+              yesColor="yellow"
+              onConfirm={applyNoteCount}
+            />
           </div>
           {/* 全消去（保存データもクリア） */}
-          {!confirmingClear ? (
-            <button
-              onClick={() => setConfirmingClear(true)}
-              className="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-red-100 dark:hover:bg-red-900"
-            >
-              リセット
-            </button>
-          ) : (
-            <div className="flex gap-1 items-center bg-red-50 dark:bg-red-950 rounded-lg p-1">
-              <span className="text-xs text-red-700 dark:text-red-300 px-1">ぜんぶ消す？</span>
-              <button onClick={clearSaved} className="px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-bold">はい</button>
-              <button onClick={() => setConfirmingClear(false)} className="px-2 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
-            </div>
-          )}
+          <BtnConfirm
+            label="リセット"
+            buttonClassName="px-3 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-red-100 dark:hover:bg-red-900"
+            promptLabel="ぜんぶ消す？"
+            yesColor="red"
+            onConfirm={clearSaved}
+          />
         </div>
       </section>
 

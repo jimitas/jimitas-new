@@ -12,6 +12,7 @@
 
 import { useState, useCallback } from "react"
 import { useSound } from "@/hooks/useSound"
+import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
 const NUM_CARDS = 10  // 5種類 × 2枚
 
@@ -32,8 +33,6 @@ export default function EawasePage() {
   const [revealed, setRevealed] = useState<boolean[]>(Array(NUM_CARDS).fill(false))
   // ひだり/みぎラベルの色（true で赤、false で透明）
   const [hintOn, setHintOn] = useState(false)
-  const [confirmingReset, setConfirmingReset] = useState(false)
-  const [confirmingSet, setConfirmingSet] = useState(false)
   const { play } = useSound()
 
   // ----- カードクリックでひっくり返す -----
@@ -53,15 +52,14 @@ export default function EawasePage() {
     play("/sounds/eawase/se_3.mp3", 0.5)
     setCardOrder(shuffle())
     setRevealed(Array(NUM_CARDS).fill(false))
-    setConfirmingSet(false)
   }
 
   // ----- りせっと: 最初の状態に戻す（並び再シャッフル + 裏返し + ヒントOFF） -----
   const reset = () => {
+    play("/sounds/eawase/se_3.mp3", 0.5)
     setCardOrder(shuffle())
     setRevealed(Array(NUM_CARDS).fill(false))
     setHintOn(false)
-    setConfirmingReset(false)
   }
 
   // ----- ひんと: ひだり/みぎラベルを赤くする/戻す -----
@@ -83,37 +81,21 @@ export default function EawasePage() {
 
       {/* ===== コントロール ===== */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {/* りせっと（インライン確認付き） */}
-        {!confirmingReset ? (
-          <button
-            onClick={() => setConfirmingReset(true)}
-            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold"
-          >
-            りせっと
-          </button>
-        ) : (
-          <div className="flex gap-1 items-center bg-red-50 dark:bg-red-950 rounded-lg p-1">
-            <span className="text-xs text-red-700 dark:text-red-300 px-2">さいしょから？</span>
-            <button onClick={reset} className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-bold">はい</button>
-            <button onClick={() => setConfirmingReset(false)} className="px-3 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
-          </div>
-        )}
+        <BtnConfirm
+          label="りせっと"
+          buttonClassName="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 text-white font-bold"
+          promptLabel="さいしょから？"
+          yesColor="red"
+          onConfirm={reset}
+        />
 
-        {/* せっと（インライン確認付き） */}
-        {!confirmingSet ? (
-          <button
-            onClick={() => setConfirmingSet(true)}
-            className="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
-          >
-            せっと
-          </button>
-        ) : (
-          <div className="flex gap-1 items-center bg-brand-50 dark:bg-brand-950 rounded-lg p-1">
-            <span className="text-xs text-brand-700 dark:text-brand-300 px-2">カードをならべる？</span>
-            <button onClick={setCards} className="px-3 py-1 rounded bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold">はい</button>
-            <button onClick={() => setConfirmingSet(false)} className="px-3 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
-          </div>
-        )}
+        <BtnConfirm
+          label="せっと"
+          buttonClassName="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
+          promptLabel="カードをならべる？"
+          yesColor="brand"
+          onConfirm={setCards}
+        />
 
         {/* ひんと */}
         <button

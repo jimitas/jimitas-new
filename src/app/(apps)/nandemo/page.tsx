@@ -12,6 +12,7 @@
 
 import { useState, useCallback } from "react"
 import { useSound } from "@/hooks/useSound"
+import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
 // 各スートが占める番号レンジ（card1.png〜card54.png）
 //   スペード 1〜13、クラブ 14〜26、ダイヤ 27〜39、ハート 40〜52、ジョーカー 53/54
@@ -51,8 +52,6 @@ export default function NandemoPage() {
   // 各位置の表/裏（true=表）
   const [revealed, setRevealed] = useState<boolean[]>([])
 
-  const [confirmingReset, setConfirmingReset] = useState(false)
-  const [confirmingSet, setConfirmingSet] = useState(false)
   const { play } = useSound()
 
   // ----- カードクリックでひっくり返す -----
@@ -73,13 +72,12 @@ export default function NandemoPage() {
     const shuffled = shuffle(all)
     setCardNums(shuffled)
     setRevealed(Array(shuffled.length).fill(false))
-    setConfirmingSet(false)
   }
 
   // ----- リセット: 全部裏に戻す（並びは維持） -----
   const reset = () => {
+    play("/sounds/reset.mp3", 0.4)
     setRevealed(prev => prev.map(() => false))
-    setConfirmingReset(false)
   }
 
   const toggleSuit = (key: SuitKey) => {
@@ -119,36 +117,22 @@ export default function NandemoPage() {
 
       {/* ===== コントロール ===== */}
       <div className="flex flex-wrap gap-2 mb-4">
-        {!confirmingReset ? (
-          <button
-            onClick={() => setConfirmingReset(true)}
-            disabled={cardNums.length === 0}
-            className="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold"
-          >
-            リセット
-          </button>
-        ) : (
-          <div className="flex gap-1 items-center bg-red-50 dark:bg-red-950 rounded-lg p-1">
-            <span className="text-xs text-red-700 dark:text-red-300 px-2">ぜんぶ裏に戻す？</span>
-            <button onClick={reset} className="px-3 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-bold">はい</button>
-            <button onClick={() => setConfirmingReset(false)} className="px-3 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
-          </div>
-        )}
+        <BtnConfirm
+          label="リセット"
+          buttonClassName="px-4 py-2 rounded-lg bg-red-500 hover:bg-red-600 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-bold"
+          disabled={cardNums.length === 0}
+          promptLabel="ぜんぶ裏に戻す？"
+          yesColor="red"
+          onConfirm={reset}
+        />
 
-        {!confirmingSet ? (
-          <button
-            onClick={() => setConfirmingSet(true)}
-            className="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
-          >
-            セット
-          </button>
-        ) : (
-          <div className="flex gap-1 items-center bg-brand-50 dark:bg-brand-950 rounded-lg p-1">
-            <span className="text-xs text-brand-700 dark:text-brand-300 px-2">カードをならべる？</span>
-            <button onClick={setCards} className="px-3 py-1 rounded bg-brand-500 hover:bg-brand-600 text-white text-xs font-bold">はい</button>
-            <button onClick={() => setConfirmingSet(false)} className="px-3 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs">いいえ</button>
-          </div>
-        )}
+        <BtnConfirm
+          label="セット"
+          buttonClassName="px-4 py-2 rounded-lg bg-brand-500 hover:bg-brand-600 text-white font-bold"
+          promptLabel="カードをならべる？"
+          yesColor="brand"
+          onConfirm={setCards}
+        />
 
         {cardNums.length > 0 && (
           <span className="ml-auto self-center text-sm text-gray-500 dark:text-gray-400">

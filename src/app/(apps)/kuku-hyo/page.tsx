@@ -14,6 +14,8 @@
 
 import { useState, useCallback } from "react"
 import { useSound } from "@/hooks/useSound"
+import { BtnColor } from "@/components/parts/buttons/BtnColor"
+import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
 // セル背景色のパレット（白＝クリア相当は除外、視認できる8色）
 const COLORS = [
@@ -40,7 +42,6 @@ export default function KukuHyoPage() {
   const [showCol, setShowCol] = useState<boolean[]>(Array(10).fill(false))
   const [showRow, setShowRow] = useState<boolean[]>(Array(10).fill(false))
   const [cellState, setCellState] = useState<Record<string, CellState>>({})
-  const [confirmingReset, setConfirmingReset] = useState(false)
   const { play } = useSound()
 
   // ----- セルクリック：個別の答え表示と色塗りトグル -----
@@ -92,7 +93,6 @@ export default function KukuHyoPage() {
     setShowCol(Array(10).fill(false))
     setShowRow(Array(10).fill(false))
     setCellState({})
-    setConfirmingReset(false)
   }
 
   // ----- セル表示判定 -----
@@ -116,49 +116,27 @@ export default function KukuHyoPage() {
       <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-3">
         <div className="flex flex-wrap items-center gap-3">
           {/* 色パレット */}
+          {/* BtnColor は se.set を内蔵。アクティブ枠強調も部品内で処理 */}
           <div className="flex flex-wrap gap-1.5">
             {COLORS.map(c => (
-              <button
+              <BtnColor
                 key={c.value}
-                onClick={() => { play("/sounds/set.mp3", 0.4); setSelectedColor(c.value) }}
-                title={c.label}
-                aria-label={c.label}
-                className={`w-9 h-9 rounded-md border-2 transition-all ${
-                  selectedColor === c.value
-                    ? "border-gray-700 dark:border-gray-200 scale-110 shadow-md"
-                    : "border-gray-300 dark:border-gray-600"
-                }`}
-                style={{ backgroundColor: c.value }}
+                color={c.value}
+                current={selectedColor}
+                onChange={setSelectedColor}
+                label={c.label}
               />
             ))}
           </div>
 
           {/* リセット */}
           <div className="ml-auto">
-            {!confirmingReset ? (
-              <button
-                onClick={() => setConfirmingReset(true)}
-                className="px-3 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 text-sm hover:bg-red-100 dark:hover:bg-red-900"
-              >
-                リセット
-              </button>
-            ) : (
-              <div className="flex gap-1 items-center bg-red-50 dark:bg-red-950 rounded-lg p-1">
-                <span className="text-xs text-red-700 dark:text-red-300 px-1">もどす？</span>
-                <button
-                  onClick={reset}
-                  className="px-2 py-1 rounded bg-red-500 hover:bg-red-600 text-white text-xs font-bold"
-                >
-                  はい
-                </button>
-                <button
-                  onClick={() => setConfirmingReset(false)}
-                  className="px-2 py-1 rounded bg-gray-300 dark:bg-gray-600 text-gray-800 dark:text-gray-100 text-xs"
-                >
-                  いいえ
-                </button>
-              </div>
-            )}
+            <BtnConfirm
+              label="リセット"
+              promptLabel="もどす？"
+              yesColor="red"
+              onConfirm={reset}
+            />
           </div>
         </div>
       </div>
