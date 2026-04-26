@@ -77,11 +77,13 @@ function makeEmptySlots(n: number): Slot[] {
 const STORAGE_KEY = "jimitas_fushi_dukuri_v1"
 
 // 保存データの型（ゆるめにバリデーション）
+// highlightedPitches は Set だと JSON にできないので配列で保存・復元する
 type SavedData = {
   tempo?: number
   noteCount?: number
   slots?: Slot[]
   withCount?: boolean
+  highlightedPitches?: number[]
 }
 
 export default function FushiDukuriPage() {
@@ -92,6 +94,9 @@ export default function FushiDukuriPage() {
   // バックグラウンド・メトロノーム：メロディと一緒に1拍ごとのクリックを鳴らす
   // 1拍目はアクセント（高音）、2〜4拍目は通常音（低音）の4/4拍子パターン
   const [withCount, setWithCount] = useState(false)
+  // ピッチ行のハイライト（教師が「使う音」を絞るためのマーキング機能）
+  // 階名ラベルをタップで該当行を薄い黄色に着色する（トグル）
+  const [highlightedPitches, setHighlightedPitches] = useState<Set<number>>(new Set())
   // localStorage 復元完了フラグ（復元前に書き戻しが走るのを防ぐ）
   const [loaded, setLoaded] = useState(false)
 
@@ -182,6 +187,11 @@ export default function FushiDukuriPage() {
         if (typeof data.withCount === "boolean") {
           setWithCount(data.withCount)
         }
+        if (Array.isArray(data.highlightedPitches)) {
+          // 数値のみフィルタしてセットに変換
+          const arr = data.highlightedPitches.filter(n => typeof n === "number" && n >= 0 && n < PITCHES.length)
+          setHighlightedPitches(new Set(arr))
+        }
       }
     } catch {
       // 破損データは無視
@@ -197,12 +207,18 @@ export default function FushiDukuriPage() {
   useEffect(() => {
     if (!loaded) return
     try {
-      const data: SavedData = { tempo, noteCount, slots, withCount }
+      const data: SavedData = {
+        tempo,
+        noteCount,
+        slots,
+        withCount,
+        highlightedPitches: Array.from(highlightedPitches),
+      }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch {
       // 容量超過などは無視（実害なし、次回保存時に再試行）
     }
-  }, [loaded, tempo, noteCount, slots, withCount])
+  }, [loaded, tempo, noteCount, slots, withCount, highlightedPitches])
 
   // ────────────────────────────────────────────────
   // 保存データを消して最初から作り直す
@@ -219,6 +235,20 @@ export default function FushiDukuriPage() {
     setPendingNoteCount(DEFAULT_NOTE_COUNT)
     setSlots(makeEmptySlots(DEFAULT_NOTE_COUNT))
     setWithCount(false)
+    setHighlightedPitches(new Set())
+  }
+
+  // ────────────────────────────────────────────────
+  // 階名ラベルクリックで行ハイライトをトグル
+  // ────────────────────────────────────────────────
+  const togglePitchHighlight = (pIdx: number) => {
+    playSE("/sounds/pi.mp3", 0.3)
+    setHighlightedPitches(prev => {
+      const next = new Set(prev)
+      if (next.has(pIdx)) next.delete(pIdx)
+      else next.add(pIdx)
+      return next
+    })
   }
 
   const ensureAudioContext = useCallback(() => {
@@ -616,44 +646,60 @@ export default function FushiDukuriPage() {
           <table className="border-collapse mx-auto">
             <tbody>
               {/* 音高行（高音から低音へ） */}
-              {PITCHES.map((pitch, pIdx) => (
-                <tr key={`p-${pIdx}`}>
-                  <th className="border border-gray-300 dark:border-gray-600 bg-blue-50 dark:bg-blue-950 px-2 py-1 text-xs font-bold text-blue-800 dark:text-blue-200 sticky left-0">
-                    {pitch.label}
-                  </th>
-                  {slots.map((slot, sIdx) => {
-                    const hasNoteHere = slot.type === "note" && slot.pitchIdx === pIdx
-                    return (
-                      <td
-                        key={`p-${pIdx}-s-${sIdx}`}
-                        data-cell="true"
-                        data-pitch={pIdx}
-                        data-slot={sIdx}
-                        onPointerDown={hasNoteHere ? (e) => startDrag(e, { kind: "slot", slotIdx: sIdx, durationIdx: slot.durationIdx }) : undefined}
-                        onPointerMove={hasNoteHere ? handlePointerMove : undefined}
-                        onPointerUp={hasNoteHere ? handlePointerUp : undefined}
-                        onPointerCancel={hasNoteHere ? handlePointerUp : undefined}
-                        className={`border border-gray-300 dark:border-gray-600 w-12 h-10 text-center align-middle hover:bg-blue-50 dark:hover:bg-blue-950 ${
-                          hasNoteHere
-                            ? "bg-white dark:bg-gray-800 cursor-grab active:cursor-grabbing touch-none"
-                            : "bg-white dark:bg-gray-800 cursor-pointer"
-                        }`}
-                        style={hasNoteHere ? { touchAction: "none" } : undefined}
-                      >
-                        {hasNoteHere ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
-                            alt=""
-                            className="h-8 mx-auto pointer-events-none select-none"
-                            draggable={false}
-                          />
-                        ) : null}
-                      </td>
-                    )
-                  })}
-                </tr>
-              ))}
+              {/* 階名ラベル(th)をタップで行ハイライト（薄い黄色）をトグル：
+                  教育用途で「使う音を絞る」表示に使う */}
+              {PITCHES.map((pitch, pIdx) => {
+                const isHighlighted = highlightedPitches.has(pIdx)
+                return (
+                  <tr key={`p-${pIdx}`}>
+                    <th
+                      onClick={() => togglePitchHighlight(pIdx)}
+                      className={`border border-gray-300 dark:border-gray-600 px-2 py-1 text-xs font-bold sticky left-0 cursor-pointer transition-colors ${
+                        isHighlighted
+                          ? "bg-yellow-200 dark:bg-yellow-700 text-yellow-900 dark:text-yellow-100"
+                          : "bg-blue-50 dark:bg-blue-950 text-blue-800 dark:text-blue-200 hover:bg-yellow-50 dark:hover:bg-yellow-900"
+                      }`}
+                      title={isHighlighted ? "ハイライトを外す" : "この音をハイライト"}
+                    >
+                      {pitch.label}
+                    </th>
+                    {slots.map((slot, sIdx) => {
+                      const hasNoteHere = slot.type === "note" && slot.pitchIdx === pIdx
+                      const cellBg = isHighlighted
+                        ? "bg-yellow-50 dark:bg-yellow-950"
+                        : "bg-white dark:bg-gray-800"
+                      return (
+                        <td
+                          key={`p-${pIdx}-s-${sIdx}`}
+                          data-cell="true"
+                          data-pitch={pIdx}
+                          data-slot={sIdx}
+                          onPointerDown={hasNoteHere ? (e) => startDrag(e, { kind: "slot", slotIdx: sIdx, durationIdx: slot.durationIdx }) : undefined}
+                          onPointerMove={hasNoteHere ? handlePointerMove : undefined}
+                          onPointerUp={hasNoteHere ? handlePointerUp : undefined}
+                          onPointerCancel={hasNoteHere ? handlePointerUp : undefined}
+                          className={`border border-gray-300 dark:border-gray-600 w-12 h-10 text-center align-middle hover:bg-blue-50 dark:hover:bg-blue-950 ${cellBg} ${
+                            hasNoteHere
+                              ? "cursor-grab active:cursor-grabbing touch-none"
+                              : "cursor-pointer"
+                          }`}
+                          style={hasNoteHere ? { touchAction: "none" } : undefined}
+                        >
+                          {hasNoteHere ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
+                              alt=""
+                              className="h-8 mx-auto pointer-events-none select-none"
+                              draggable={false}
+                            />
+                          ) : null}
+                        </td>
+                      )
+                    })}
+                  </tr>
+                )
+              })}
               {/* 休符行 */}
               <tr>
                 <th className="border border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 px-2 py-1 text-xs font-bold text-gray-700 dark:text-gray-300 sticky left-0">
