@@ -120,7 +120,7 @@ export default function KukuHyoPage() {
             {COLORS.map(c => (
               <button
                 key={c.value}
-                onClick={() => setSelectedColor(c.value)}
+                onClick={() => { play("/sounds/set.mp3", 0.4); setSelectedColor(c.value) }}
                 title={c.label}
                 aria-label={c.label}
                 className={`w-9 h-9 rounded-md border-2 transition-all ${
