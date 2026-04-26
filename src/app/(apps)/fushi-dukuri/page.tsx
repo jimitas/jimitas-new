@@ -128,12 +128,22 @@ export default function FushiDukuriPage() {
 
   // ────────────────────────────────────────────────
   // 再生：各スロットを順次スケジュール
+  //
+  // ADSR エンベロープ：
+  //   Attack  3ms  : 立ち上がり（短く鋭く、8分音符でも確実に発音）
+  //   Decay  60ms  : ピーク → サステインレベルへ素早く落ちる
+  //   Sustain      : 残り時間ずっと中音量で伸ばす
+  //   Release 50ms : 末尾でフェードアウト → 次音との区切りを作る
+  //
+  // 各音の終わりに 25ms の無音ギャップを入れることで、
+  // 同じ高さの音が連続したときにも境目がはっきり聞こえる。
   // ────────────────────────────────────────────────
   const handlePlay = () => {
     stopAll()
     const ctx = ensureAudioContext()
     const beatSec = 60 / tempo
     const startTime = ctx.currentTime + 0.05
+    const SEPARATION_SEC = 0.025  // 連続音の区切り（25ms ギャップ）
 
     let cursor = 0
     for (const slot of slots) {
@@ -144,22 +154,35 @@ export default function FushiDukuriPage() {
       if (slot.type === "note" && !dur.isRest) {
         const t0 = startTime + cursor
         const pitch = PITCHES[slot.pitchIdx]
+
+        // エンベロープ秒数（短い音でも最低限のADSRを確保）
+        const totalEnvSec = Math.max(noteSec - SEPARATION_SEC, noteSec * 0.5)
+        const attack  = Math.min(0.003, totalEnvSec * 0.1)
+        const decay   = Math.min(0.06,  totalEnvSec * 0.25)
+        const release = Math.min(0.05,  totalEnvSec * 0.2)
+        const sustainTime = Math.max(0, totalEnvSec - attack - decay - release)
+        const peak    = 0.32
+        const sustain = 0.20
+
         const osc = ctx.createOscillator()
         osc.type = "triangle"
         osc.frequency.setValueAtTime(pitch.freq, t0)
 
         const gain = ctx.createGain()
-        const peak = 0.18
-        const release = Math.min(0.15, noteSec * 0.3)
         gain.gain.setValueAtTime(0, t0)
-        gain.gain.linearRampToValueAtTime(peak, t0 + 0.01)
-        gain.gain.setValueAtTime(peak, t0 + Math.max(0.05, noteSec - release))
-        gain.gain.linearRampToValueAtTime(0, t0 + noteSec)
+        // Attack: 0 → peak（鋭く立ち上げる）
+        gain.gain.linearRampToValueAtTime(peak, t0 + attack)
+        // Decay: peak → sustain（ピアノっぽく素早く減衰）
+        gain.gain.linearRampToValueAtTime(sustain, t0 + attack + decay)
+        // Sustain: 中音量を保持
+        gain.gain.setValueAtTime(sustain, t0 + attack + decay + sustainTime)
+        // Release: sustain → 0（次音との区切り）
+        gain.gain.linearRampToValueAtTime(0, t0 + attack + decay + sustainTime + release)
 
         osc.connect(gain)
         gain.connect(ctx.destination)
         osc.start(t0)
-        osc.stop(t0 + noteSec + 0.05)
+        osc.stop(t0 + totalEnvSec + 0.02)
         scheduledRef.current.push({ osc, gain })
       }
 
