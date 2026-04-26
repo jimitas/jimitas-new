@@ -40,7 +40,72 @@ const DURATIONS: DurationDef[] = [
   { label: "8分音ぷ",     image: "8buo", factor: 0.5,  isRest: false },  // 3
   { label: "4分休ふ",     image: "4kyu", factor: 1,    isRest: true },   // 4
   { label: "8分休ふ",     image: "8kyu", factor: 0.5,  isRest: true },   // 5
+  { label: "2分休ふ",     image: "2kyu", factor: 2,    isRest: true },   // 6（追加）
+  { label: "付点4分休ふ", image: "f4ku", factor: 1.5,  isRest: true },   // 7（追加・専用画像なし＝4kyu+付点で合成）
 ]
+
+// パレット内での表示順（音符4種 → 休符4種、それぞれ長い順）
+//   既存 localStorage の durationIdx を壊さないため、DURATIONS は append-only。
+//   表示の並びだけこの配列で制御する。
+const PALETTE_ORDER = [0, 1, 2, 3, 6, 4, 7, 5]
+
+// 画像ファイル解決：image="f4ku" は専用画像が無いため 4kyu.png + 付点 で表示する
+function resolveImage(image: string): { image: string; needDot: boolean } {
+  if (image === "f4ku") return { image: "4kyu", needDot: true }
+  return { image, needDot: false }
+}
+
+// ── 音符 ↔ 休符 の長さ対応マッピング ──────────────────
+// パレットのどのアイテムをドラッグしても、ドロップ先（音階行 or 休符行）に
+// 合わせて durationIdx を変換できるようにする。
+const NOTE_TO_REST: Record<string, string> = {
+  "2buo": "2kyu",
+  "4buo": "4kyu",
+  "f4bo": "f4ku",
+  "8buo": "8kyu",
+}
+const REST_TO_NOTE: Record<string, string> = {
+  "2kyu": "2buo",
+  "4kyu": "4buo",
+  "f4ku": "f4bo",
+  "8kyu": "8buo",
+}
+
+function findDurationIdxByImage(image: string): number {
+  return DURATIONS.findIndex(d => d.image === image)
+}
+
+// ドロップ先の行に合わせて durationIdx を正規化する
+//   音階行: 必ず音符インデックスに変換
+//   休符行: 必ず休符インデックスに変換
+function normalizeDurationIdx(durationIdx: number, toRest: boolean): number {
+  const dur = DURATIONS[durationIdx]
+  if (!dur) return durationIdx
+  if (toRest && !dur.isRest) {
+    const restImage = NOTE_TO_REST[dur.image]
+    if (restImage) {
+      const idx = findDurationIdxByImage(restImage)
+      if (idx >= 0) return idx
+    }
+  }
+  if (!toRest && dur.isRest) {
+    const noteImage = REST_TO_NOTE[dur.image]
+    if (noteImage) {
+      const idx = findDurationIdxByImage(noteImage)
+      if (idx >= 0) return idx
+    }
+  }
+  return durationIdx
+}
+
+// レンダー用：常に「音符画像」を返す（休符 durationIdx でもノート画像に変換）
+function getNoteRenderInfo(durationIdx: number): { image: string; needDot: boolean } {
+  const dur = DURATIONS[durationIdx]
+  if (!dur) return { image: "4buo", needDot: false }
+  if (!dur.isRest) return resolveImage(dur.image)
+  const noteImage = REST_TO_NOTE[dur.image]
+  return noteImage ? resolveImage(noteImage) : resolveImage(dur.image)
+}
 
 // ── 音高（高い順に並べる：上が高音、下が低音）──────────
 const PITCHES = [
@@ -63,20 +128,14 @@ type Slot =
   | { type: "note"; durationIdx: number; pitchIdx: number }
   | { type: "rest"; durationIdx: number }
 
-// ── 音符を休符に変換するときの画像マッピング ──────────
-// 音符（durationIdx 0..3）をそのまま休符として置いた場合、
-// 対応する休符画像で表示する。付点4分休符は専用画像がないため
-// 4分休符画像 + 付点を合成して描画する（needDot フラグ）。
+// レンダー用：常に「休符画像」を返す（音符 durationIdx でも休符画像に変換）
+//   付点4分休符は専用画像がないため、4分休符画像＋付点（needDot）で合成する
 function getRestRenderInfo(durationIdx: number): { image: string; needDot: boolean } {
-  switch (DURATIONS[durationIdx]?.image) {
-    case "2buo": return { image: "2kyu", needDot: false }   // 2分音符 → 2分休符
-    case "4buo": return { image: "4kyu", needDot: false }   // 4分音符 → 4分休符
-    case "f4bo": return { image: "4kyu", needDot: true }    // 付点4分音符 → 付点4分休符（4分休符＋付点）
-    case "8buo": return { image: "8kyu", needDot: false }   // 8分音符 → 8分休符
-    case "4kyu": return { image: "4kyu", needDot: false }   // 4分休符そのまま
-    case "8kyu": return { image: "8kyu", needDot: false }   // 8分休符そのまま
-    default:     return { image: "4kyu", needDot: false }
-  }
+  const dur = DURATIONS[durationIdx]
+  if (!dur) return { image: "4kyu", needDot: false }
+  if (dur.isRest) return resolveImage(dur.image)
+  const restImage = NOTE_TO_REST[dur.image]
+  return restImage ? resolveImage(restImage) : resolveImage(dur.image)
 }
 
 const DEFAULT_NOTE_COUNT = 8
@@ -458,15 +517,21 @@ export default function FushiDukuriPage() {
       drag.hasDragged = true
       const dur = DURATIONS[drag.source.durationIdx]
       if (dur) {
+        const info = resolveImage(dur.image)
         const ghost = document.createElement("div")
         ghost.style.position = "fixed"
         ghost.style.zIndex = "10000"
         ghost.style.pointerEvents = "none"
         ghost.style.transition = "none"
         ghost.style.opacity = "0.85"
-        ghost.style.width = "48px"
-        ghost.style.height = "48px"
-        ghost.innerHTML = `<img src="/images/fushi-dukuri/${dur.image}.png" alt="" style="width:100%;height:100%;object-fit:contain;" draggable="false" />`
+        ghost.style.display = "inline-flex"
+        ghost.style.alignItems = "center"
+        ghost.style.gap = "2px"
+        // 付点が必要な場合は画像 + ドット要素で合成（4分休符＋付点 = 付点4分休符）
+        const dotHtml = info.needDot
+          ? `<span style="display:inline-block;width:6px;height:6px;border-radius:50%;background:#374151;"></span>`
+          : ""
+        ghost.innerHTML = `<img src="/images/fushi-dukuri/${info.image}.png" alt="" style="width:48px;height:48px;object-fit:contain;" draggable="false" />${dotHtml}`
         document.body.appendChild(ghost)
         dragGhostRef.current = ghost
       }
@@ -499,10 +564,11 @@ export default function FushiDukuriPage() {
           const dur = DURATIONS[drag.source.durationIdx]
 
           if (Number.isFinite(targetSlot) && dur) {
-            // ピッチ行に音符を置けるか／休符行に何かを置けるかを判定
-            const willPlace = (isRestRow || dur.isRest) || (Number.isFinite(targetPitch) && targetPitch >= 0)
+            // どこかに置けるか判定（休符行 or 音階セル）
+            const canPlaceOnRest = isRestRow
+            const canPlaceOnPitch = !isRestRow && Number.isFinite(targetPitch) && targetPitch >= 0
+            const willPlace = canPlaceOnRest || canPlaceOnPitch
             if (willPlace) {
-              // ドロップ成功の効果音
               playSE("/sounds/pi.mp3", 0.4)
             }
             setSlots(prev => {
@@ -512,10 +578,14 @@ export default function FushiDukuriPage() {
               if (drag.source.kind === "slot") {
                 next[drag.source.slotIdx] = { type: "empty" }
               }
-              if (isRestRow || dur.isRest) {
-                next[targetSlot] = { type: "rest", durationIdx: drag.source.durationIdx }
-              } else if (Number.isFinite(targetPitch) && targetPitch >= 0) {
-                next[targetSlot] = { type: "note", durationIdx: drag.source.durationIdx, pitchIdx: targetPitch }
+              if (canPlaceOnRest) {
+                // 休符行：パレットの音符を引きずってきても、対応する休符に変換
+                const restDurIdx = normalizeDurationIdx(drag.source.durationIdx, true)
+                next[targetSlot] = { type: "rest", durationIdx: restDurIdx }
+              } else if (canPlaceOnPitch) {
+                // 音階行：パレットの休符を引きずってきても、対応する音符に変換
+                const noteDurIdx = normalizeDurationIdx(drag.source.durationIdx, false)
+                next[targetSlot] = { type: "note", durationIdx: noteDurIdx, pitchIdx: targetPitch }
               }
               return next
             })
@@ -681,6 +751,7 @@ export default function FushiDukuriPage() {
                     </th>
                     {slots.map((slot, sIdx) => {
                       const hasNoteHere = slot.type === "note" && slot.pitchIdx === pIdx
+                      const noteInfo = hasNoteHere ? getNoteRenderInfo(slot.durationIdx) : null
                       const cellBg = isHighlighted
                         ? "bg-yellow-50 dark:bg-yellow-950"
                         : "bg-white dark:bg-gray-800"
@@ -701,14 +772,19 @@ export default function FushiDukuriPage() {
                           }`}
                           style={hasNoteHere ? { touchAction: "none" } : undefined}
                         >
-                          {hasNoteHere ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={`/images/fushi-dukuri/${DURATIONS[slot.durationIdx].image}.png`}
-                              alt=""
-                              className="h-8 mx-auto pointer-events-none select-none"
-                              draggable={false}
-                            />
+                          {noteInfo ? (
+                            <span className="inline-flex items-center justify-center gap-0.5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img
+                                src={`/images/fushi-dukuri/${noteInfo.image}.png`}
+                                alt=""
+                                className="h-8 pointer-events-none select-none"
+                                draggable={false}
+                              />
+                              {noteInfo.needDot && (
+                                <span aria-hidden="true" className="inline-block w-1.5 h-1.5 rounded-full bg-gray-700 dark:bg-gray-200 pointer-events-none" />
+                              )}
+                            </span>
                           ) : null}
                         </td>
                       )
@@ -791,26 +867,37 @@ export default function FushiDukuriPage() {
           🎵 音符・休符パレット（ドラッグして上のグリッドに置こう）
         </div>
         <div className="flex flex-wrap gap-3 justify-center">
-          {DURATIONS.map((dur, durIdx) => (
-            <div
-              key={durIdx}
-              onPointerDown={(e) => startDrag(e, { kind: "palette", durationIdx: durIdx })}
-              onPointerMove={handlePointerMove}
-              onPointerUp={handlePointerUp}
-              onPointerCancel={handlePointerUp}
-              className="touch-none cursor-grab active:cursor-grabbing select-none flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-purple-200 dark:border-purple-800 p-2 hover:border-purple-400"
-              style={{ touchAction: "none" }}
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={`/images/fushi-dukuri/${dur.image}.png`}
-                alt={dur.label}
-                className="h-12 w-12 object-contain pointer-events-none"
-                draggable={false}
-              />
-              <span className="text-xs mt-1 text-gray-700 dark:text-gray-300">{dur.label}</span>
-            </div>
-          ))}
+          {/* PALETTE_ORDER の順で表示：音符4種 → 休符4種（それぞれ長い順）*/}
+          {PALETTE_ORDER.map((durIdx) => {
+            const dur = DURATIONS[durIdx]
+            if (!dur) return null
+            const info = resolveImage(dur.image)
+            return (
+              <div
+                key={durIdx}
+                onPointerDown={(e) => startDrag(e, { kind: "palette", durationIdx: durIdx })}
+                onPointerMove={handlePointerMove}
+                onPointerUp={handlePointerUp}
+                onPointerCancel={handlePointerUp}
+                className="touch-none cursor-grab active:cursor-grabbing select-none flex flex-col items-center bg-white dark:bg-gray-800 rounded-lg border-2 border-purple-200 dark:border-purple-800 p-2 hover:border-purple-400"
+                style={{ touchAction: "none" }}
+              >
+                <span className="inline-flex items-center justify-center gap-0.5 h-12">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/images/fushi-dukuri/${info.image}.png`}
+                    alt={dur.label}
+                    className="h-12 w-12 object-contain pointer-events-none"
+                    draggable={false}
+                  />
+                  {info.needDot && (
+                    <span aria-hidden="true" className="inline-block w-2 h-2 rounded-full bg-gray-700 dark:bg-gray-200 pointer-events-none" />
+                  )}
+                </span>
+                <span className="text-xs mt-1 text-gray-700 dark:text-gray-300">{dur.label}</span>
+              </div>
+            )
+          })}
         </div>
       </section>
     </div>
