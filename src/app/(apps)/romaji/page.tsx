@@ -277,7 +277,7 @@ export default function RomajiPage() {
         {/* もんだい */}
         <button
           onClick={handleQuestion}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-warm-500 text-white hover:bg-warm-600 active:scale-95 transition-all shadow"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-brand-400 text-white hover:bg-brand-500 active:bg-brand-600 active:scale-95 transition-all shadow"
         >
           ▶ もんだい
         </button>

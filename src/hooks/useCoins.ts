@@ -40,9 +40,6 @@ export function useCoins() {
   const [coins, setCoins] = useState<number>(0)
 
   useEffect(() => {
-    // マウント時に localStorage から復元
-    setCoins(readCoins())
-
     // 同タブ内での変更を受け取る（アプリ→ヘッダーの同期）
     const handleCoinsChanged = () => setCoins(readCoins())
 
@@ -53,6 +50,11 @@ export function useCoins() {
 
     window.addEventListener(COINS_EVENT, handleCoinsChanged)
     window.addEventListener("storage", handleStorage)
+
+    // マウント後に localStorage の値で初期化する。
+    // イベント経由で行うことで直接 setState を呼ばず、SSR との hydration ずれも起きない。
+    window.dispatchEvent(new Event(COINS_EVENT))
+
     return () => {
       window.removeEventListener(COINS_EVENT, handleCoinsChanged)
       window.removeEventListener("storage", handleStorage)

@@ -27,9 +27,9 @@ export function generateBunsu2(): CustomResult {
   for (let i = 0; i < 8; i++) {
     const idx = Math.floor(Math.random() * 3)
     const a = Math.floor(Math.random() * 20 + 2)
-    let b = nums[idx]
-    let [c, d] = reduceFraction(a, b)
-    if (d === 1) d = 2
+    const b = nums[idx]
+    const [c, dRaw] = reduceFraction(a, b)
+    const d = dRaw === 1 ? 2 : dRaw
 
     problems.push(`<div class="jf-row">${BANGOU[i + 6]}　${fracHtml(c, d)}　＝<span class="jf-eq"></span></div>`)
     answers.push(`${c / d}`)

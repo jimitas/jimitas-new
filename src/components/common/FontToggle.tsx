@@ -31,6 +31,8 @@ export default function FontToggle() {
   useEffect(() => {
     const saved = localStorage.getItem("jimitas_font")
     if (saved === "gothic") {
+      // SSR/hydration の安全のために useEffect 内で setState する意図的な実装。
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFont("gothic")
       document.body.style.fontFamily = FONT_VALUES["gothic"]
     } else {

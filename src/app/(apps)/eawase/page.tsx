@@ -40,6 +40,8 @@ export default function EawasePage() {
 
   // マウント後にクライアント側でシャッフル（SSR 結果と CSR 結果が一致するように）
   useEffect(() => {
+    // SSR/hydration の安全のために useEffect 内で setState する意図的な実装。
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setCardOrder(shuffle())
   }, [])
 
