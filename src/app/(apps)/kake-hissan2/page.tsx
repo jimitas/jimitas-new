@@ -653,7 +653,7 @@ export default function KakeHissan2Page() {
         </button>
         <button
           onClick={clearTable}
-          className="px-3 py-2 rounded font-bold border-2 border-gray-400 text-gray-600 hover:bg-gray-100 text-sm active:scale-95 transition-all"
+          className="px-3 py-2 rounded font-bold bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white text-sm active:scale-95 transition-all"
         >
           消す
         </button>

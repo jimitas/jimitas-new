@@ -11,7 +11,7 @@
 // 旧 jimitas.com のわり算考え方①を React + Pointer Events で移植。
 // ======================================================
 
-import { useState, useCallback, useRef, useEffect } from "react"
+import { useState, useRef, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
 
 const MAX_DIVIDEND = 99

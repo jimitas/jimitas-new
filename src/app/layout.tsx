@@ -45,27 +45,6 @@ const mPlus1p = M_PLUS_1p({
 })
 
 // -------------------------------------------------------
-// ダークモード・フォント初期化スクリプト（チラつき防止）
-//
-// React が動き出す前（ページ描画の瞬間）に実行される。
-// localStorage の設定を読んで html 要素に反映することで、
-// ページを開いた瞬間に正しいテーマが適用され、白→黒のチラつきを防ぐ。
-// -------------------------------------------------------
-const themeInitScript = `
-(function() {
-  // ダークモードの設定を復元
-  if (localStorage.getItem('jimitas_dark') === 'true') {
-    document.documentElement.classList.add('dark');
-  }
-  // フォントの設定を復元
-  const font = localStorage.getItem('jimitas_font');
-  if (font === 'gothic') {
-    document.documentElement.dataset.font = 'gothic';
-  }
-})();
-`
-
-// -------------------------------------------------------
 // ビューポート設定（タブレット・スマホのピンチズーム・スケール制御）
 //
 // user-scalable=no, maximum-scale=1:

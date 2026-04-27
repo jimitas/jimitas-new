@@ -209,7 +209,6 @@ export default function FushiDukuriPage() {
       stopAll()
       audioCtxRef.current?.close()
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // tempo 状態が外側（リストア・スライダー）から変わったときに入力欄も追従
