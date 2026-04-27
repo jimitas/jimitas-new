@@ -3,7 +3,7 @@
 // 17問: 真分数/仮分数の分類、帯分数→仮分数、大小比較、同分母の加減
 
 import { CustomResult } from "../types"
-import { fracHtml, mixedFracHtml, reduceFraction } from "../bunsuu"
+import { fracHtml, mixedFracHtml } from "../bunsuu"
 import { BANGOU } from "../constants"
 const FUGOU = ["ア", "イ", "ウ", "エ"]
 

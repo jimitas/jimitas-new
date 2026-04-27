@@ -212,7 +212,7 @@ export default function Warizan2Page() {
         </h1>
         <button
           onClick={handleErase}
-          className="px-3 py-1 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 text-sm hover:bg-gray-300 dark:hover:bg-gray-600"
+          className="px-3 py-1 rounded-lg bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white text-sm"
         >
           やりなおし
         </button>

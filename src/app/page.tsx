@@ -196,9 +196,9 @@ export default function HomePage() {
                 </h2>
                 <Link href="/jimipri">
                   <div className="
-                    rounded-xl border-2 border-green-300 dark:border-green-700
-                    bg-gradient-to-r from-green-50 to-emerald-50
-                    dark:from-green-950 dark:to-emerald-950
+                    rounded-xl border-2 border-brand-300 dark:border-brand-700
+                    bg-gradient-to-r from-brand-50 to-brand-100
+                    dark:from-brand-900 dark:to-brand-800
                     p-4 hover:shadow-md hover:-translate-y-0.5
                     transition-all duration-150 cursor-pointer
                   ">
@@ -213,7 +213,7 @@ export default function HomePage() {
                         </p>
                         <div className="flex gap-2 mt-2">
                           {["1年", "2年", "3年", "4年", "5年", "6年"].map((g) => (
-                            <span key={g} className="text-xs px-2 py-0.5 rounded-full bg-green-200 dark:bg-green-800 text-green-800 dark:text-green-200">
+                            <span key={g} className="text-xs px-2 py-0.5 rounded-full bg-brand-200 dark:bg-brand-800 text-brand-800 dark:text-brand-200">
                               {g}
                             </span>
                           ))}
