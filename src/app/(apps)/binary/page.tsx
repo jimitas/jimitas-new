@@ -11,13 +11,6 @@ const BASE_LABELS: Record<Base, string> = {
   16: "16進数",
 }
 
-const BASE_PREFIX: Record<Base, string> = {
-  2: "0b",
-  8: "0o",
-  10: "",
-  16: "0x",
-}
-
 const BASES: Base[] = [2, 8, 10, 16]
 
 function toBase(decimal: number, base: Base): string {
@@ -111,7 +104,6 @@ export default function BinaryPage() {
       <div className="bg-white dark:bg-gray-800 border-2 border-brand-400 rounded-xl p-4 mb-4">
         <label className="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">
           {BASE_LABELS[inputBase]}で入力
-          <span className="ml-2 text-xs text-gray-400">（{BASE_PREFIX[inputBase]}...）</span>
         </label>
         <input
           type="text"
@@ -140,7 +132,8 @@ export default function BinaryPage() {
             >
               <div className="text-xs font-bold text-gray-500 dark:text-gray-400 mb-1">{BASE_LABELS[b]}</div>
               <div className="text-xl font-bold font-mono text-gray-800 dark:text-gray-100 break-all">
-                {BASE_PREFIX[b]}{toBase(decimal, b)}
+                {toBase(decimal, b)}
+                <span className="text-sm font-normal text-gray-400 dark:text-gray-500 ml-0.5">({b})</span>
               </div>
             </div>
           ))}
