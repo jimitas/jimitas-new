@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
+import * as se from "@/lib/se"
 
 type Base = 2 | 8 | 10 | 16
 
@@ -124,7 +125,7 @@ export default function BinaryPage() {
           {BASES.map(b => (
             <div
               key={b}
-              onClick={() => { setInputValue(toBase(decimal, b)); setInputBase(b) }}
+              onClick={() => { se.playSe(se.pi); setInputValue(toBase(decimal, b)); setInputBase(b) }}
               className={`rounded-xl border-2 p-3 cursor-pointer transition-all
                 ${b === inputBase
                   ? "border-brand-400 bg-brand-50 dark:bg-brand-900/30"
