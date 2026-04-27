@@ -67,7 +67,7 @@ export const metadata: Metadata = {
     template: "%s | Jimitas",  // 子ページで title を設定すると「○○ | Jimitas」になる
   },
   description:
-    "先生・子ども・保護者のための学習アプリポータル。算数・国語・音楽・社会など41種類のアプリが無料で使えます。",
+    "先生・子ども・保護者のための学習Webアプリポータル。算数・国語・音楽・社会など56種類のアプリ・ツールが無料で使えます。URLを貼るだけでタブレット・PCで動く、授業でそのまま使えるコンテンツです。",
   metadataBase: new URL("https://jimitas.com"),
   openGraph: {
     siteName: "Jimitas（ジミタス）",
