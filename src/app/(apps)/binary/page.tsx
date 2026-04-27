@@ -73,6 +73,13 @@ export default function BinaryPage() {
     }
   }
 
+  function step(delta: 1 | -1) {
+    const next = (isNaN(decimal) ? 0 : decimal) + delta
+    if (next < 0) return
+    se.playSe(se.pi)
+    setInputValue(toBase(next, inputBase))
+  }
+
   function handleBaseChange(newBase: Base) {
     if (!isNaN(decimal)) {
       setInputValue(toBase(decimal, newBase))
@@ -106,14 +113,31 @@ export default function BinaryPage() {
         <label className="block text-sm font-bold text-gray-600 dark:text-gray-400 mb-2">
           {BASE_LABELS[inputBase]}で入力
         </label>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={e => handleInput(e.target.value)}
-          placeholder={`${BASE_LABELS[inputBase]}の数を入力`}
-          className={`w-full text-2xl font-bold font-mono px-3 py-2 rounded-lg border-2 bg-gray-50 dark:bg-gray-900
-            ${isValid ? "border-brand-300 dark:border-brand-700" : "border-danger-400"}`}
-        />
+        <div className="flex items-stretch gap-2">
+          <button
+            onClick={() => step(-1)}
+            disabled={isNaN(decimal) || decimal <= 0}
+            className="px-3 rounded-lg text-2xl font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white disabled:opacity-30 transition-colors select-none"
+            aria-label="1減らす"
+          >
+            ▼
+          </button>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={e => handleInput(e.target.value)}
+            placeholder={`${BASE_LABELS[inputBase]}の数を入力`}
+            className={`flex-1 text-2xl font-bold font-mono px-3 py-2 rounded-lg border-2 bg-gray-50 dark:bg-gray-900
+              ${isValid ? "border-brand-300 dark:border-brand-700" : "border-danger-400"}`}
+          />
+          <button
+            onClick={() => step(1)}
+            className="px-3 rounded-lg text-2xl font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white transition-colors select-none"
+            aria-label="1増やす"
+          >
+            ▲
+          </button>
+        </div>
         {!isValid && inputValue && (
           <p className="text-danger-500 text-sm mt-1">{BASE_LABELS[inputBase]}では使えない文字が含まれています</p>
         )}
