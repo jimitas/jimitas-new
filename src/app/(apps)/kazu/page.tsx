@@ -8,20 +8,23 @@ type Mode = "cherry" | "banana" | "clip"
 
 type Problem = {
   mode: Mode
-  count: number
-  groupSize: number
+  imageCount: number  // 表示する画像の枚数
+  answer: number      // 実際の個数（cherry: 枚数×2、banana: 枚数×5、clip: 枚数×1）
 }
 
+// さくらんぼ: 1枚の画像に2個の実 → 5〜9枚表示 → 答え = 枚数×2
+// バナナ:     1枚の画像に5本の房 → 2〜4枚表示 → 答え = 枚数×5
+// クリップ:   1枚の画像に1個     → 11〜19枚バラバラ表示 → 答え = 枚数×1
 function makeProblem(mode: Mode): Problem {
   if (mode === "cherry") {
-    const pairs = Math.floor(Math.random() * 5 + 5)  // 5〜9組（計10〜18個）
-    return { mode, count: pairs * 2, groupSize: 2 }
+    const n = Math.floor(Math.random() * 5 + 5)  // 5〜9
+    return { mode, imageCount: n, answer: n * 2 }
   } else if (mode === "banana") {
-    const groups = Math.floor(Math.random() * 3 + 2)  // 2〜4房（計10〜20個）
-    return { mode, count: groups * 5, groupSize: 5 }
+    const n = Math.floor(Math.random() * 3 + 2)  // 2〜4
+    return { mode, imageCount: n, answer: n * 5 }
   } else {
-    const n = Math.floor(Math.random() * 9 + 11)  // 11〜19個
-    return { mode, count: n, groupSize: 1 }
+    const n = Math.floor(Math.random() * 9 + 11)  // 11〜19
+    return { mode, imageCount: n, answer: n }
   }
 }
 
@@ -31,13 +34,27 @@ const MODE_HINT: Record<Mode, string> = {
   clip: "１つずつ数えよう！",
 }
 
+// クリップ用のランダム配置データ（再レンダリングで変わらないよう Problem に持たせる）
+type ClipPos = { left: number; top: number; rotate: number }
+
+function makeClipPositions(n: number): ClipPos[] {
+  return Array.from({ length: n }, (_, i) => ({
+    left: (i * 37 + 7) % 85,
+    top: (i * 53 + 11) % 70,
+    rotate: (i * 73) % 180,
+  }))
+}
+
 export default function KazuPage() {
   const [problem, setProblem] = useState<Problem | null>(null)
+  const [clipPos, setClipPos] = useState<ClipPos[]>([])
   const [showAnswer, setShowAnswer] = useState(false)
 
   function start(mode: Mode) {
-    setProblem(makeProblem(mode))
+    const p = makeProblem(mode)
+    setProblem(p)
     setShowAnswer(false)
+    if (mode === "clip") setClipPos(makeClipPositions(p.imageCount))
     se.playSe(se.set)
   }
 
@@ -47,39 +64,46 @@ export default function KazuPage() {
     se.playSe(se.seikai2)
   }
 
-  // 画像をグループ単位で並べる
   function renderItems(p: Problem) {
-    const { mode, count, groupSize } = p
-    const groups: number[] = []
-    for (let i = 0; i < count; i += groupSize) {
-      groups.push(Math.min(groupSize, count - i))
+    if (p.mode === "cherry") {
+      // 元コードに忠実: cherry.png を imageCount 枚並べるだけ
+      return (
+        <div className="flex flex-wrap gap-3 justify-center">
+          {Array.from({ length: p.imageCount }).map((_, i) => (
+            <Image key={i} src="/images/kazu-cherry.png" alt="さくらんぼ" width={60} height={60} />
+          ))}
+        </div>
+      )
     }
 
-    const imgSrc = mode === "cherry" ? "/images/kazu-cherry.png"
-      : mode === "banana" ? "/images/kazu-banana.jpg"
-      : "/images/kazu-clip.png"
-    const imgSize = mode === "banana" ? 80 : mode === "clip" ? 44 : 44
+    if (p.mode === "banana") {
+      // 元コードに忠実: banana.jpg を imageCount 枚並べるだけ
+      return (
+        <div className="flex flex-wrap gap-4 justify-center items-end">
+          {Array.from({ length: p.imageCount }).map((_, i) => (
+            <Image key={i} src="/images/kazu-banana.jpg" alt="バナナ" width={90} height={90} />
+          ))}
+        </div>
+      )
+    }
 
+    // クリップ: 元コードに忠実: ランダムな位置・回転で配置
     return (
-      <div className="flex flex-wrap gap-4 justify-center">
-        {groups.map((gSize, gi) => (
-          <div
-            key={gi}
-            className={`flex flex-wrap gap-1 p-2 rounded-lg ${mode !== "clip" ? "border-2 border-gray-300 dark:border-gray-600" : ""}`}
-            style={{ minWidth: imgSize + 8 }}
-          >
-            {Array.from({ length: gSize }).map((_, i) => (
-              <Image
-                key={i}
-                src={imgSrc}
-                alt={mode}
-                width={imgSize}
-                height={imgSize}
-                className={mode === "clip" ? `rotate-[${(gi * 37 + i * 53) % 180}deg]` : ""}
-                style={mode === "clip" ? { transform: `rotate(${(gi * 37 + i * 53) % 180}deg)` } : undefined}
-              />
-            ))}
-          </div>
+      <div className="relative w-full" style={{ height: 200 }}>
+        {Array.from({ length: p.imageCount }).map((_, i) => (
+          <Image
+            key={i}
+            src="/images/kazu-clip.png"
+            alt="クリップ"
+            width={40}
+            height={40}
+            style={{
+              position: "absolute",
+              left: `${clipPos[i]?.left ?? 0}%`,
+              top: `${clipPos[i]?.top ?? 0}%`,
+              transform: `rotate(${clipPos[i]?.rotate ?? 0}deg)`,
+            }}
+          />
         ))}
       </div>
     )
@@ -124,7 +148,7 @@ export default function KazuPage() {
             <BtnShowAnswer handleEvent={handleShowAnswer} />
             {showAnswer && (
               <div className="text-4xl font-bold text-brand-600 dark:text-brand-400 animate-bounce">
-                {problem.count} こ
+                {problem.answer} こ
               </div>
             )}
           </div>
