@@ -447,7 +447,7 @@ export default function ShashagonyuPage() {
             答え
           </p>
           <div className="text-center text-4xl font-black text-gray-800 dark:text-gray-100
-                          min-h-[3.5rem] flex items-center justify-center">
+                          min-h-14 flex items-center justify-center">
             {displayValue !== null
               ? displayValue
               : <span className="text-gray-300 dark:text-gray-600 text-xl font-normal">
