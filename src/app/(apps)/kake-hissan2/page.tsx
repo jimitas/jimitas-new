@@ -673,7 +673,7 @@ export default function KakeHissan2Page() {
       {/* 式の表示 */}
       <div
         ref={formulaRef}
-        className="text-center font-bold text-3xl md:text-4xl py-3 px-4 bg-gradient-to-r from-white to-orange-50 rounded-xl border-2 border-orange-200 shadow-sm tracking-wider min-h-14 flex items-center justify-center"
+        className="text-center font-bold text-3xl md:text-4xl py-3 px-4 bg-linear-to-r from-white to-orange-50 rounded-xl border-2 border-orange-200 shadow-sm tracking-wider min-h-14 flex items-center justify-center"
       />
 
       {/* 小数ヒント */}

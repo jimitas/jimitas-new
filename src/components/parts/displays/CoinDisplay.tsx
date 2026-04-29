@@ -53,7 +53,7 @@ const COIN_STYLE: Record<number, { size: string; bg: string; border: string; tex
   },
   1000: {
     size:   "w-20 h-20",
-    bg:     "bg-gradient-to-br from-yellow-300 via-amber-400 to-yellow-600",
+    bg:     "bg-linear-to-br from-yellow-300 via-amber-400 to-yellow-600",
     border: "border-4 border-amber-800",
     text:   "text-amber-900 text-sm font-black",
     label:  "1000",

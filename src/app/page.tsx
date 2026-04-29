@@ -197,7 +197,7 @@ export default function HomePage() {
                 <Link href="/jimipri">
                   <div className="
                     rounded-xl border-2 border-brand-300 dark:border-brand-700
-                    bg-gradient-to-r from-brand-50 to-brand-100
+                    bg-linear-to-r from-brand-50 to-brand-100
                     dark:from-brand-900 dark:to-brand-800
                     p-4 hover:shadow-md hover:-translate-y-0.5
                     transition-all duration-150 cursor-pointer

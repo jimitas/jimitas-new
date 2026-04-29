@@ -1065,7 +1065,7 @@ export default function WariHissanPage() {
       {/* 式の表示 */}
       <div
         ref={formulaRef}
-        className="text-center font-bold text-3xl md:text-4xl py-3 px-4 bg-gradient-to-r from-white to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border-2 border-orange-200 dark:border-orange-800 shadow-sm tracking-wider min-h-[56px] flex items-center justify-center"
+        className="text-center font-bold text-3xl md:text-4xl py-3 px-4 bg-linear-to-r from-white to-orange-50 dark:from-gray-800 dark:to-gray-700 rounded-xl border-2 border-orange-200 dark:border-orange-800 shadow-sm tracking-wider min-h-14 flex items-center justify-center"
       />
 
       {/* 小数ヒント */}
