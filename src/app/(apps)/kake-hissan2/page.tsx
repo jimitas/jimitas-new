@@ -667,7 +667,7 @@ export default function KakeHissan2Page() {
 
       {/* メッセージ表示（alert の代替） */}
       <p ref={msgRef} style={{ display: "none" }}
-         className="text-center text-sm font-bold text-red-600 bg-red-50 rounded-lg py-2 px-3 border border-red-200">
+         className="text-center text-sm font-bold text-danger-600 bg-danger-50 rounded-lg py-2 px-3 border border-danger-200">
       </p>
 
       {/* 式の表示 */}

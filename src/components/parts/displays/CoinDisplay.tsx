@@ -133,7 +133,7 @@ export function CoinDisplay({ coins, onReset, className }: CoinDisplayProps) {
         {onReset && (
           <button
             onClick={onReset}
-            className="text-xs px-2 py-1 bg-red-400 hover:bg-red-500
+            className="text-xs px-2 py-1 bg-danger-400 hover:bg-danger-500
                        text-white rounded-lg font-bold transition-colors"
           >
             リセット

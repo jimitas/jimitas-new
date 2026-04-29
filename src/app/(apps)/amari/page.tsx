@@ -1,5 +1,6 @@
 "use client"
 import { useState, useRef } from "react"
+import { calcAmari, isValidManualInput } from "./_lib/amariLogic"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
@@ -27,8 +28,7 @@ export default function AmariPage() {
   const [manualJ, setManualJ] = useState("")
 
   function startProblem(h: number, j: number) {
-    const s = Math.floor(h / j)
-    const a = h % j
+    const { shou: s, amari: a } = calcAmari(h, j)
     setHijosu(h)
     setJosu(j)
     setAnswerShou(s)
@@ -53,7 +53,7 @@ export default function AmariPage() {
   function setManual() {
     const h = Number(manualH)
     const j = Number(manualJ)
-    if (!manualH || !manualJ || h < 2 || h > 99 || j < 2 || j > 9 || h % j === 0) {
+    if (!manualH || !manualJ || !isValidManualInput(h, j)) {
       setMessage("わられる数(2〜99)・わる数(2〜9)を入力し、あまりが出る数にしてください")
       se.playSe(se.alertSound)
       return

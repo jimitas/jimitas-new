@@ -2,8 +2,7 @@
 import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import * as se from "@/lib/se"
-
-type Base = 2 | 8 | 10 | 16
+import { type Base, toBase, fromBase, isValidForBase } from "./_lib/converter"
 
 const BASE_LABELS: Record<Base, string> = {
   2: "2進数",
@@ -13,21 +12,6 @@ const BASE_LABELS: Record<Base, string> = {
 }
 
 const BASES: Base[] = [2, 8, 10, 16]
-
-function toBase(decimal: number, base: Base): string {
-  if (isNaN(decimal) || decimal < 0) return ""
-  return decimal.toString(base).toUpperCase()
-}
-
-function fromBase(str: string, base: Base): number {
-  const n = parseInt(str, base)
-  return isNaN(n) ? NaN : n
-}
-
-function isValidForBase(char: string, base: Base): boolean {
-  const validChars = "0123456789abcdefABCDEF".slice(0, base > 10 ? 16 : base)
-  return [...char].every(c => validChars.includes(c))
-}
 
 // 2進数のビット表示
 function BitDisplay({ decimal }: { decimal: number }) {

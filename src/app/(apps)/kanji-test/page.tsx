@@ -483,7 +483,7 @@ export default function KanpuriPage() {
 
           {/* メッセージ（エラー・通知） */}
           {msg && (
-            <p className="text-sm font-bold text-red-500 bg-red-50 rounded-lg px-3 py-2">
+            <p className="text-sm font-bold text-danger-500 bg-danger-50 rounded-lg px-3 py-2">
               {msg}
             </p>
           )}

@@ -22,6 +22,7 @@
 
 import { useState, useRef, useEffect, useCallback } from "react"
 import * as se from "@/lib/se"
+import { roundToDigit } from "./_lib/rounding"
 import { useCoins } from "@/hooks/useCoins"
 import { useKeyboardInput } from "@/hooks/useKeyboardInput"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
@@ -113,8 +114,7 @@ export default function ShashagonyuPage() {
     const minTD = 2
     const maxTD = Math.max(minTD, numDigits - 1)
     const targetDigit = Math.floor(Math.random() * (maxTD - minTD + 1)) + minTD
-    const correctAnswer =
-      Math.round(num / Math.pow(10, targetDigit - 1)) * Math.pow(10, targetDigit - 1)
+    const correctAnswer = roundToDigit(num, targetDigit)
 
     targetDigitRef.current   = targetDigit
     correctAnswerRef.current = correctAnswer

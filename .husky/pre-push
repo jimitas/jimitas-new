@@ -1,0 +1,14 @@
+#!/bin/sh
+# git push 前にユニットテストを自動実行する
+
+echo "🧪 push 前テスト実行中..."
+npm test
+
+if [ $? -ne 0 ]; then
+  echo ""
+  echo "❌ テストが失敗しました。push を中止します。"
+  echo "   npm test で詳細を確認してください。"
+  exit 1
+fi
+
+echo "✅ テスト完了。push を続行します。"

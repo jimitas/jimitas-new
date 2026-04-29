@@ -557,7 +557,7 @@ export default function HikiHissanPage() {
 
       {/* バリデーションエラー表示 */}
       <p ref={msgRef} style={{ display: "none" }}
-         className="text-center text-sm font-bold text-red-600 bg-red-50 rounded-lg py-1 px-3">
+         className="text-center text-sm font-bold text-danger-600 bg-danger-50 rounded-lg py-1 px-3">
       </p>
 
       {/* 式の入力欄 */}

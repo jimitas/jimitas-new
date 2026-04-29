@@ -67,14 +67,14 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
         onClick={() => { se.playSe(se.cancel); onDelete() }}
         title="1文字消す"
         className="flex-shrink-0 w-11 h-11
-                   bg-orange-200 dark:bg-orange-900
+                   bg-warm-200 dark:bg-orange-900
                    text-orange-800 dark:text-orange-200
                    text-base font-bold
                    rounded-lg
-                   border-2 border-orange-300 dark:border-orange-700
-                   border-b-4 border-b-orange-400 dark:border-b-orange-800
+                   border-2 border-warm-300 dark:border-orange-700
+                   border-b-4 border-b-warm-400 dark:border-b-orange-800
                    shadow-md
-                   hover:bg-orange-100 dark:hover:bg-orange-800
+                   hover:bg-warm-100 dark:hover:bg-orange-800
                    active:border-b-2 active:translate-y-[2px] active:shadow-sm
                    transition-all duration-75
                    select-none"
@@ -87,14 +87,14 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
         onClick={() => { se.playSe(se.reset); onClear() }}
         title="全部消す"
         className="flex-shrink-0 w-11 h-11
-                   bg-red-300 dark:bg-red-900
+                   bg-danger-300 dark:bg-red-900
                    text-red-900 dark:text-red-200
                    text-base font-bold
                    rounded-lg
-                   border-2 border-red-400 dark:border-red-700
-                   border-b-4 border-b-red-500 dark:border-b-red-800
+                   border-2 border-danger-400 dark:border-red-700
+                   border-b-4 border-b-danger-500 dark:border-b-red-800
                    shadow-md
-                   hover:bg-red-200 dark:hover:bg-red-800
+                   hover:bg-danger-200 dark:hover:bg-red-800
                    active:border-b-2 active:translate-y-[2px] active:shadow-sm
                    transition-all duration-75
                    select-none"
