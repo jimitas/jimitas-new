@@ -335,7 +335,7 @@ export default function RomajiPage() {
                       ? "bg-gray-300 text-gray-400 cursor-not-allowed"
                       : isVowel
                       ? "bg-warm-400 text-white hover:bg-warm-500 shadow-sm"
-                      : "bg-accent-500 text-white hover:bg-accent-600 shadow-sm"
+                      : "bg-accent-400 text-white hover:bg-accent-500 shadow-sm"
                   }`}
                 >
                   {letter}

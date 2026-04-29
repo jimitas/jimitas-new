@@ -94,7 +94,7 @@ export default function AboutPage() {
       <div className="mt-12 text-center">
         <Link
           href="/"
-          className="inline-block px-6 py-2 rounded-full bg-brand-500 text-white text-sm font-medium hover:bg-brand-600 transition-colors"
+          className="inline-block px-6 py-2 rounded-full bg-brand-400 text-white text-sm font-medium hover:bg-brand-500 transition-colors"
         >
           ← アプリ一覧へ戻る
         </Link>
