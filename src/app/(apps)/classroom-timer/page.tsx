@@ -430,7 +430,7 @@ export default function ClassroomTimerPage() {
         {/* ===== メッセージ（エラー・終了通知） ===== */}
         <p
           ref={msgRef}
-          className="text-xl font-bold text-red-500 min-h-[2rem] text-center"
+          className="text-xl font-bold text-red-500 min-h-8 text-center"
         />
 
         {/* ===== キーボードショートカットのヒント ===== */}

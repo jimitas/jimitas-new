@@ -263,7 +263,7 @@ export default function KatakanaPage() {
         </div>
 
         {/* 右：入力表示欄 */}
-        <div className="flex-1 flex items-center justify-center bg-white border-2 border-gray-300 rounded-2xl px-4 text-4xl font-bold tracking-widest text-gray-700 min-h-[8rem]">
+        <div className="flex-1 flex items-center justify-center bg-white border-2 border-gray-300 rounded-2xl px-4 text-4xl font-bold tracking-widest text-gray-700 min-h-32">
           {myAnswer || <span className="text-gray-300">─</span>}
         </div>
 

@@ -331,7 +331,7 @@ export default function ShashagonyuPage() {
           disabled={!hasProblem}
           className="px-6 py-2.5 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white font-bold
                      rounded-xl shadow disabled:opacity-40 disabled:cursor-not-allowed
-                     active:scale-95 transition-all min-w-[9rem]"
+                     active:scale-95 transition-all min-w-36"
         >
           {hintActive ? "ヒントを消す" : "ヒントを見る"}
         </button>

@@ -411,7 +411,7 @@ export default function GakutenPage() {
                                   font-bold text-center py-3 px-4 w-20 text-lg">
                     名前
                   </td>
-                  <td className="text-center py-3 px-4 text-xl font-bold min-h-[3rem]">
+                  <td className="text-center py-3 px-4 text-xl font-bold min-h-12">
                     {quizOption === 2 ? "" : quizData.name}
                   </td>
                 </tr>
@@ -420,7 +420,7 @@ export default function GakutenPage() {
                                   font-bold text-center py-3 px-4 w-20 text-lg">
                     意味
                   </td>
-                  <td className="text-center py-3 px-4 text-base min-h-[3rem]">
+                  <td className="text-center py-3 px-4 text-base min-h-12">
                     {quizOption === 1 ? "" : quizData.mean}
                   </td>
                 </tr>
