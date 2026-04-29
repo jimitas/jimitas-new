@@ -285,7 +285,7 @@ export default function RomajiPage() {
         <button
           onClick={handleShowAnswer}
           disabled={!flag}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-400 text-white hover:bg-accent-500 active:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           👁 答えを見る
         </button>
@@ -293,7 +293,7 @@ export default function RomajiPage() {
         <button
           onClick={handleDelete}
           disabled={!flag || myAnswer.length === 0}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-400 text-white hover:bg-accent-500 active:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           ← 1つ消す
         </button>
@@ -301,7 +301,7 @@ export default function RomajiPage() {
         <button
           onClick={handleClear}
           disabled={!flag || myAnswer.length === 0}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-400 text-white hover:bg-accent-500 active:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           🗑 全部消す
         </button>

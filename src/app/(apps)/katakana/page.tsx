@@ -280,21 +280,21 @@ export default function KatakanaPage() {
         <button
           onClick={handleShowAnswer}
           disabled={!flag}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-400 text-white hover:bg-accent-500 active:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           👁 こたえ
         </button>
         <button
           onClick={handleDelete}
           disabled={!flag || myAnswer.length === 0}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-400 text-white hover:bg-accent-500 active:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           ← 1つ消す
         </button>
         <button
           onClick={handleClear}
           disabled={!flag || myAnswer.length === 0}
-          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
+          className="px-5 py-3 rounded-xl text-base font-bold bg-accent-400 text-white hover:bg-accent-500 active:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed active:scale-95 transition-all"
         >
           🗑 全部消す
         </button>
