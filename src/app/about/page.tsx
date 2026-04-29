@@ -88,6 +88,36 @@ export default function AboutPage() {
           </p>
         </section>
 
+        {/* --- ご利用にあたって --- */}
+        <section className="bg-gray-50 dark:bg-gray-800 rounded-xl p-5 space-y-3 text-sm">
+          <h2 className="text-base font-bold text-gray-900 dark:text-gray-100 flex items-center gap-2">
+            <span className="text-brand-500">●</span> ご利用にあたって
+          </h2>
+          <ul className="space-y-2 text-gray-600 dark:text-gray-400">
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 mt-0.5 shrink-0">✓</span>
+              <span>すべてのアプリ・ツールは<strong className="text-gray-800 dark:text-gray-200">無料</strong>でご利用いただけます</span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 mt-0.5 shrink-0">✓</span>
+              <span><strong className="text-gray-800 dark:text-gray-200">広告は掲載していません</strong></span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-brand-500 mt-0.5 shrink-0">✓</span>
+              <span>ログイン・会員登録は不要です。<strong className="text-gray-800 dark:text-gray-200">個人情報は収集していません</strong></span>
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="text-warm-500 mt-0.5 shrink-0">!</span>
+              <span>
+                コインの枚数や一部アプリ（ふしづくり等）の作業データは、お使いのブラウザの
+                <strong className="text-gray-800 dark:text-gray-200">ローカルストレージ</strong>に保存されます。
+                ブラウザの履歴・キャッシュを削除するとデータも消えてしまいます。
+                サーバーへのデータ送信は行っていません。
+              </span>
+            </li>
+          </ul>
+        </section>
+
       </div>
 
       {/* ===== トップへ戻るリンク ===== */}
