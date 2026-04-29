@@ -42,7 +42,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
         <button
           key={n}
           onClick={() => { se.playSe(se.pi); onDigit(n) }}
-          className="flex-shrink-0 w-11 h-11
+          className="shrink-0 w-11 h-11
                      bg-gray-100 dark:bg-gray-700
                      text-gray-800 dark:text-gray-100
                      text-lg font-bold
@@ -60,13 +60,13 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
       ))}
 
       {/* 区切り線 */}
-      <div className="flex-shrink-0 w-px h-8 bg-gray-500 dark:bg-gray-700 mx-0.5" />
+      <div className="shrink-0 w-px h-8 bg-gray-500 dark:bg-gray-700 mx-0.5" />
 
       {/* ← バックスペース */}
       <button
         onClick={() => { se.playSe(se.cancel); onDelete() }}
         title="1文字消す"
-        className="flex-shrink-0 w-11 h-11
+        className="shrink-0 w-11 h-11
                    bg-warm-200 dark:bg-orange-900
                    text-orange-800 dark:text-orange-200
                    text-base font-bold
@@ -86,7 +86,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
       <button
         onClick={() => { se.playSe(se.reset); onClear() }}
         title="全部消す"
-        className="flex-shrink-0 w-11 h-11
+        className="shrink-0 w-11 h-11
                    bg-danger-300 dark:bg-red-900
                    text-red-900 dark:text-red-200
                    text-base font-bold

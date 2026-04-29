@@ -212,16 +212,16 @@ export default function RecorderPage() {
           <div className="text-sm text-gray-600">
             <p className="font-bold text-gray-700 mb-2">●運指の見かた</p>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 bg-amber-100 flex-shrink-0" />
+              <span className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 bg-amber-100 shrink-0" />
               <span>あける</span>
             </div>
             <div className="flex items-center gap-2 mb-1.5">
-              <span className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 bg-gray-900 flex-shrink-0" />
+              <span className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 bg-gray-900 shrink-0" />
               <span>おさえる</span>
             </div>
             <div className="flex items-center gap-2">
               <span
-                className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 flex-shrink-0"
+                className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 shrink-0"
                 style={{ background: "linear-gradient(90deg, #1a1a1a 50%, #fef3c7 50%)" }}
               />
               <span>サミング（半開き）</span>

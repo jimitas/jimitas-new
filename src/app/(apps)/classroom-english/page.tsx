@@ -246,7 +246,7 @@ export default function ClassroomEnglishPage() {
                   hover:bg-blue-50 active:bg-blue-100 transition-colors disabled:opacity-40
                   flex items-start gap-3"
               >
-                <span className="text-blue-500 mt-0.5 flex-shrink-0">🔊</span>
+                <span className="text-blue-500 mt-0.5 shrink-0">🔊</span>
                 <span className="flex flex-col gap-0.5">
                   <span className="font-bold text-gray-800 text-sm md:text-base">{phrase.en}</span>
                   <span className="text-xs text-gray-500">{phrase.ja}</span>

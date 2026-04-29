@@ -652,7 +652,7 @@ export default function OkanePage() {
               />
               {i < 4 && (
                 <div
-                  className="w-2 flex-shrink-0 bg-gray-200 hover:bg-brand-300 active:bg-brand-500
+                  className="w-2 shrink-0 bg-gray-200 hover:bg-brand-300 active:bg-brand-500
                              cursor-col-resize select-none"
                   onMouseDown={handleResizeStart(i)}
                   onTouchStart={handleResizeStart(i)}
@@ -674,7 +674,7 @@ export default function OkanePage() {
         <Image
           src="/images/saifu.png" alt="財布"
           width={72} height={54}
-          className="pointer-events-none flex-shrink-0"
+          className="pointer-events-none shrink-0"
         />
 
         {/* お札エリア（1万・5千・千） */}

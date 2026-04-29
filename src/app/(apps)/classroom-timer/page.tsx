@@ -298,7 +298,7 @@ export default function ClassroomTimerPage() {
         </h1>
       </header>
 
-      <main className="flex-grow flex flex-col items-center mt-6 px-4 gap-6">
+      <main className="grow flex flex-col items-center mt-6 px-4 gap-6">
 
         {/* ===== モード切り替え ===== */}
         <div className="flex gap-2">

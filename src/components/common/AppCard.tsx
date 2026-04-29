@@ -59,7 +59,7 @@ export default function AppCard({ app }: Props) {
         "
       >
         {/* 左端のカラーライン（教科で色分け） */}
-        <div className={`${lineColor} w-1 flex-shrink-0`} />
+        <div className={`${lineColor} w-1 shrink-0`} />
 
         {/* テキストエリア（タイトル位置を揃えるため上詰め） */}
         <div className="px-3 py-2 flex flex-col justify-start gap-0.5">

@@ -58,7 +58,7 @@ function WordVisual({
         alt={word.word}
         width={px}
         height={px}
-        className="object-contain flex-shrink-0"
+        className="object-contain shrink-0"
         style={{ maxHeight: px }}
       />
     )
