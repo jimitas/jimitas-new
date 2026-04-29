@@ -51,7 +51,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
                      border-b-4 border-b-gray-400 dark:border-b-gray-600
                      shadow-md
                      hover:bg-white dark:hover:bg-gray-600
-                     active:border-b-2 active:translate-y-[2px] active:shadow-sm
+                     active:border-b-2 active:translate-y-0.5 active:shadow-sm
                      transition-all duration-75
                      select-none"
         >
@@ -75,7 +75,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
                    border-b-4 border-b-warm-400 dark:border-b-orange-800
                    shadow-md
                    hover:bg-warm-100 dark:hover:bg-orange-800
-                   active:border-b-2 active:translate-y-[2px] active:shadow-sm
+                   active:border-b-2 active:translate-y-0.5 active:shadow-sm
                    transition-all duration-75
                    select-none"
       >
@@ -95,7 +95,7 @@ export function NumPad({ onDigit, onDelete, onClear, disabled = false }: NumPadP
                    border-b-4 border-b-danger-500 dark:border-b-red-800
                    shadow-md
                    hover:bg-danger-200 dark:hover:bg-red-800
-                   active:border-b-2 active:translate-y-[2px] active:shadow-sm
+                   active:border-b-2 active:translate-y-0.5 active:shadow-sm
                    transition-all duration-75
                    select-none"
       >
