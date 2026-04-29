@@ -303,7 +303,7 @@ export default function Warizan2Page() {
               <div
                 key={`plate-${i}`}
                 data-plate={i}
-                className="bg-yellow-100 dark:bg-yellow-900 rounded-lg border-2 border-yellow-400 dark:border-yellow-700 min-h-[80px] p-2 flex flex-wrap content-start gap-1 relative"
+                className="bg-yellow-100 dark:bg-yellow-900 rounded-lg border-2 border-yellow-400 dark:border-yellow-700 min-h-20 p-2 flex flex-wrap content-start gap-1 relative"
               >
                 <span className="absolute top-0.5 left-1 text-xs text-yellow-700 dark:text-yellow-300">{i + 1}</span>
                 {cookiesAt(`plate-${i}`).map(c => (

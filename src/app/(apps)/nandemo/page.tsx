@@ -187,7 +187,7 @@ function Card({
           onFlip()
         }
       }}
-      className="relative w-[68px] h-[96px] sm:w-[80px] sm:h-[112px] select-none"
+      className="relative w-[68px] h-24 sm:w-20 sm:h-28 select-none"
       style={{ perspective: 1000 }}
       aria-label={isRevealed ? `カード${num} 表` : "カード 裏"}
     >

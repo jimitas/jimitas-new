@@ -678,7 +678,7 @@ export default function KakeHissan2Page() {
 
       {/* 小数ヒント */}
       <p ref={hintRef}
-         className="text-center text-sm text-gray-500 min-h-[20px]" />
+         className="text-center text-sm text-gray-500 min-h-5" />
 
       {/* 筆算テーブル（8行×9列） */}
       <div className="flex items-start gap-2">

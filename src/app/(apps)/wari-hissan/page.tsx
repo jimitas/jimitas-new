@@ -1070,7 +1070,7 @@ export default function WariHissanPage() {
 
       {/* 小数ヒント */}
       <p ref={hintRef}
-         className="text-center text-sm text-gray-500 dark:text-gray-400 min-h-[20px]" />
+         className="text-center text-sm text-gray-500 dark:text-gray-400 min-h-5" />
 
       {/* 筆算テーブル（13列 × 可変行） + ゴミ箱 */}
       <div className="flex items-start gap-2">
@@ -1134,7 +1134,7 @@ export default function WariHissanPage() {
 
       {/* テーブル下ヒント（モード31: あまりの小数点ガイダンス） */}
       <p ref={hint2Ref}
-         className="text-center text-sm text-gray-500 dark:text-gray-400 min-h-[20px]" />
+         className="text-center text-sm text-gray-500 dark:text-gray-400 min-h-5" />
 
       {/* 数字パレット（0〜9） */}
       <div

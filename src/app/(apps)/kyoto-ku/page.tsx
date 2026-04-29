@@ -422,7 +422,7 @@ export default function KyotoKuPage() {
         </div>
 
         {/* ── カードパネル（右側）──────────────────────── */}
-        <div className="flex flex-col gap-1.5 min-w-[80px]">
+        <div className="flex flex-col gap-1.5 min-w-20">
           {/* カード一覧 */}
           {cardOrder.map(wardId => {
             const ward = WARDS[wardId]

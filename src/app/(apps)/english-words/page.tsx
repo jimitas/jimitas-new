@@ -303,7 +303,7 @@ export default function EnglishWordsPage() {
               disabled={isLoading}
               className="flex flex-col items-center justify-center gap-1.5 p-2 rounded-xl border-2
                 border-gray-200 bg-white hover:border-blue-300 hover:bg-blue-50
-                active:scale-95 transition-all disabled:opacity-40 min-h-[80px]"
+                active:scale-95 transition-all disabled:opacity-40 min-h-20"
               style={word.bgColor ? { backgroundColor: word.bgColor, borderColor: word.bgColor } : {}}
             >
               {category.hasImage && word.imageFile ? (

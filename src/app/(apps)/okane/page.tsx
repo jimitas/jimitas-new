@@ -578,7 +578,7 @@ export default function OkanePage() {
         {/* 右：モード別コントロール */}
         <div className="flex flex-wrap items-center gap-2 p-3 basis-1/2
                         bg-gray-50 dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-600
-                        min-h-[80px]">
+                        min-h-20">
           {mode === "set" && (<>
             <input
               ref={el_kazu}
@@ -680,7 +680,7 @@ export default function OkanePage() {
         {/* お札エリア（1万・5千・千） */}
         <div
           ref={el_bills}
-          className="flex flex-wrap items-center gap-1 min-h-[44px] min-w-[96px]"
+          className="flex flex-wrap items-center gap-1 min-h-11 min-w-24"
         />
 
         {/* 仕切り */}
@@ -689,7 +689,7 @@ export default function OkanePage() {
         {/* 硬貨エリア（500〜1円） */}
         <div
           ref={el_coins}
-          className="flex flex-wrap items-center gap-1 min-h-[44px] flex-1"
+          className="flex flex-wrap items-center gap-1 min-h-11 flex-1"
         />
       </div>
 

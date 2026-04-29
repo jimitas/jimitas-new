@@ -271,7 +271,7 @@ export default function TokeiPage() {
       {/* メッセージエリア（useAnswerCheck が innerHTML を書き込む） */}
       <div
         ref={el_text}
-        className="min-h-[2.5rem] text-xl font-bold px-3 py-2
+        className="min-h-10 text-xl font-bold px-3 py-2
                    bg-yellow-50 border border-yellow-200 rounded text-gray-800"
       />
 

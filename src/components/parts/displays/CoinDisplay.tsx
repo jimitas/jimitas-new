@@ -99,7 +99,7 @@ export function CoinDisplay({ coins, onReset, className }: CoinDisplayProps) {
                  ${className ?? ""}`}
     >
       {/* コイン表示エリア */}
-      <div className="flex flex-wrap gap-2 items-end min-h-[44px]">
+      <div className="flex flex-wrap gap-2 items-end min-h-11">
         {/* 1000コイン */}
         {Array.from({ length: thousands }).map((_, i) => (
           <Coin key={`k${i}`} unit={1000} />
