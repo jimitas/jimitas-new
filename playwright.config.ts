@@ -9,8 +9,6 @@ export default defineConfig({
 
   use: {
     baseURL: "http://localhost:3000",
-    // アニメーション抑制（テスト安定化）
-    reducedMotion: "reduce",
     locale: "ja-JP",
     // スクリーンショットは失敗時のみ
     screenshot: "only-on-failure",
