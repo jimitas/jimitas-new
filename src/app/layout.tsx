@@ -16,7 +16,6 @@ import Script from "next/script"
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
-import SoundPreloader from "@/components/common/SoundPreloader"
 import NoContextMenu from "@/components/common/NoContextMenu"
 
 // -------------------------------------------------------
@@ -104,17 +103,9 @@ export default function RootLayout({
       <head>
         {/* ダークモード・フォントの初期化（チラつき防止のため同期実行） */}
         <Script src="/theme-init.js" strategy="beforeInteractive" />
-
-        {/* Font Awesome（アイコン用）CDNから読み込む */}
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-          crossOrigin="anonymous"
-        />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200">
         <NoContextMenu />
-        <SoundPreloader />
         <Header />
         <main className="flex-1">
           {children}

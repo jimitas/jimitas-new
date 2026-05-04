@@ -2,11 +2,11 @@
 // BtnQuestion コンポーネント
 //
 // 「もんだい」ボタン。
-// アイコンは Font Awesome CDN（fa-solid fa-question）を使用。
 // ======================================================
 
 "use client"
 
+import { FaQuestion } from "react-icons/fa6"
 import * as se from "@/lib/se"
 
 interface BtnQuestionProps {
@@ -29,8 +29,7 @@ export function BtnQuestion({ handleEvent, btnText = "もんだい", disabled = 
                    rounded-lg shadow-sm
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
       >
-        {/* Font Awesome CDN: はてなマークアイコン */}
-        <i className="fa-solid fa-question w-4 h-4 md:w-6 md:h-6" />
+        <FaQuestion className="w-4 h-4 md:w-6 md:h-6" />
         {btnText}
       </button>
     </div>

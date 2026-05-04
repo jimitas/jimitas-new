@@ -3,11 +3,11 @@
 //
 // 「こたえをみる」ボタン。
 // 問題の正解を答え欄に表示する。
-// Font Awesome は CDN 方式（<i> タグ）を使用。
 // ======================================================
 
 "use client"
 
+import { FaEye } from "react-icons/fa6"
 import * as se from "@/lib/se"
 
 interface BtnShowAnswerProps {
@@ -29,8 +29,7 @@ export function BtnShowAnswer({ handleEvent, disabled = false }: BtnShowAnswerPr
                    rounded-lg shadow-sm
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
       >
-        {/* fa-eye: 答えを見せる */}
-        <i className="fa-solid fa-eye" />
+        <FaEye />
         こたえをみる
       </button>
     </div>

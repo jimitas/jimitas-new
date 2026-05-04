@@ -12,6 +12,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { FaCat } from "react-icons/fa6"
 import { useCoins } from "@/hooks/useCoins"
 import { useSound, UI_SOUNDS } from "@/hooks/useSound"
 import { useMute } from "@/hooks/useMute"
@@ -60,8 +61,7 @@ export default function Header() {
 
         {/* --- ロゴ --- */}
         <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
-          {/* Font Awesome の猫アイコン（黒） */}
-          <i className="fa-solid fa-cat text-2xl text-gray-900 dark:text-gray-100" />
+          <FaCat className="text-2xl text-gray-900 dark:text-gray-100" />
           {/* サイト名（黒） */}
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
             Jimitas

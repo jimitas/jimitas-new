@@ -7,6 +7,7 @@
 
 "use client"
 
+import { FaShuffle } from "react-icons/fa6"
 import * as se from "@/lib/se"
 
 interface BtnShuffleProps {
@@ -25,8 +26,7 @@ export function BtnShuffle({ handleEvent, btnText = "シャッフル" }: BtnShuf
                  active:translate-y-0.5 transition-colors
                  rounded-lg shadow-sm"
     >
-      {/* Font Awesome CDN: シャッフルアイコン */}
-      <i className="fa-solid fa-shuffle" />
+      <FaShuffle />
       {btnText}
     </button>
   )

@@ -2,13 +2,13 @@
 // BtnUndo コンポーネント
 //
 // リセット（元に戻す・もどす）ボタン。
-// アイコンは Font Awesome CDN（fa-solid fa-rotate-left）を使用。
 // 配色: danger（赤系）— リセット・破壊的アクションの統一トークン。
 // 詳細は docs/06_配色設計.md 参照。
 // ======================================================
 
 "use client"
 
+import { FaRotateLeft } from "react-icons/fa6"
 import * as se from "@/lib/se"
 
 interface BtnUndoProps {
@@ -27,8 +27,7 @@ export function BtnUndo({ handleEvent }: BtnUndoProps) {
                    active:translate-y-0.5 transition-colors
                    rounded-lg shadow-sm"
       >
-        {/* Font Awesome CDN: 巻き戻しアイコン */}
-        <i className="fa-solid fa-rotate-left w-4 h-4 md:w-6 md:h-6" />
+        <FaRotateLeft className="w-4 h-4 md:w-6 md:h-6" />
       </button>
     </div>
   )

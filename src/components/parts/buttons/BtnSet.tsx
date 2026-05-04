@@ -3,11 +3,11 @@
 //
 // 「セット」ボタン。
 // 式の入力欄に入力した数値を問題としてセットするときに押す。
-// Font Awesome は CDN 方式（<i> タグ）を使用。
 // ======================================================
 
 "use client"
 
+import { FaPenToSquare } from "react-icons/fa6"
 import * as se from "@/lib/se"
 
 interface BtnSetProps {
@@ -26,8 +26,7 @@ export function BtnSet({ handleEvent }: BtnSetProps) {
                    active:translate-y-0.5 transition-colors
                    rounded-lg shadow-sm"
       >
-        {/* fa-pen-to-square: FA6 での fa-user-edit 相当 */}
-        <i className="fa-solid fa-pen-to-square" />
+        <FaPenToSquare />
         セット
       </button>
     </div>

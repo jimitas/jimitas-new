@@ -2,11 +2,11 @@
 // BtnCheck コンポーネント
 //
 // 「たしかめ」または「こたえあわせ」ボタン。
-// アイコンは Font Awesome CDN（fa-solid fa-check）を使用。
 // ======================================================
 
 "use client"
 
+import { FaCheck } from "react-icons/fa6"
 import * as se from "@/lib/se"
 
 interface BtnCheckProps {
@@ -29,8 +29,7 @@ export function BtnCheck({ handleEvent, btnText = "こたえあわせ", disabled
                    rounded-lg shadow-sm
                    disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
       >
-        {/* Font Awesome CDN: チェックマークアイコン */}
-        <i className="fa-solid fa-check w-4 h-4 md:w-6 md:h-6" />
+        <FaCheck className="w-4 h-4 md:w-6 md:h-6" />
         {btnText}
       </button>
     </div>
