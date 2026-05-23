@@ -29,6 +29,12 @@ import { AnswerArea } from "../_lib/components/AnswerArea"
 import { NanbanmeDisplay } from "../_lib/components/NanbanmeDisplay"
 import { NanjiDisplay } from "../_lib/components/NanjiDisplay"
 
+// フォント定数
+const FONT_KYOKASHO_BOLD   = '"UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", "UD Digi Kyokasho NK-R", "UD デジタル 教科書体 NK-R", var(--font-biz-udp-gothic), sans-serif'
+const FONT_KYOKASHO_NORMAL = '"UD Digi Kyokasho NK-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif'
+const FONT_MINCHO = 'var(--font-biz-ud-mincho), "BIZ UDMincho", "游明朝", "YuMincho", "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN", serif'
+const FONT_GOTHIC = '"BIZ UDGothic", var(--font-biz-ud-gothic), "游ゴシック", "YuGothic", "メイリオ", "Meiryo", sans-serif'
+
 // モード別演算記号（operatorが空のプリントで使用）
 const MODE_OPERATORS: Record<string, Record<number, string>> = {
   "100made":    { 0: "+", 1: "-", 2: "+", 3: "-" },
@@ -54,6 +60,8 @@ export default function JimipriPrintPage() {
     () => (printDef && isImplemented(printDef)) ? printDef.generate(0) : null
   )
   const [showAnswers, setShowAnswers] = useState(false)
+  const [fontStyle, setFontStyle] = useState<"kyokasho" | "mincho" | "gothic">("kyokasho")
+  const [isBold, setIsBold] = useState(true)
 
   // 問題を生成する関数（ボタン押下・モード変更時に呼ぶ）
   const generateProblem = useCallback((mode: number = modeIndex) => {
@@ -160,6 +168,28 @@ export default function JimipriPrintPage() {
           こたえ
         </button>
 
+        {/* 書体選択 */}
+        <select
+          value={fontStyle}
+          onChange={e => setFontStyle(e.target.value as "kyokasho" | "mincho" | "gothic")}
+          className="px-2 py-2 border rounded text-sm bg-white dark:bg-gray-800"
+        >
+          <option value="kyokasho">教科書体</option>
+          <option value="mincho">UD明朝</option>
+          <option value="gothic">UDゴシック</option>
+        </select>
+
+        {/* 太字切り替え */}
+        <label className="flex items-center gap-1 text-sm cursor-pointer">
+          <input
+            type="checkbox"
+            checked={isBold}
+            onChange={e => setIsBold(e.target.checked)}
+            className="accent-warm-500"
+          />
+          太字
+        </label>
+
         {/* いんさつボタン */}
         <button
           onClick={() => window.print()}
@@ -174,7 +204,16 @@ export default function JimipriPrintPage() {
       <style>{`@page { size: A4 portrait; margin: 0mm; }`}</style>
 
       <div className="jimipri-print-wrapper mx-auto">
-        <div className="jimipri-print-area">
+        <div
+          className="jimipri-print-area"
+          style={{
+            fontFamily:
+              fontStyle === "gothic"   ? FONT_GOTHIC :
+              fontStyle === "kyokasho" ? (isBold ? FONT_KYOKASHO_BOLD : FONT_KYOKASHO_NORMAL) :
+              FONT_MINCHO,
+            fontWeight: isBold ? "bold" : "normal",
+          }}
+        >
 
           {/* ヘッダー: タイトル + 名前欄（元: #title-header） */}
           <table className="w-full" style={{ borderCollapse: "collapse", marginBottom: "1rem" }}>
