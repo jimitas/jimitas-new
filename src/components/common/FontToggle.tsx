@@ -1,12 +1,13 @@
 // ======================================================
 // FontToggle コンポーネント
 //
-// 丸ゴシック（Noto Sans JP）と ゴシック（M PLUS 1p）を切り替える。
+// UD教科書体 と UDゴシック を切り替える。
 //
-// 【修正後の仕組み】
-//   CSS変数の属性セレクタ方式はTailwindのベーススタイルに
-//   負ける場合があるため、JS で直接 document.body.style.fontFamily
-//   を上書きする方式に変更。
+// フォールバックチェーン:
+//   教科書体: UD デジタル 教科書体 N-R（Windows優先）→ BIZ UDPGothic
+//   ゴシック: BIZ UDGothic → var(--font-biz-ud-gothic)
+//
+// 仕組み: JS で document.body.style.fontFamily を直接書き換える。
 //   インラインスタイルは CSS のどのルールよりも優先される。
 // ======================================================
 
@@ -15,16 +16,14 @@
 import { useState, useEffect } from "react"
 import { useSound, UI_SOUNDS } from "@/hooks/useSound"
 
-// next/font が html 要素に注入する CSS 変数の参照
-// layout.tsx で variable: "--font-noto-sans-jp" などと指定したものと対応する
 const FONT_VALUES = {
-  maru:   "var(--font-noto-sans-jp), sans-serif",
-  gothic: "var(--font-m-plus-1p), sans-serif",
+  kyokasho: '"UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif',
+  gothic:   '"BIZ UDGothic", var(--font-biz-ud-gothic), sans-serif',
 }
 
 export default function FontToggle() {
   // サーバーとクライアントで同じ初期値にしてハイドレーション不一致を防ぐ
-  const [font, setFont] = useState<"maru" | "gothic">("maru")
+  const [font, setFont] = useState<"kyokasho" | "gothic">("kyokasho")
   const { play } = useSound()
 
   // 初回マウント時に localStorage から復元（SSR後に1回だけ実行）
@@ -36,7 +35,7 @@ export default function FontToggle() {
       setFont("gothic")
       document.body.style.fontFamily = FONT_VALUES["gothic"]
     } else {
-      document.body.style.fontFamily = FONT_VALUES["maru"]
+      document.body.style.fontFamily = FONT_VALUES["kyokasho"]
     }
   }, [])
 
@@ -47,9 +46,8 @@ export default function FontToggle() {
 
   const toggle = () => {
     play(UI_SOUNDS.fontToggle)
-    const next: "maru" | "gothic" = font === "maru" ? "gothic" : "maru"
+    const next: "kyokasho" | "gothic" = font === "kyokasho" ? "gothic" : "kyokasho"
     setFont(next)
-    // body のインラインスタイルを直接書き換える
     document.body.style.fontFamily = FONT_VALUES[next]
     localStorage.setItem("jimitas_font", next)
   }
@@ -57,12 +55,12 @@ export default function FontToggle() {
   return (
     <button
       onClick={toggle}
-      title={font === "maru" ? "ゴシック体に切り替え" : "丸ゴシックに切り替え"}
+      title={font === "kyokasho" ? "UDゴシックに切り替え" : "UD教科書体に切り替え"}
       className="flex items-center gap-1 px-2 py-1 rounded text-xs text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
     >
       <span className="text-sm">🔤</span>
       <span className="hidden sm:inline">
-        {font === "maru" ? "丸ゴ" : "ゴシック"}
+        {font === "kyokasho" ? "教科書体" : "UDゴシック"}
       </span>
     </button>
   )

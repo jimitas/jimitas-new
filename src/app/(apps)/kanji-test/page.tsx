@@ -42,7 +42,15 @@ type SavedData = {
   namaeIndex?: number
   setumeiIndex?: number
   saveFileName?: string
+  fontStyle?: "kyokasho" | "mincho" | "gothic"
+  isBold?: boolean
 }
+
+// ── フォント定数 ──────────────────────────────────────
+const FONT_KYOKASHO_BOLD   = '"UD Digi Kyokasho NK-B", "UD デジタル 教科書体 NK-B", "UD Digi Kyokasho N-B", "UD デジタル 教科書体 N-B", var(--font-biz-udp-gothic), sans-serif'
+const FONT_KYOKASHO_NORMAL = '"UD Digi Kyokasho NK-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif'
+const FONT_MINCHO = 'var(--font-biz-ud-mincho), "BIZ UDMincho", "游明朝", "YuMincho", "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN", "HG明朝E", "MS P明朝", "MS 明朝", serif'
+const FONT_GOTHIC = '"BIZ UDGothic", var(--font-biz-ud-gothic), "游ゴシック", "YuGothic", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", "Meiryo", sans-serif'
 
 // ── 定数 ─────────────────────────────────────────────
 
@@ -159,6 +167,8 @@ export default function KanpuriPage() {
   const [namaeIndex,   setNamaeIndex]   = useState(0)      // 名前欄
   const [setumeiIndex, setSetumeiIndex] = useState(0)      // 説明欄
   const [saveFileName, setSaveFileName] = useState("")      // 保存ファイル名
+  const [fontStyle, setFontStyle]       = useState<"kyokasho" | "mincho" | "gothic">("kyokasho")
+  const [isBold, setIsBold]             = useState(true)   // 太字/細字
 
   // エラー・通知メッセージ
   const [msg, setMsg]   = useState("")
@@ -199,6 +209,10 @@ export default function KanpuriPage() {
           setSetumeiIndex(data.setumeiIndex)
         }
         if (typeof data.saveFileName === "string") setSaveFileName(data.saveFileName)
+        if (data.fontStyle === "kyokasho" || data.fontStyle === "mincho" || data.fontStyle === "gothic") {
+          setFontStyle(data.fontStyle)
+        }
+        if (typeof data.isBold === "boolean") setIsBold(data.isBold)
       }
     } catch {
       // 破損データは無視
@@ -215,14 +229,14 @@ export default function KanpuriPage() {
         inputText, displayLines, grade,
         mondaisu, fontSize, dansu,
         titleIndex, subTitleText, namaeIndex, setumeiIndex,
-        saveFileName,
+        saveFileName, fontStyle, isBold,
       }
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
     } catch {
       // 容量超過などは無視
     }
   }, [loaded, inputText, displayLines, grade, mondaisu, fontSize, dansu,
-      titleIndex, subTitleText, namaeIndex, setumeiIndex, saveFileName])
+      titleIndex, subTitleText, namaeIndex, setumeiIndex, saveFileName, fontStyle, isBold])
 
   // ── ヘルパー ────────────────────────────────────────
 
@@ -332,6 +346,11 @@ export default function KanpuriPage() {
   const namaeLabel   = `　　　${NAMAE_DATA[namaeIndex * 3]}　　${NAMAE_DATA[namaeIndex * 3 + 1]}　${NAMAE_DATA[namaeIndex * 3 + 2]}（　　　　　　　　　　）`
   const setumeiText  = `　　○　${SETUMEI_DATA[setumeiIndex]}`
   const titleText    = `　${DAIMEI[titleIndex]}`
+  const fontFamily   =
+    fontStyle === "gothic"   ? FONT_GOTHIC :
+    fontStyle === "kyokasho" ? (isBold ? FONT_KYOKASHO_BOLD : FONT_KYOKASHO_NORMAL) :
+    FONT_MINCHO
+  const fontWeight   = isBold ? "bold" : "normal"
 
   // テーブルの tr 行を生成するヘルパー（縦書きでは1 tr = 1列）
   const makeRows = (startIdx: number, count: number, bangouOffset: number) =>
@@ -610,6 +629,33 @@ export default function KanpuriPage() {
               </label>
             </div>
 
+            {/* 書体 */}
+            <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span className="text-gray-700 dark:text-gray-300 font-bold">書体</span>
+              {(["kyokasho", "mincho", "gothic"] as const).map(f => (
+                <label key={f} className="flex items-center gap-1 cursor-pointer text-gray-700 dark:text-gray-300">
+                  <input
+                    type="radio"
+                    name="kt-fontStyle"
+                    value={f}
+                    checked={fontStyle === f}
+                    onChange={() => { se.playSe(se.pi); setFontStyle(f) }}
+                    className="accent-warm-500"
+                  />
+                  {f === "kyokasho" ? "教科書体" : f === "mincho" ? "UD明朝" : "UDゴシック"}
+                </label>
+              ))}
+              <label className="flex items-center gap-1 cursor-pointer text-gray-700 dark:text-gray-300">
+                <input
+                  type="checkbox"
+                  checked={isBold}
+                  onChange={() => { se.playSe(se.pi); setIsBold(v => !v) }}
+                  className="accent-warm-500"
+                />
+                太字
+              </label>
+            </div>
+
           </div>
 
           {/* プレビュー見出し（印刷時非表示） */}
@@ -628,7 +674,7 @@ export default function KanpuriPage() {
           <div className="kanji-test-print-wrapper">
             <div
               className="kanji-test-print-area"
-              style={{ fontFamily: '"UD デジタル 教科書体 NK-R", "Noto Sans JP", sans-serif' }}
+              style={{ fontFamily, fontWeight, paddingRight: "5mm" }}
             >
 
               {/* 表題・副題 */}

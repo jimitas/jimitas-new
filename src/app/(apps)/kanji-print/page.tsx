@@ -78,10 +78,14 @@ const IMI_TEXT = [
 ];
 
 // フォント定義
-const FONT_MINCHO = '"Times New Roman", "游明朝", "YuMincho", "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN", "HG明朝E", "MS P明朝", "MS 明朝", serif';
-const FONT_GOTHIC = '"游ゴシック", "YuGothic", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", "Meiryo", sans-serif'
-// 教科書体：筆のはね・はらい・とめが手書きに近く、書き取り練習に最適（Windows 10/11 標準搭載）
-const FONT_KYOKASHO = '"UD デジタル 教科書体 NK-B", "UD デジタル 教科書体 N-B", "UD デジタル 教科書体 NK-R", "UD デジタル 教科書体 N-R", serif';
+// UD明朝: BIZ UDMincho（Google Fonts）を先頭に
+const FONT_MINCHO = 'var(--font-biz-ud-mincho), "BIZ UDMincho", "游明朝", "YuMincho", "ヒラギノ明朝 ProN W3", "Hiragino Mincho ProN", "HG明朝E", "MS P明朝", "MS 明朝", serif';
+// UDゴシック: BIZ UDGothic（Google Fonts）を先頭に
+const FONT_GOTHIC = '"BIZ UDGothic", var(--font-biz-ud-gothic), "游ゴシック", "YuGothic", "ヒラギノ角ゴ ProN W3", "Hiragino Kaku Gothic ProN", "メイリオ", "Meiryo", sans-serif'
+// UD教科書体（太字）: NK-B / N-B を優先
+const FONT_KYOKASHO_BOLD   = '"UD Digi Kyokasho NK-B", "UD デジタル 教科書体 NK-B", "UD Digi Kyokasho N-B", "UD デジタル 教科書体 N-B", var(--font-biz-udp-gothic), sans-serif';
+// UD教科書体（細字）: NK-R / N-R を優先
+const FONT_KYOKASHO_NORMAL = '"UD Digi Kyokasho NK-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif';
 
 // 繰り返しマスの数
 const MASU_COUNT = 7;
@@ -102,6 +106,7 @@ export default function KanjiPrintPage() {
   const [positionX, setPositionX] = useState(0);        // 文字位置X微調整
   const [positionY, setPositionY] = useState(0);        // 文字位置Y微調整
   const [fontStyle, setFontStyle] = useState<"mincho" | "gothic" | "kyokasho">("kyokasho");
+  const [isBold, setIsBold] = useState(true);             // 太字/細字
   const [printScale, setPrintScale] = useState(0.97);     // 印刷時の縮小率
 
   // 表示オプション
@@ -121,8 +126,11 @@ export default function KanjiPrintPage() {
   // ── ヘルパー ────────────────────────────────────────
 
   const gi = grade - 1; // grade index（0〜5）
-  const fontFamily = fontStyle === "gothic" ? FONT_GOTHIC : fontStyle === "kyokasho" ? FONT_KYOKASHO : FONT_MINCHO;
-  const fontWeight = fontStyle === "gothic" ? "500" : "bold";
+  const fontFamily =
+    fontStyle === "gothic"    ? FONT_GOTHIC :
+    fontStyle === "kyokasho"  ? (isBold ? FONT_KYOKASHO_BOLD : FONT_KYOKASHO_NORMAL) :
+    FONT_MINCHO;
+  const fontWeight = isBold ? "bold" : "normal";
 
   // ── 印刷エリアのサブコンポーネント（インライン関数） ──
 
@@ -524,9 +532,18 @@ export default function KanjiPrintPage() {
                         onChange={() => { se.playSe(se.set); setFontStyle(f) }}
                         className="accent-warm-500"
                       />
-                      {f === "kyokasho" ? "教科書体" : f === "mincho" ? "明朝体" : "ゴシック体"}
+                      {f === "kyokasho" ? "教科書体" : f === "mincho" ? "UD明朝" : "UDゴシック"}
                     </label>
                   ))}
+                  <label className="flex items-center gap-1 cursor-pointer text-gray-700 dark:text-gray-300 mt-1 pt-1 border-t border-gray-200 dark:border-gray-600">
+                    <input
+                      type="checkbox"
+                      checked={isBold}
+                      onChange={() => { se.playSe(se.pi); setIsBold(v => !v) }}
+                      className="accent-warm-500"
+                    />
+                    太字
+                  </label>
                 </div>
               </div>
             </div>
@@ -673,7 +690,7 @@ export default function KanjiPrintPage() {
               <div
                 className="kp-print-area"
                 style={{
-                  fontFamily: '"UD デジタル 教科書体 NK-R", "Noto Sans JP", sans-serif',
+                  fontFamily: '"UD Digi Kyokasho NK-R", "UD デジタル 教科書体 NK-R", "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif',
                   padding: "8mm 3mm 8mm 7mm",
                 }}
               >

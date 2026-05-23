@@ -82,19 +82,23 @@
 
 /* -------------------------------------------------------
    フォント切り替え
-   layout.tsx の next/font が --font-noto-sans-jp と
-   --font-m-plus-1p という CSS 変数を html 要素に注入する。
-   それをここで参照して body に適用する。
+   layout.tsx の next/font が --font-biz-udp-gothic と
+   --font-biz-ud-gothic という CSS 変数を html 要素に注入する。
+
+   フォールバックチェーン:
+     ① Windows に「UD デジタル 教科書体 N-R」があればそれを使う
+     ② なければ BIZ UDPGothic（Google Fonts）
+     ③ それもなければシステムフォント
 
    html の data-font 属性で切り替える:
-     data-font なし    → 丸ゴシック（Noto Sans JP）デフォルト
-     data-font="gothic" → ゴシック（M PLUS 1p）
+     data-font なし    → UD教科書体（デフォルト）
+     data-font="gothic" → UDゴシック（BIZ UDGothic）
    ------------------------------------------------------- */
 :root {
-  --font-current: var(--font-noto-sans-jp), sans-serif;
+  --font-current: "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif;
 }
 :root[data-font="gothic"] {
-  --font-current: var(--font-m-plus-1p), sans-serif;
+  --font-current: "BIZ UDGothic", var(--font-biz-ud-gothic), sans-serif;
 }
 
 /* -------------------------------------------------------
@@ -384,7 +388,7 @@ select,
   transform: scale(0.7);
   background: white;
   border: dotted 0.5px #888;
-  font-family: "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", sans-serif;
+  font-family: "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif;
 }
 
 /* 分数表示（元: .fraction + .numerator + .denominator を再現） */

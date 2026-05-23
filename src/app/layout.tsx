@@ -11,7 +11,7 @@
 // ======================================================
 
 import type { Metadata, Viewport } from "next"
-import { Noto_Sans_JP, M_PLUS_1p } from "next/font/google"
+import { BIZ_UDPGothic, BIZ_UDGothic, BIZ_UDMincho } from "next/font/google"
 import Script from "next/script"
 import "./globals.css"
 import Header from "@/components/common/Header"
@@ -27,19 +27,28 @@ import NoContextMenu from "@/components/common/NoContextMenu"
 // この変数名を globals.css の var(--font-noto-sans-jp) で参照する。
 // -------------------------------------------------------
 
-// 丸ゴシック：子ども向けのやさしい字形
-const notoSansJP = Noto_Sans_JP({
+// UD教科書体の代替Webフォント
+// Windows に「UD デジタル 教科書体 N-R」がある場合はそちらを優先（globals.css 参照）
+const bizUDPGothic = BIZ_UDPGothic({
   weight: ["400", "700"],
   subsets: ["latin"],
-  variable: "--font-noto-sans-jp", // globals.css の var(--font-noto-sans-jp) と対応
-  display: "swap",                 // フォント読み込み中はシステムフォントで表示
+  variable: "--font-biz-udp-gothic",
+  display: "swap",
 })
 
-// ゴシック：先生向けのすっきりした字形
-const mPlus1p = M_PLUS_1p({
+// UDゴシック（等幅・先生向け）
+const bizUDGothic = BIZ_UDGothic({
   weight: ["400", "700"],
   subsets: ["latin"],
-  variable: "--font-m-plus-1p",   // globals.css の var(--font-m-plus-1p) と対応
+  variable: "--font-biz-ud-gothic",
+  display: "swap",
+})
+
+// UD明朝（漢字プリント作成の明朝体オプション用）
+const bizUDMincho = BIZ_UDMincho({
+  weight: ["400", "700"],
+  subsets: ["latin"],
+  variable: "--font-biz-ud-mincho",
   display: "swap",
 })
 
@@ -98,7 +107,7 @@ export default function RootLayout({
       lang="ja"
       translate="no"
       suppressHydrationWarning
-      className={`${notoSansJP.variable} ${mPlus1p.variable}`}
+      className={`${bizUDPGothic.variable} ${bizUDGothic.variable} ${bizUDMincho.variable}`}
     >
       <head>
         {/* ダークモード・フォントの初期化（チラつき防止のため同期実行） */}
