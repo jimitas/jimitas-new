@@ -1,7 +1,7 @@
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# Claude Code の設定ファイル（個人の設定なのでGitHubには上げない）
-.claude/
+# Claude Code のローカル設定（個人設定・権限設定なのでGitHubには上げない）
+.claude/settings.local.json
 
 # dependencies
 /node_modules
