@@ -15,6 +15,7 @@
 "use client"
 
 import { useState, useRef, useCallback, useEffect } from "react"
+import * as se from "@/lib/se"
 
 // ── 型 ─────────────────────────────────────────────────────
 type Phase    = "pick" | "decide" | "done"
@@ -353,6 +354,7 @@ export default function MontyHallPage() {
   // ── ドアを選ぶ ────────────────────────────────────────
   function onPick(idx: number) {
     if (phase !== "pick") return
+    se.playSe(se.pi)
     const candidates = [0, 1, 2].filter(d => d !== idx && d !== carDoorRef.current)
     const opened = candidates[randInt(candidates.length)]
     pickedDoorRef.current = idx
@@ -375,10 +377,12 @@ export default function MontyHallPage() {
     }))
     const label = strategy === "switch" ? "ドアを変えて" : "ドアを変えずに"
     if (won) {
+      se.playSe(se.seikai2)
       setStatusText(`🎉 当たり！ ${label}ドア${final + 1}を選び、車を獲得！ 🎉`)
       setStatusVariant("win")
       launchConfetti()
     } else {
+      se.playSe(se.alertSound)
       setStatusText(`😢 はずれ。${label}ドア${final + 1}を選びましたが、ヤギでした。`)
       setStatusVariant("lose")
     }
@@ -386,12 +390,14 @@ export default function MontyHallPage() {
 
   function onSwitch() {
     if (phase !== "decide") return
+    se.playSe(se.set)
     const final = [0, 1, 2].find(d => d !== pickedDoorRef.current && d !== openedDoorRef.current)!
     reveal(final, "switch")
   }
 
   function onStay() {
     if (phase !== "decide") return
+    se.playSe(se.set)
     reveal(pickedDoorRef.current, "stay")
   }
 
@@ -416,6 +422,7 @@ export default function MontyHallPage() {
   // ── シミュレーション実行 ──────────────────────────────
   function runSimulation() {
     if (simRunningRef.current) return
+    se.playSe(se.set)
     let n = trialsRef.current
     if (!Number.isFinite(n) || n < 1) n = 1
     if (n > 1_000_000) n = 1_000_000
@@ -563,7 +570,7 @@ export default function MontyHallPage() {
           {/* もう一度プレイ */}
           {phase === "done" && (
             <div className="mh-actions">
-              <button className="mh-btn" onClick={newGame}>もう一度プレイ</button>
+              <button className="mh-btn" onClick={() => { se.playSe(se.reset); newGame() }}>もう一度プレイ</button>
             </div>
           )}
 
