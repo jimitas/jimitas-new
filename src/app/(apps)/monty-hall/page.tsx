@@ -390,14 +390,12 @@ export default function MontyHallPage() {
 
   function onSwitch() {
     if (phase !== "decide") return
-    se.playSe(se.set)
     const final = [0, 1, 2].find(d => d !== pickedDoorRef.current && d !== openedDoorRef.current)!
     reveal(final, "switch")
   }
 
   function onStay() {
     if (phase !== "decide") return
-    se.playSe(se.set)
     reveal(pickedDoorRef.current, "stay")
   }
 
