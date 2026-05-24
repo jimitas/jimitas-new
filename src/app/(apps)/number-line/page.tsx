@@ -45,13 +45,24 @@ export default function NumberLinePage() {
   const [revealed, setRevealed] = useState(false)
   const hasAnsweredRef = useRef(false)
   const seikaiRef = useRef<HTMLSpanElement>(null!)
+  // 前回の矢印位置を記憶（連続同一問題の回避用）
+  const prevPosRef = useRef<number | null>(null)
 
   const cfg = LEVELS[level]
   const lineWidth = SVG_W - MARGIN * 2
 
   function generateQuestion() {
-    // arrowPos は 1〜9（端以外のランダム位置）
-    const pos = Math.floor(Math.random() * (cfg.ticks - 2)) + 1
+    // arrowPos は 1〜(cfg.ticks-2) のランダム位置（前回と同じ値を除く）
+    const rangeSize = cfg.ticks - 2
+    let pos: number
+    if (prevPosRef.current !== null && rangeSize > 1) {
+      const raw = Math.floor(Math.random() * (rangeSize - 1))
+      const shifted = raw >= (prevPosRef.current - 1) ? raw + 1 : raw
+      pos = shifted + 1
+    } else {
+      pos = Math.floor(Math.random() * rangeSize) + 1
+    }
+    prevPosRef.current = pos
     const val = cfg.start + pos * cfg.step
     setArrowPos(pos)
     setAnswerValue(val)

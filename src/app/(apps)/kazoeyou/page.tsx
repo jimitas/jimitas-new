@@ -54,6 +54,9 @@ export default function KazoeyouPage() {
   // 1問につき初回正解のみコインを付与するフラグ
   const hasAnsweredRef = useRef<boolean>(false)
 
+  // 前回の答えを記憶（連続同一問題の回避用）
+  const prevAnsRef = useRef<number | null>(null)
+
   // answer の最新値を ref で保持（useAnswerCheck の onCorrect 内で参照するため）
   const answerRef = useRef<number>(0)
   useEffect(() => { answerRef.current = answer }, [answer])
@@ -103,7 +106,17 @@ export default function KazoeyouPage() {
   // 「もんだい」ボタン：動物をランダムな枚数で表示する
   const giveQuestion = () => {
     const mv = maxValueRef.current
-    const newAns = Math.floor(Math.random() * mv + 1)  // 1〜mv のランダム
+
+    // 1〜mv のランダム（前回と同じ値を除く）
+    let newAns: number
+    if (prevAnsRef.current !== null && mv > 1) {
+      const raw = Math.floor(Math.random() * (mv - 1))
+      const shifted = raw >= (prevAnsRef.current - 1) ? raw + 1 : raw
+      newAns = shifted + 1
+    } else {
+      newAns = Math.floor(Math.random() * mv + 1)
+    }
+    prevAnsRef.current = newAns
 
     // 効果音は BtnQuestion 側で鳴るため、ここでは鳴らさない
     setAnswer(newAns)

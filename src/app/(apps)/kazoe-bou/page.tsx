@@ -68,11 +68,16 @@ function createBouImg(bou: (typeof BOU)[number]): HTMLImageElement {
   return img;
 }
 
-function generateQuestion(useHyaku: boolean, useJu: boolean, useIchi: boolean): number {
-  const hyaku = useHyaku ? Math.floor(Math.random() * 9 + 1) : 0;
-  const ju = useJu ? Math.floor(Math.random() * 9 + 1) : 0;
-  const ichi = useIchi ? Math.floor(Math.random() * 9 + 1) : 0;
-  return hyaku * 100 + ju * 10 + ichi;
+function generateQuestion(useHyaku: boolean, useJu: boolean, useIchi: boolean, prev?: number | null): number {
+  const gen = () => {
+    const hyaku = useHyaku ? Math.floor(Math.random() * 9 + 1) : 0;
+    const ju = useJu ? Math.floor(Math.random() * 9 + 1) : 0;
+    const ichi = useIchi ? Math.floor(Math.random() * 9 + 1) : 0;
+    return hyaku * 100 + ju * 10 + ichi;
+  };
+  let result = gen();
+  if (result === prev) result = gen();
+  return result;
 }
 
 // ── コンポーネント ───────────────────────────────────
@@ -94,6 +99,7 @@ export default function KazoeBouPage() {
   const [useJu, setUseJu] = useState(true);
   const [useIchi, setUseIchi] = useState(true);
   const hasAnswered = useRef(false);
+  const prevQuestionRef = useRef<number | null>(null);
 
   const { coins, addCoins } = useCoins();
 
@@ -307,7 +313,8 @@ export default function KazoeBouPage() {
       showMsg(`<span style="color:red;">くらいを　えらんでね</span>`, 1500);
       return;
     }
-    const q = generateQuestion(useHyaku, useJu, useIchi);
+    const q = generateQuestion(useHyaku, useJu, useIchi, prevQuestionRef.current);
+    prevQuestionRef.current = q;
     setQuestion(q);
     hasAnswered.current = false;
     clearTable();
@@ -327,7 +334,8 @@ export default function KazoeBouPage() {
       showMsg(`<span style="color:red;">くらいを　えらんでね</span>`, 1500);
       return;
     }
-    const q = generateQuestion(useHyaku, useJu, useIchi);
+    const q = generateQuestion(useHyaku, useJu, useIchi, prevQuestionRef.current);
+    prevQuestionRef.current = q;
     setQuestion(q);
     setIkutsuAnswer("");
     hasAnswered.current = false;

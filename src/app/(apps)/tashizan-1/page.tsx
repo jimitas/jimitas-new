@@ -53,6 +53,8 @@ export default function Tashizan1Page() {
 
   // 答えは表示不要なので useRef で管理（useState にすると不要な再レンダが発生）
   const answerRef      = useRef<number>(0)
+  // 前回の答えを記憶（連続同一問題の回避用）
+  const prevAnsRef     = useRef<number | null>(null)
   // 1問につき初回正解のみコインを付与するフラグ
   const hasAnsweredRef = useRef<boolean>(false)
 
@@ -102,21 +104,42 @@ export default function Tashizan1Page() {
     const mode = Math.floor(Math.random() * 2 + 1) // 1 or 2（左右どちらが大きい数か）
 
     switch (selectIndex) {
-      case 0: // 10までのかず（答え 1〜10）
-        ans = Math.floor(Math.random() * 10 + 1)
+      case 0: { // 10までのかず（答え 1〜10）
+        const p = prevAnsRef.current
+        if (p !== null && p >= 1 && p <= 10) {
+          const raw = Math.floor(Math.random() * 9)
+          ans = (raw >= p - 1 ? raw + 1 : raw) + 1
+        } else {
+          ans = Math.floor(Math.random() * 10 + 1)
+        }
         lv  = Math.floor(Math.random() * (ans + 1))
         rv  = ans - lv
         break
-      case 1: // 10+□ または □+10（答え 11〜20）
-        ans = Math.floor(Math.random() * 10 + 11)
+      }
+      case 1: { // 10+□ または □+10（答え 11〜20）
+        const p = prevAnsRef.current
+        if (p !== null && p >= 11 && p <= 20) {
+          const raw = Math.floor(Math.random() * 9)
+          ans = (raw >= p - 11 ? raw + 1 : raw) + 11
+        } else {
+          ans = Math.floor(Math.random() * 10 + 11)
+        }
         if (mode === 1) { lv = 10; rv = ans - lv }
         else            { rv = 10; lv = ans - rv }
         break
-      case 2: // 繰り上がりあり（答え 12〜20）
-        ans = Math.floor(Math.random() * 9 + 12)
+      }
+      case 2: { // 繰り上がりあり（答え 12〜20）
+        const p = prevAnsRef.current
+        if (p !== null && p >= 12 && p <= 20) {
+          const raw = Math.floor(Math.random() * 8)
+          ans = (raw >= p - 12 ? raw + 1 : raw) + 12
+        } else {
+          ans = Math.floor(Math.random() * 9 + 12)
+        }
         if (mode === 1) { lv = Math.floor(Math.random() * (ans - 11) + 1); rv = ans - lv }
         else            { rv = Math.floor(Math.random() * (ans - 11) + 1); lv = ans - rv }
         break
+      }
       case 3: // 20までのかず（全体）
         lv  = Math.floor(Math.random() * 9 + 2)
         rv  = Math.floor(Math.random() * lv + (10 - lv) + 1)
@@ -125,6 +148,7 @@ export default function Tashizan1Page() {
     }
 
     answerRef.current = ans
+    prevAnsRef.current = ans
     setLeftValue(lv)
     setRightValue(rv)
     if (el_left_input.current)  el_left_input.current.value  = lv.toString()

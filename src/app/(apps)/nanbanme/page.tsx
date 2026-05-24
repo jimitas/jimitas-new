@@ -65,6 +65,9 @@ export default function NanbanmePage() {
   // 1問ごとの初回正解のみコインを付与するフラグ
   const hasAnsweredRef = useRef<boolean>(false)
 
+  // 前回の num を記憶（連続同一問題の回避用）
+  const prevNumRef = useRef<number | null>(null)
+
   // コインシステム
   const { coins, addCoins } = useCoins()
 
@@ -107,7 +110,17 @@ export default function NanbanmePage() {
 
     // ひだり/みぎ をランダムに決める
     const dir = Math.floor(Math.random() * 2 + 1)  // 1=ひだり, 2=みぎ
-    const num = Math.floor(Math.random() * 9 + 1)   // 1〜9（端の動物は除く）
+
+    // 1〜9 のランダム（前回と同じ値を除く）
+    let num: number
+    if (prevNumRef.current !== null) {
+      const raw = Math.floor(Math.random() * 8)
+      const shifted = raw >= (prevNumRef.current - 1) ? raw + 1 : raw
+      num = shifted + 1
+    } else {
+      num = Math.floor(Math.random() * 9 + 1)
+    }
+    prevNumRef.current = num
 
     // 正解：左から num 番目の動物（dir に関わらず order[num-1] が基準）
     answerRef.current = ANIMALS[order[num - 1]]

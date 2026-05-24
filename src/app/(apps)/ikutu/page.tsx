@@ -50,6 +50,9 @@ export default function IkutuPage() {
   // 1問につき初回正解のみコインを付与するフラグ
   const hasAnsweredRef = useRef<boolean>(false)
 
+  // 前回の答えを記憶（連続同一問題の回避用）
+  const prevAnsRef = useRef<number | null>(null)
+
   // メッセージ表示エリアへの参照
   const el_text = useRef<HTMLDivElement | null>(null)
 
@@ -95,8 +98,16 @@ export default function IkutuPage() {
     // □ を左に置くか右に置くかランダムに決める（1=左、2=右）
     const dir = Math.floor(Math.random() * 2 + 1)
 
-    // □ の正解値（0 〜 n-1 のランダム）
-    const ans = Math.floor(Math.random() * n)
+    // □ の正解値（前回と同じ値を除いた 0〜n-1 のランダム）
+    let ans: number
+    if (prevAnsRef.current !== null && n > 1) {
+      // n-1 個の候補から選び、前回値以上なら+1してスキップ
+      const raw = Math.floor(Math.random() * (n - 1))
+      ans = raw >= prevAnsRef.current ? raw + 1 : raw
+    } else {
+      ans = Math.floor(Math.random() * n)
+    }
+    prevAnsRef.current = ans
 
     // 問題テキストを組み立てる
     let left: number | string

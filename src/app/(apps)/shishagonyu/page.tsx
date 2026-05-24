@@ -65,6 +65,8 @@ export default function ShashagonyuPage() {
   const msgRef         = useRef<HTMLDivElement>(null)
   const seikaiRef      = useRef<HTMLSpanElement>(null)
   const hasAnsweredRef = useRef(false)
+  // 前回の問題数値を記憶（連続同一問題の回避用）
+  const prevNumRef     = useRef<number | null>(null)
 
   // ── コイン ────────────────────────────────────────────
   const { coins, addCoins } = useCoins()
@@ -96,13 +98,19 @@ export default function ShashagonyuPage() {
     const colIdx    = selectedCols[Math.floor(Math.random() * selectedCols.length)]
     const numDigits = 8 - colIdx
 
-    let num = 0
-    for (let i = 0; i < numDigits; i++) {
-      const d = i === numDigits - 1
-        ? Math.floor(Math.random() * 9 + 1)
-        : Math.floor(Math.random() * 10)
-      num += d * Math.pow(10, i)
+    const genNum = () => {
+      let n = 0
+      for (let i = 0; i < numDigits; i++) {
+        const d = i === numDigits - 1
+          ? Math.floor(Math.random() * 9 + 1)
+          : Math.floor(Math.random() * 10)
+        n += d * Math.pow(10, i)
+      }
+      return n
     }
+    let num = genNum()
+    if (num === prevNumRef.current) num = genNum()
+    prevNumRef.current = num
 
     let mode: "no-kurai" | "ue-kara"
     if (quizMode === "both") {

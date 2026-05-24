@@ -42,9 +42,11 @@ export default function TasuRenshuPage() {
   const [inputStr,    setInputStr]    = useState<string>("")      // キーボード入力バッファ
 
   // 問題値を ref で管理
-  const leftRef   = useRef<number>(0)
-  const rightRef  = useRef<number>(0)
-  const answerRef = useRef<number>(0)
+  const leftRef    = useRef<number>(0)
+  const rightRef   = useRef<number>(0)
+  const answerRef  = useRef<number>(0)
+  // 前回の答えを記憶（連続同一問題の回避用）
+  const prevAnsRef = useRef<number | null>(null)
 
   // メッセージ表示エリアへの参照
   const el_text = useRef<HTMLDivElement | null>(null)
@@ -110,24 +112,45 @@ export default function TasuRenshuPage() {
     let left = 0, right = 0, ans = 0
 
     switch (selectIndex) {
-      case 0:
+      case 0: {
         // 10までのたしざん（答え 1〜10）
-        ans   = Math.floor(Math.random() * 10 + 1)
+        const p = prevAnsRef.current
+        if (p !== null && p >= 1 && p <= 10) {
+          const raw = Math.floor(Math.random() * 9)
+          ans = (raw >= p - 1 ? raw + 1 : raw) + 1
+        } else {
+          ans = Math.floor(Math.random() * 10 + 1)
+        }
         left  = Math.floor(Math.random() * (ans + 1))
         right = ans - left
         break
-      case 1:
+      }
+      case 1: {
         // 10+□ または □+10（答え 11〜20）
-        ans = Math.floor(Math.random() * 10 + 11)
+        const p = prevAnsRef.current
+        if (p !== null && p >= 11 && p <= 20) {
+          const raw = Math.floor(Math.random() * 9)
+          ans = (raw >= p - 11 ? raw + 1 : raw) + 11
+        } else {
+          ans = Math.floor(Math.random() * 10 + 11)
+        }
         if (mode === 1) { left = 10; right = ans - left }
         else            { right = 10; left = ans - right }
         break
-      case 2:
+      }
+      case 2: {
         // 1□+□ または □+1□（繰り上がりあり、答え 12〜20）
-        ans = Math.floor(Math.random() * 9 + 12)
+        const p = prevAnsRef.current
+        if (p !== null && p >= 12 && p <= 20) {
+          const raw = Math.floor(Math.random() * 8)
+          ans = (raw >= p - 12 ? raw + 1 : raw) + 12
+        } else {
+          ans = Math.floor(Math.random() * 9 + 12)
+        }
         if (mode === 1) { left = Math.floor(Math.random() * (ans - 11) + 1); right = ans - left }
         else            { right = Math.floor(Math.random() * (ans - 11) + 1); left = ans - right }
         break
+      }
       case 3:
         // 20までのたしざん（答え 最大20）
         left  = Math.floor(Math.random() * 9 + 2)
@@ -136,9 +159,10 @@ export default function TasuRenshuPage() {
         break
     }
 
-    leftRef.current   = left
-    rightRef.current  = right
-    answerRef.current = ans
+    leftRef.current    = left
+    rightRef.current   = right
+    answerRef.current  = ans
+    prevAnsRef.current = ans
 
     if (el_text.current) {
       el_text.current.innerHTML = `${left}　＋　${right}　＝`
