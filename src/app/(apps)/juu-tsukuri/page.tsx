@@ -296,6 +296,8 @@ export default function JuuTsukuriPage() {
               ば — カードをドラッグしてスロットに おこう
             </p>
             <div className="flex gap-3 justify-center">
+              {/* デッキ幅分の透明スペーサー（手札行と列を揃える） */}
+              <div className="w-28 h-32 shrink-0 opacity-0 pointer-events-none" />
               {field.map((card, i) => {
                 const isFlash = flashSlots.has(i)
                 return (
@@ -361,8 +363,8 @@ export default function JuuTsukuriPage() {
             </div>
           )}
 
-          {/* 山札 + 手札（隣接・中央揃え） */}
-          <div className="flex items-start justify-center">
+          {/* 山札 + 手札（gap-3 で場の列と揃える） */}
+          <div className="flex gap-3 items-start justify-center">
 
             {/* 山札（クリックで引く） */}
             <div className="flex flex-col items-center gap-1 shrink-0">
@@ -408,7 +410,7 @@ export default function JuuTsukuriPage() {
               <p className="text-xs font-bold text-gray-400 text-center pl-2">
                 てふだ — ドラッグして ばに おこう
               </p>
-              <div className="flex gap-2 pl-2">
+              <div className="flex gap-3">
                 {Array.from({ length: 4 }, (_, i) => {
                   const card = hand[i] ?? null
                   return (
