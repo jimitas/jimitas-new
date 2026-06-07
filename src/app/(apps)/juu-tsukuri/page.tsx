@@ -320,8 +320,40 @@ export default function JuuTsukuriPage() {
         {/* ──── ゲーム中 ──── */}
         {phase === "playing" && (
           <>
-            {/* 上段: 山札 + 手札 */}
-            <div className="flex gap-4 items-start">
+            {/* 上段: 場（ドロップゾーン） */}
+            <div className="rounded-2xl bg-white/70 border-2 border-amber-200 p-4 flex flex-col gap-2">
+              <p className="text-xs font-bold text-gray-400 text-center">
+                ば — カードをドラッグしてスロットに おこう
+              </p>
+              <div className="flex gap-3 justify-center">
+                {field.map((card, i) => {
+                  const isFlash = flashSlots.has(i)
+                  return (
+                    <div
+                      key={i}
+                      data-slot-idx={String(i)}
+                      className={[
+                        "w-28 h-32 rounded-2xl border-2 flex items-center justify-center",
+                        "transition-all duration-200",
+                        card
+                          ? `${CARD_COLORS[card.value]} shadow-md`
+                          : "border-dashed border-amber-300 bg-amber-50/30",
+                        isFlash
+                          ? "!bg-yellow-200 !border-yellow-400 ring-4 ring-yellow-300 animate-pulse scale-110"
+                          : "",
+                      ].join(" ")}
+                    >
+                      {card && (
+                        <span className="text-6xl font-bold">{card.value}</span>
+                      )}
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+
+            {/* 下段: 山札 + 手札 */}
+            <div className="flex items-start">
 
               {/* 山札（クリックで引く） */}
               <div className="flex flex-col items-center gap-1 shrink-0">
@@ -394,37 +426,6 @@ export default function JuuTsukuriPage() {
               </div>
             </div>
 
-            {/* 場（4スロット固定のドロップゾーン） */}
-            <div className="flex-1 rounded-2xl bg-white/70 border-2 border-amber-200 p-4 flex flex-col gap-2">
-              <p className="text-xs font-bold text-gray-400 text-center">
-                ば — カードをドラッグしてスロットに おこう
-              </p>
-              <div className="flex-1 flex gap-3 justify-center items-center">
-                {field.map((card, i) => {
-                  const isFlash = flashSlots.has(i)
-                  return (
-                    <div
-                      key={i}
-                      data-slot-idx={String(i)}
-                      className={[
-                        "w-28 h-32 rounded-2xl border-2 flex items-center justify-center",
-                        "transition-all duration-200",
-                        card
-                          ? `${CARD_COLORS[card.value]} shadow-md`
-                          : "border-dashed border-amber-300 bg-amber-50/30",
-                        isFlash
-                          ? "!bg-yellow-200 !border-yellow-400 ring-4 ring-yellow-300 animate-pulse scale-110"
-                          : "",
-                      ].join(" ")}
-                    >
-                      {card && (
-                        <span className="text-6xl font-bold">{card.value}</span>
-                      )}
-                    </div>
-                  )
-                })}
-              </div>
-            </div>
           </>
         )}
       </div>
