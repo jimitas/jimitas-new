@@ -288,7 +288,7 @@ export default function JuuTsukuriPage() {
 
       {/* ──── ゲーム画面（playing / clear / gameover）コンパクト ──── */}
       {phase !== "idle" && (
-        <div className="flex flex-col p-4 gap-3">
+        <div className="max-w-2xl mx-auto w-full flex flex-col p-4 gap-3">
 
           {/* 場（4スロット） */}
           <div className="rounded-2xl bg-white/70 border-2 border-amber-200 p-4 flex flex-col gap-2">
