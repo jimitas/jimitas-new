@@ -325,8 +325,8 @@ export default function JuuTsukuriPage() {
         <div className="max-w-2xl mx-auto w-full flex flex-col p-4 gap-3">
 
           {/* 場（4スロット） */}
-          <div className="rounded-2xl bg-white/70 border-2 border-amber-200 p-4 flex flex-col gap-2">
-            <p className="text-xs font-bold text-gray-400 text-center">
+          <div className="rounded-2xl bg-white/70 dark:bg-gray-800 border-2 border-amber-200 p-4 flex flex-col gap-2">
+            <p className="text-xs font-bold text-gray-400 dark:text-gray-200 text-center">
               ば — カードを ここに おいてね
             </p>
             <div className="flex gap-3 justify-center">
@@ -402,7 +402,7 @@ export default function JuuTsukuriPage() {
 
             {/* 山札（クリックで引く） */}
             <div className="flex flex-col items-center gap-1 shrink-0">
-              <p className="text-xs font-bold text-gray-400">やまふだ</p>
+              <p className="text-xs font-bold text-gray-400 dark:text-gray-300">やまふだ</p>
               <div
                 className={`relative w-28 h-32 ${
                   deck.length > 0 && hand.length < 4 ? "cursor-pointer" : "opacity-50"
@@ -430,7 +430,7 @@ export default function JuuTsukuriPage() {
                 )}
               </div>
               <p className="text-sm font-bold text-indigo-700">{deck.length}まい</p>
-              <p className="text-xs text-gray-400 text-center leading-tight">
+              <p className="text-xs text-gray-400 dark:text-gray-300 text-center leading-tight">
                 {deck.length > 0 && hand.length >= 4
                   ? "てふだ いっぱい"
                   : deck.length > 0
@@ -441,7 +441,7 @@ export default function JuuTsukuriPage() {
 
             {/* 手札（4スロット固定・山札の右隣） */}
             <div className="flex flex-col gap-1">
-              <p className="text-xs font-bold text-gray-400 text-center pl-2">
+              <p className="text-xs font-bold text-gray-400 dark:text-gray-300 text-center pl-2">
                 てふだ — ばに うごかそう
               </p>
               <div className="flex gap-3">
