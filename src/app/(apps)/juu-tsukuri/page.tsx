@@ -28,7 +28,7 @@ function CardDots({ value }: { value: number }) {
   const top = Math.min(value, 5)
   const bot = Math.max(0, value - 5)
   return (
-    <div className="flex flex-col items-center gap-1 mt-2">
+    <div className="flex flex-col items-start gap-1 mt-2">
       <div className="flex gap-1">
         {Array.from({ length: top }, (_, i) => (
           <div key={i} className="w-3 h-3 rounded-full bg-gray-600 opacity-60" />
@@ -361,8 +361,8 @@ export default function JuuTsukuriPage() {
             </div>
           )}
 
-          {/* 山札 + 手札（隣接） */}
-          <div className="flex items-start">
+          {/* 山札 + 手札（隣接・中央揃え） */}
+          <div className="flex items-start justify-center">
 
             {/* 山札（クリックで引く） */}
             <div className="flex flex-col items-center gap-1 shrink-0">
