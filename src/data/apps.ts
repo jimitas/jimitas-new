@@ -27,7 +27,7 @@ export const apps: AppItem[] = [
   {
     id: "juu-tsukuri",
     title: "10をつくろう",
-    description: "カードを ならべて 10に なる ペアを けそう！",
+    description: "カードを つかって ふたつの かずで 10を つくろう！",
     seoDescription: "1〜9の数字カードをドラッグして2枚の合計が10になるペアを消すカードゲーム。1年生の10の合成・分解を楽しく練習できる",
     grades: [1],
     subjects: ["算数"],

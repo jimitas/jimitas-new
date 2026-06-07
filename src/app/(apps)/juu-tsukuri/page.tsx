@@ -28,7 +28,7 @@ function CardDots({ value }: { value: number }) {
   const top = Math.min(value, 5)
   const bot = Math.max(0, value - 5)
   return (
-    <div className="flex flex-col items-start gap-1 mt-2">
+    <div className="flex flex-col items-start gap-1 mt-2 h-[28px]">
       <div className="flex gap-1">
         {Array.from({ length: top }, (_, i) => (
           <div key={i} className="w-3 h-3 rounded-full bg-gray-600 opacity-60" />
@@ -246,7 +246,7 @@ export default function JuuTsukuriPage() {
   // ── UI ────────────────────────────────────────────────────────────
   return (
     <div
-      className="min-h-screen bg-amber-50 flex flex-col"
+      className="min-h-screen bg-white dark:bg-gray-900 flex flex-col"
       style={{ userSelect: "none" }}
     >
       {/* ヘッダー */}
@@ -351,7 +351,7 @@ export default function JuuTsukuriPage() {
                   >
                     {card && (
                       <>
-                        <span className="text-4xl font-bold leading-none">{card.value}</span>
+                        <span className="text-4xl font-bold leading-none text-gray-800">{card.value}</span>
                         <CardDots value={card.value} />
                       </>
                     )}
@@ -459,7 +459,7 @@ export default function JuuTsukuriPage() {
                             CARD_COLORS[card.value],
                           ].join(" ")}
                         >
-                          <span className="text-4xl font-bold leading-none">{card.value}</span>
+                          <span className="text-4xl font-bold leading-none text-gray-800">{card.value}</span>
                           <CardDots value={card.value} />
                         </div>
                       ) : (
