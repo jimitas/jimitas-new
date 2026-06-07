@@ -84,12 +84,22 @@ function handlePointerMove(e: PointerEvent) {
   dragInfo.clone.style.top  = `${e.clientY - dragInfo.oy}px`
 }
 
+function handlePointerCancel() {
+  if (!dragInfo) return
+  dragInfo.clone.remove()
+  document.removeEventListener("pointermove",   handlePointerMove)
+  document.removeEventListener("pointerup",     handlePointerUp)
+  document.removeEventListener("pointercancel", handlePointerCancel)
+  dragInfo = null
+}
+
 function handlePointerUp(e: PointerEvent) {
   if (!dragInfo) return
   const { card, clone } = dragInfo
   clone.remove()
-  document.removeEventListener("pointermove", handlePointerMove)
-  document.removeEventListener("pointerup",   handlePointerUp)
+  document.removeEventListener("pointermove",   handlePointerMove)
+  document.removeEventListener("pointerup",     handlePointerUp)
+  document.removeEventListener("pointercancel", handlePointerCancel)
   dragInfo = null
 
   if (isFlashingRef.current) return
@@ -122,8 +132,9 @@ function startDrag(e: PointerEvent, card: Card, el: HTMLElement) {
   })
   document.body.appendChild(clone)
   dragInfo = { card, clone, ox: e.clientX - rect.left, oy: e.clientY - rect.top }
-  document.addEventListener("pointermove", handlePointerMove)
-  document.addEventListener("pointerup",   handlePointerUp)
+  document.addEventListener("pointermove",   handlePointerMove)
+  document.addEventListener("pointerup",     handlePointerUp)
+  document.addEventListener("pointercancel", handlePointerCancel)
 }
 
 // ── メインコンポーネント ─────────────────────────────────────────────
@@ -452,6 +463,7 @@ export default function JuuTsukuriPage() {
                       {card ? (
                         <div
                           onPointerDown={e => handleCardPointerDown(e, card)}
+                          style={{ touchAction: "none" }}
                           className={[
                             "w-full h-full rounded-xl border-2 flex flex-col items-center justify-center",
                             "font-bold shadow cursor-grab active:cursor-grabbing",
