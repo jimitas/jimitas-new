@@ -441,8 +441,10 @@ export default function JuuTsukuriPage() {
         </div>
       )}
 
-      {/* コイン表示（playing 時はゲーム内容直下） */}
-      <CoinDisplay coins={coins} />
+      {/* コイン表示 */}
+      <div className="max-w-2xl mx-auto w-full">
+        <CoinDisplay coins={coins} />
+      </div>
     </div>
   )
 }
