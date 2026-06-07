@@ -28,16 +28,16 @@ function CardDots({ value }: { value: number }) {
   const top = Math.min(value, 5)
   const bot = Math.max(0, value - 5)
   return (
-    <div className="flex flex-col items-start gap-1 mt-2 h-[28px]">
-      <div className="flex gap-1">
+    <div className="flex flex-col items-start gap-0.5 sm:gap-1 mt-1 sm:mt-2 h-[20px] sm:h-[28px]">
+      <div className="flex gap-0.5 sm:gap-1">
         {Array.from({ length: top }, (_, i) => (
-          <div key={i} className="w-3 h-3 rounded-full bg-gray-600 opacity-60" />
+          <div key={i} className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-600 opacity-60" />
         ))}
       </div>
       {bot > 0 && (
-        <div className="flex gap-1">
+        <div className="flex gap-0.5 sm:gap-1">
           {Array.from({ length: bot }, (_, i) => (
-            <div key={i} className="w-3 h-3 rounded-full bg-gray-600 opacity-60" />
+            <div key={i} className="w-2 h-2 sm:w-3 sm:h-3 rounded-full bg-gray-600 opacity-60" />
           ))}
         </div>
       )}
@@ -301,7 +301,7 @@ export default function JuuTsukuriPage() {
           {/* コンテンツ */}
           <div className="flex flex-col items-center gap-4 py-4">
             <div className="text-center">
-              <p className="text-3xl font-bold text-amber-700 mb-4">
+              <p className="text-xl sm:text-3xl font-bold text-amber-700 mb-4">
                 ふたつの かずを たして 10に しよう！
               </p>
               <div className="flex gap-3 justify-center flex-wrap">
@@ -319,7 +319,7 @@ export default function JuuTsukuriPage() {
             </div>
             <button
               onClick={startGame}
-              className="px-12 py-5 bg-amber-500 hover:bg-amber-600 text-white text-3xl font-bold rounded-2xl shadow-lg transition-colors cursor-pointer"
+              className="px-8 sm:px-12 py-4 sm:py-5 bg-amber-500 hover:bg-amber-600 text-white text-2xl sm:text-3xl font-bold rounded-2xl shadow-lg transition-colors cursor-pointer"
             >
               スタート
             </button>
@@ -340,9 +340,9 @@ export default function JuuTsukuriPage() {
             <p className="text-xs font-bold text-gray-400 dark:text-gray-200 text-center">
               ば — カードを ここに おいてね
             </p>
-            <div className="flex gap-3 justify-center">
-              {/* デッキ幅分の透明スペーサー（手札行と列を揃える） */}
-              <div className="w-28 h-32 shrink-0 opacity-0 pointer-events-none" />
+            <div className="grid grid-cols-2 sm:flex gap-3 sm:justify-center">
+              {/* デッキ幅分の透明スペーサー（手札行と列を揃える・スマホでは非表示） */}
+              <div className="hidden sm:block w-28 h-32 shrink-0 opacity-0 pointer-events-none" />
               {field.map((card, i) => {
                 const isFlash = flashSlots.has(i)
                 return (
@@ -350,7 +350,7 @@ export default function JuuTsukuriPage() {
                     key={i}
                     data-slot-idx={String(i)}
                     className={[
-                      "w-28 h-32 rounded-2xl border-2 flex flex-col items-center justify-center",
+                      "w-20 h-24 sm:w-28 sm:h-32 rounded-2xl border-2 flex flex-col items-center justify-center",
                       "transition-all duration-200",
                       card
                         ? `${CARD_COLORS[card.value]} shadow-md`
@@ -362,7 +362,7 @@ export default function JuuTsukuriPage() {
                   >
                     {card && (
                       <>
-                        <span className="text-4xl font-bold leading-none text-gray-800">{card.value}</span>
+                        <span className="text-3xl sm:text-4xl font-bold leading-none text-gray-800">{card.value}</span>
                         <CardDots value={card.value} />
                       </>
                     )}
@@ -409,13 +409,13 @@ export default function JuuTsukuriPage() {
           )}
 
           {/* 山札 + 手札（gap-3 で場の列と揃える） */}
-          <div className="flex gap-3 items-start justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 items-center sm:items-start sm:justify-center">
 
             {/* 山札（クリックで引く） */}
             <div className="flex flex-col items-center gap-1 shrink-0">
               <p className="text-xs font-bold text-gray-400 dark:text-gray-300">やまふだ</p>
               <div
-                className={`relative w-28 h-32 ${
+                className={`relative w-20 h-24 sm:w-28 sm:h-32 ${
                   deck.length > 0 && hand.length < 4 ? "cursor-pointer" : "opacity-50"
                 }`}
                 onClick={drawCard}
@@ -455,11 +455,11 @@ export default function JuuTsukuriPage() {
               <p className="text-xs font-bold text-gray-400 dark:text-gray-300 text-center pl-2">
                 てふだ — ばに うごかそう
               </p>
-              <div className="flex gap-3">
+              <div className="grid grid-cols-2 sm:flex gap-3">
                 {Array.from({ length: 4 }, (_, i) => {
                   const card = hand[i] ?? null
                   return (
-                    <div key={i} className="w-28 h-32">
+                    <div key={i} className="w-20 h-24 sm:w-28 sm:h-32">
                       {card ? (
                         <div
                           onPointerDown={e => handleCardPointerDown(e, card)}
@@ -471,7 +471,7 @@ export default function JuuTsukuriPage() {
                             CARD_COLORS[card.value],
                           ].join(" ")}
                         >
-                          <span className="text-4xl font-bold leading-none text-gray-800">{card.value}</span>
+                          <span className="text-3xl sm:text-4xl font-bold leading-none text-gray-800">{card.value}</span>
                           <CardDots value={card.value} />
                         </div>
                       ) : (
