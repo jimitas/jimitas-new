@@ -25,6 +25,17 @@ export const apps: AppItem[] = [
     path: "/tashizan-1",
   },
   {
+    id: "juu-tsukuri",
+    title: "10をつくろう",
+    description: "カードを ならべて 10に なる ペアを けそう！",
+    seoDescription: "1〜9の数字カードをドラッグして2枚の合計が10になるペアを消すカードゲーム。1年生の10の合成・分解を楽しく練習できる",
+    grades: [1],
+    subjects: ["算数"],
+    tags: ["10の合成", "たし算", "カード", "ドラッグ操作", "コイン獲得"],
+    type: "app",
+    path: "/juu-tsukuri",
+  },
+  {
     id: "hikizan-1",
     title: "ひきざん",
     description: "ブロックを つかって ひきざんを れんしゅう",
