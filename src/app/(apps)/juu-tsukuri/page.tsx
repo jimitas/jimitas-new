@@ -252,7 +252,7 @@ export default function JuuTsukuriPage() {
         <h1 className="text-2xl font-bold text-amber-700">10をつくろう</h1>
         {phase !== "idle" && (
           <span className="text-lg text-gray-600">
-            けした: <strong className="text-green-600">{cleared}</strong>ペア
+            けした: <strong className="text-green-600">{cleared}</strong>くみ
           </span>
         )}
       </div>
@@ -262,7 +262,7 @@ export default function JuuTsukuriPage() {
         <div className="flex-1 flex flex-col items-center justify-center gap-8 p-4">
           <div className="text-center">
             <p className="text-3xl font-bold text-amber-700 mb-4">
-              たして 10に なる ペアを けそう！
+              ふたつの かずを たして 10に しよう！
             </p>
             <div className="flex gap-3 justify-center flex-wrap">
               {([[1, 9], [2, 8], [3, 7], [4, 6], [5, 5]] as [number, number][]).map(
@@ -293,7 +293,7 @@ export default function JuuTsukuriPage() {
           {/* 場（4スロット） */}
           <div className="rounded-2xl bg-white/70 border-2 border-amber-200 p-4 flex flex-col gap-2">
             <p className="text-xs font-bold text-gray-400 text-center">
-              ば — カードをドラッグしてスロットに おこう
+              ば — カードを ここに おいてね
             </p>
             <div className="flex gap-3 justify-center">
               {/* デッキ幅分の透明スペーサー（手札行と列を揃える） */}
@@ -337,7 +337,7 @@ export default function JuuTsukuriPage() {
               {phase === "clear" && (
                 <>
                   <p className="text-2xl font-bold text-green-600 mb-1">
-                    🎉 クリア！ {cleared}ペア けせたよ！
+                    🎉 クリア！ {cleared}くみ けせたよ！
                   </p>
                   <p className="text-lg text-amber-500 font-bold mb-3">
                     +5コイン ボーナス！
@@ -350,7 +350,7 @@ export default function JuuTsukuriPage() {
                     😢 ゲームオーバー
                   </p>
                   <p className="text-lg text-gray-600 mb-3">
-                    ばが いっぱいで 10が つくれない！ {cleared}ペア けせたよ
+                    ばが いっぱいで 10が つくれない！ {cleared}くみ けせたよ
                   </p>
                 </>
               )}
@@ -400,7 +400,7 @@ export default function JuuTsukuriPage() {
                 {deck.length > 0 && hand.length >= 4
                   ? "てふだ いっぱい"
                   : deck.length > 0
-                  ? "タップで引く"
+                  ? "タップして とろう"
                   : ""}
               </p>
             </div>
@@ -408,7 +408,7 @@ export default function JuuTsukuriPage() {
             {/* 手札（4スロット固定・山札の右隣） */}
             <div className="flex flex-col gap-1">
               <p className="text-xs font-bold text-gray-400 text-center pl-2">
-                てふだ — ドラッグして ばに おこう
+                てふだ — ばに うごかそう
               </p>
               <div className="flex gap-3">
                 {Array.from({ length: 4 }, (_, i) => {
