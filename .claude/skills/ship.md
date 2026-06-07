@@ -1,6 +1,6 @@
 ---
 name: ship
-description: 開発一段落時のまとめ操作（テスト→コミット→push→Webレポート作成）
+description: 開発一段落時のまとめ操作（テスト→コミット→push→Webレポート作成）。「一段落した」「コミットして」「push して」「リリース」と言われたときに起動する。
 user_invocable: true
 ---
 
