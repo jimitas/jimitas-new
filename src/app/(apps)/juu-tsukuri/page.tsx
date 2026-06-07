@@ -181,7 +181,7 @@ export default function JuuTsukuriPage() {
     if (isGameOver(fieldRef.current)) {
       setTimeout(() => {
         setPhase("gameover")
-        se.playSe(se.alertSound)
+        se.playSe(se.piron)
       }, 400)
     }
   }, [addCoins])
@@ -248,18 +248,26 @@ export default function JuuTsukuriPage() {
       style={{ userSelect: "none" }}
     >
       {/* ヘッダー */}
-      <div className="flex items-center justify-between px-6 py-3 bg-white shadow-sm">
+      <div className="flex items-center justify-center gap-6 px-6 py-3 bg-white shadow-sm">
         <h1 className="text-2xl font-bold text-amber-700">10をつくろう</h1>
         {phase !== "idle" && (
-          <span className="text-lg text-gray-600">
-            けした: <strong className="text-green-600">{cleared}</strong>くみ
-          </span>
+          <>
+            <span className="text-lg text-gray-600">
+              けした: <strong className="text-green-600">{cleared}</strong>くみ
+            </span>
+            <button
+              onClick={startGame}
+              className="px-3 py-1 text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+            >
+              リセット
+            </button>
+          </>
         )}
       </div>
 
       {/* ──── アイドル画面（flex-1 で縦中央） ──── */}
       {phase === "idle" && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-8 p-4">
+        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
           <div className="text-center">
             <p className="text-3xl font-bold text-amber-700 mb-4">
               ふたつの かずを たして 10に しよう！
