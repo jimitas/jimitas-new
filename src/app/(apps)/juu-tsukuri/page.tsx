@@ -134,6 +134,7 @@ export default function JuuTsukuriPage() {
   const [flashSlots, setFlashSlots] = useState<Set<number>>(new Set())
   const [cleared,    setCleared]    = useState(0)
   const [phase,      setPhase]      = useState<Phase>("idle")
+  const [confirmReset, setConfirmReset] = useState(false)
 
   const deckRef  = useRef<Card[]>([])
   const handRef  = useRef<Card[]>([])
@@ -213,6 +214,7 @@ export default function JuuTsukuriPage() {
     setField([null, null, null, null])
     setFlashSlots(new Set())
     setCleared(0)
+    setConfirmReset(false)
     setPhase("playing")
     se.playSe(se.set)
   }, [])
@@ -248,20 +250,37 @@ export default function JuuTsukuriPage() {
       style={{ userSelect: "none" }}
     >
       {/* ヘッダー */}
-      <div className="flex items-center justify-center gap-6 px-6 py-3 bg-white shadow-sm">
+      <div className="flex items-center justify-center gap-4 px-6 py-3 bg-white shadow-sm">
         <h1 className="text-2xl font-bold text-amber-700">10をつくろう</h1>
-        {phase !== "idle" && (
+        {phase !== "idle" && !confirmReset && (
           <>
             <span className="text-lg text-gray-600">
               けした: <strong className="text-green-600">{cleared}</strong>くみ
             </span>
             <button
-              onClick={startGame}
-              className="px-3 py-1 text-sm font-bold text-gray-500 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+              onClick={() => setConfirmReset(true)}
+              className="px-3 py-1 text-sm font-bold text-white bg-danger-400 hover:bg-danger-500 rounded-lg transition-colors cursor-pointer"
             >
               リセット
             </button>
           </>
+        )}
+        {phase !== "idle" && confirmReset && (
+          <span className="flex items-center gap-2 text-sm">
+            <span className="font-bold text-danger-600">ほんとうに？</span>
+            <button
+              onClick={() => { setConfirmReset(false); startGame() }}
+              className="px-3 py-1 font-bold text-white bg-danger-400 hover:bg-danger-500 rounded-lg transition-colors cursor-pointer"
+            >
+              はい
+            </button>
+            <button
+              onClick={() => setConfirmReset(false)}
+              className="px-3 py-1 font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors cursor-pointer"
+            >
+              いいえ
+            </button>
+          </span>
         )}
       </div>
 
