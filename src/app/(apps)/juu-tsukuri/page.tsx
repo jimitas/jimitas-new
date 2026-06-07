@@ -284,32 +284,39 @@ export default function JuuTsukuriPage() {
         )}
       </div>
 
-      {/* ──── アイドル画面（flex-1 で縦中央） ──── */}
+      {/* ──── アイドル画面 ──── */}
       {phase === "idle" && (
-        <div className="flex-1 flex flex-col items-center justify-center gap-4 p-4">
-          <div className="text-center">
-            <p className="text-3xl font-bold text-amber-700 mb-4">
-              ふたつの かずを たして 10に しよう！
-            </p>
-            <div className="flex gap-3 justify-center flex-wrap">
-              {([[1, 9], [2, 8], [3, 7], [4, 6], [5, 5]] as [number, number][]).map(
-                ([a, b]) => (
-                  <span
-                    key={a}
-                    className="text-lg text-gray-600 bg-white px-4 py-2 rounded-full shadow"
-                  >
-                    {a} + {b} = 10
-                  </span>
-                )
-              )}
+        <div className="flex flex-col p-4">
+          {/* コンテンツ */}
+          <div className="flex flex-col items-center gap-4 py-4">
+            <div className="text-center">
+              <p className="text-3xl font-bold text-amber-700 mb-4">
+                ふたつの かずを たして 10に しよう！
+              </p>
+              <div className="flex gap-3 justify-center flex-wrap">
+                {([[1, 9], [2, 8], [3, 7], [4, 6], [5, 5]] as [number, number][]).map(
+                  ([a, b]) => (
+                    <span
+                      key={a}
+                      className="text-lg text-gray-600 bg-white px-4 py-2 rounded-full shadow"
+                    >
+                      {a} + {b} = 10
+                    </span>
+                  )
+                )}
+              </div>
             </div>
+            <button
+              onClick={startGame}
+              className="px-12 py-5 bg-amber-500 hover:bg-amber-600 text-white text-3xl font-bold rounded-2xl shadow-lg transition-colors cursor-pointer"
+            >
+              スタート
+            </button>
           </div>
-          <button
-            onClick={startGame}
-            className="px-12 py-5 bg-amber-500 hover:bg-amber-600 text-white text-3xl font-bold rounded-2xl shadow-lg transition-colors cursor-pointer"
-          >
-            スタート
-          </button>
+          {/* コイン表示（スタートボタンのすぐ下） */}
+          <div className="max-w-2xl mx-auto w-full">
+            <CoinDisplay coins={coins} />
+          </div>
         </div>
       )}
 
@@ -465,13 +472,10 @@ export default function JuuTsukuriPage() {
             </div>
           </div>
 
+          {/* コイン表示（ゲーム内容直下） */}
+          <CoinDisplay coins={coins} />
         </div>
       )}
-
-      {/* コイン表示 */}
-      <div className="max-w-2xl mx-auto w-full">
-        <CoinDisplay coins={coins} />
-      </div>
     </div>
   )
 }
