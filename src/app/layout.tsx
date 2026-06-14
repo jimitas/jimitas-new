@@ -12,7 +12,6 @@
 
 import type { Metadata, Viewport } from "next"
 import { BIZ_UDPGothic, BIZ_UDGothic, BIZ_UDMincho } from "next/font/google"
-import Script from "next/script"
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
@@ -37,19 +36,24 @@ const bizUDPGothic = BIZ_UDPGothic({
 })
 
 // UDゴシック（等幅・先生向け）
+// preload: false → 初回描画では未使用（data-font="gothic" に切り替えた時だけ使う）。
+// 全ページの critical path から不要な font preload を外して FCP を軽くする。
 const bizUDGothic = BIZ_UDGothic({
   weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-biz-ud-gothic",
   display: "swap",
+  preload: false,
 })
 
 // UD明朝（漢字プリント作成の明朝体オプション用）
+// preload: false → kanji-print の明朝オプション専用。初回描画では使わない。
 const bizUDMincho = BIZ_UDMincho({
   weight: ["400", "700"],
   subsets: ["latin"],
   variable: "--font-biz-ud-mincho",
   display: "swap",
+  preload: false,
 })
 
 // -------------------------------------------------------
@@ -110,8 +114,25 @@ export default function RootLayout({
       className={`${bizUDPGothic.variable} ${bizUDGothic.variable} ${bizUDMincho.variable}`}
     >
       <head>
-        {/* ダークモード・フォントの初期化（チラつき防止のため同期実行） */}
-        <Script src="/theme-init.js" strategy="beforeInteractive" />
+        {/*
+          ダークモード・フォントの初期化（チラつき防止のため同期実行・インライン）
+          外部ファイル（/theme-init.js）の取得リクエストを critical path から外すため
+          public/theme-init.js の中身をそのままインライン展開している。
+          React が動き出す前に同期実行され、localStorage の設定を html 要素に反映する。
+        */}
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function() {
+  if (localStorage.getItem('jimitas_dark') === 'true') {
+    document.documentElement.classList.add('dark');
+  }
+  var font = localStorage.getItem('jimitas_font');
+  if (font === 'gothic') {
+    document.documentElement.dataset.font = 'gothic';
+  }
+})();`,
+          }}
+        />
       </head>
       <body className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-800 dark:text-gray-100 transition-colors duration-200">
         <NoContextMenu />
