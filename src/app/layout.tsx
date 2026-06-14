@@ -11,7 +11,7 @@
 // ======================================================
 
 import type { Metadata, Viewport } from "next"
-import { BIZ_UDPGothic, BIZ_UDGothic, BIZ_UDMincho } from "next/font/google"
+import { BIZ_UDPGothic, BIZ_UDGothic } from "next/font/google"
 import "./globals.css"
 import Header from "@/components/common/Header"
 import Footer from "@/components/common/Footer"
@@ -46,15 +46,9 @@ const bizUDGothic = BIZ_UDGothic({
   preload: false,
 })
 
-// UD明朝（漢字プリント作成の明朝体オプション用）
-// preload: false → kanji-print の明朝オプション専用。初回描画では使わない。
-const bizUDMincho = BIZ_UDMincho({
-  weight: ["400", "700"],
-  subsets: ["latin"],
-  variable: "--font-biz-ud-mincho",
-  display: "swap",
-  preload: false,
-})
+// UD明朝（kanji-print / kanji-test / jimipri の「UD明朝」オプション専用）は
+// root では読み込まない。約189KB の @font-face CSS を全ページの critical path
+// から外すため、使う3アプリの layout.tsx で個別に読み込む（src/lib/fonts.ts）。
 
 // -------------------------------------------------------
 // ビューポート設定（タブレット・スマホのピンチズーム・スケール制御）
@@ -111,7 +105,7 @@ export default function RootLayout({
       lang="ja"
       translate="no"
       suppressHydrationWarning
-      className={`${bizUDPGothic.variable} ${bizUDGothic.variable} ${bizUDMincho.variable}`}
+      className={`${bizUDPGothic.variable} ${bizUDGothic.variable}`}
     >
       <head>
         {/*
