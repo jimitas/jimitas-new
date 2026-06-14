@@ -60,7 +60,7 @@ export default function Header() {
       <div className="max-w-5xl mx-auto px-4 py-2 flex items-center justify-between gap-4">
 
         {/* --- ロゴ --- */}
-        <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
+        <Link href="/" prefetch={false} className="flex items-center gap-2 hover:opacity-80 transition-opacity shrink-0">
           <FaCat className="text-2xl text-gray-900 dark:text-gray-100" />
           {/* サイト名（黒） */}
           <span className="text-lg font-bold text-gray-900 dark:text-gray-100">
@@ -112,6 +112,7 @@ export default function Header() {
                   ) : (
                     <Link
                       href={item.href}
+                      prefetch={false}
                       onClick={() => play(UI_SOUNDS.nav)}
                       className="block px-3 py-1 text-xs font-medium rounded text-gray-600 dark:text-gray-300 hover:bg-brand-100 dark:hover:bg-brand-900 hover:text-brand-700 dark:hover:text-brand-300 transition-colors"
                     >
@@ -128,6 +129,7 @@ export default function Header() {
               <li>
                 <Link
                   href="/about"
+                  prefetch={false}
                   onClick={() => play(UI_SOUNDS.about)}
                   className="block px-3 py-1 text-xs font-medium rounded text-gray-400 dark:text-gray-500 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-300 transition-colors"
                 >
@@ -140,6 +142,7 @@ export default function Header() {
             <li>
               <Link
                 href="/"
+                prefetch={false}
                 onClick={() => play(UI_SOUNDS.back)}
                 className="block px-3 py-1 text-xs font-medium rounded text-brand-600 dark:text-brand-400 hover:bg-brand-100 dark:hover:bg-brand-900 transition-colors"
               >

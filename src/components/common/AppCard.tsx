@@ -46,7 +46,7 @@ export default function AppCard({ app }: Props) {
   const { play } = useSound()
 
   return (
-    <Link href={app.path} onClick={() => play(UI_SOUNDS.card)}>
+    <Link href={app.path} prefetch={false} onClick={() => play(UI_SOUNDS.card)}>
       <div
         className="
           bg-white dark:bg-gray-800

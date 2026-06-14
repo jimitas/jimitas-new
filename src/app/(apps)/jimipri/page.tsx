@@ -86,6 +86,7 @@ export default function JimipriPortalPage() {
                 <Link
                   key={print.id}
                   href={`/jimipri/${print.id}`}
+                  prefetch={false}
                   className={`
                     block rounded-lg border p-3 transition-shadow hover:shadow-md
                     ${GRADE_COLORS[print.grade] || ""} ${GRADE_BORDER[print.grade] || ""}
