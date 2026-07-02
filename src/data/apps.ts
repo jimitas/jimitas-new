@@ -673,6 +673,17 @@ export const apps: AppItem[] = [
     path: "/koch-curve",
   },
   {
+    id: "sign-wave",
+    title: "サイン波シミュレーター",
+    description: "周波数を 変えて 音の高さと 波形の 変化を 確かめよう",
+    seoDescription: "サイン波を鳴らして周波数（100〜2000Hz）と音量を変えながら、音の高さと波形の変化をリアルタイムのグラフで確かめられる。中学・高校の情報・数学で「音は波」を体感できる",
+    grades: ["中学", "高校"],
+    subjects: ["その他"],
+    tags: ["サイン波", "音", "周波数", "波形", "Web Audio", "情報", "数学"],
+    type: "tool",
+    path: "/sign-wave",
+  },
+  {
     id: "triangle-ratio",
     title: "三角比 (sin / cos / tan)",
     description: "高校数学の 三角比（sin/cos/tan）を 視覚的に 学習",
