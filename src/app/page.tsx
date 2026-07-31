@@ -1,27 +1,29 @@
 // ======================================================
 // トップページ
 //
-// 設計書の画面設計：
-//   ┌──────────────────────┐
-//   │  Jimitas             │
-//   │  地味に助かる…       │
-//   ├──────────────────────┤
-//   │  １年生  (#grade-1)  │
-//   │  [カード] [カード]…  │
-//   ├──────────────────────┤
-//   │  …（2〜6年生）       │
-//   ├──────────────────────┤
-//   │  どうぐばこ (#tools) │
-//   │  [音楽] [体育] …     │
-//   ├──────────────────────┤
-//   │  📄 教材作成(#print) │
-//   │  [じみぷり] …        │
-//   └──────────────────────┘
+// 画面設計：
+//   ┌────────────────────────┐
+//   │  Jimitas               │
+//   │  地味に助かる…         │
+//   ├────────────────────────┤
+//   │  📄 教材作成  (#print) │  ← 先生向け。じみぷりを含む
+//   │  [じみぷり] [漢字…]    │
+//   ├────────────────────────┤
+//   │  １年生    (#grade-1)  │
+//   │  [カード] [カード]…    │
+//   ├────────────────────────┤
+//   │  …（2〜6年生）         │
+//   ├────────────────────────┤
+//   │  そのほか    (#tools)  │
+//   │  [音楽] [体育] …       │
+//   └────────────────────────┘
+//
+// 教材作成を最上部に置いているのは、プリントを探しに来る先生の導線を
+// 最短にするため（じみぷりが最下部で埋もれて使われなかった経緯がある）。
 //
 // サーバーコンポーネントでOK（データ取得・表示のみ）。
 // ======================================================
 
-import Link from "next/link"
 import GradeSection from "@/components/common/GradeSection"
 import { apps } from "@/data/apps"
 import { AppItem, Grade } from "@/types"
@@ -64,6 +66,16 @@ const subjectIndex = (app: AppItem) => {
 }
 
 const SECTIONS: SectionDef[] = [
+  // 教材作成（print 種別すべて。じみぷり・漢字テスト作成・漢字プリント作成）
+  // 先生がプリントを探しに来る導線なので最上部に置く。
+  // 並び順は下のソート規則（SUBJECT_ORDER）だけで
+  // じみぷり(算数) → 漢字テスト・漢字プリント(国語) になるため order の指定は不要。
+  {
+    id: "print",
+    title: "📄 教材作成（先生向け）",
+    filter: (app) => app.type === "print",
+  },
+
   // 学年別（1〜6年）
   // grades に該当学年の数値が含まれていれば、教科を問わずそのセクションに表示。
   // 例: リコーダー(grades:[3,4,5]) は3年・4年・5年に出る → 先生が学年から探しやすい
@@ -131,13 +143,6 @@ const SECTIONS: SectionDef[] = [
     title: "🎵 そのほか・先生向け",
     filter: (app) => app.type !== "print" && !hasAnyNumericGrade(app),
   },
-
-  // 教材作成（print 種別、jimipri はバナーで別表示するので除外）
-  {
-    id: "print",
-    title: "📄 教材作成",
-    filter: (app) => app.type === "print" && app.id !== "jimipri",
-  },
 ]
 
 export default function HomePage() {
@@ -182,49 +187,12 @@ export default function HomePage() {
         })
 
         return (
-          <div key={section.id}>
-            <GradeSection
-              id={section.id}
-              title={section.title}
-              apps={sorted}
-            />
-            {/* 「音楽・体育・その他」の直後にじみぷりバナーを挿入 */}
-            {section.id === "tools" && (
-              <section className="mb-10 scroll-mt-24">
-                <h2 className="text-base font-bold text-gray-700 dark:text-gray-300 mb-3 pb-2 border-b-2 border-brand-400">
-                  🖨️ じみぷり（算数プリント）
-                </h2>
-                <Link href="/jimipri">
-                  <div className="
-                    rounded-xl border-2 border-brand-300 dark:border-brand-700
-                    bg-linear-to-r from-brand-50 to-brand-100
-                    dark:from-brand-900 dark:to-brand-800
-                    p-4 hover:shadow-md hover:-translate-y-0.5
-                    transition-all duration-150 cursor-pointer
-                  ">
-                    <div className="flex items-center gap-3">
-                      <div className="text-3xl">📝</div>
-                      <div>
-                        <h3 className="text-lg font-bold text-gray-800 dark:text-gray-100">
-                          じみぷり ― 地味に助かる学習プリント
-                        </h3>
-                        <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                          たし算・ひき算・かけ算・わり算・分数など、1〜6年生の算数プリントを自動生成して印刷できます（全39種）
-                        </p>
-                        <div className="flex gap-2 mt-2">
-                          {["1年", "2年", "3年", "4年", "5年", "6年"].map((g) => (
-                            <span key={g} className="text-xs px-2 py-0.5 rounded-full bg-brand-200 dark:bg-brand-800 text-brand-800 dark:text-brand-200">
-                              {g}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Link>
-              </section>
-            )}
-          </div>
+          <GradeSection
+            key={section.id}
+            id={section.id}
+            title={section.title}
+            apps={sorted}
+          />
         )
       })}
 

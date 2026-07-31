@@ -41,6 +41,13 @@ function getLineColor(app: AppItem): string {
   return SUBJECT_LINE[app.subjects[0]] ?? "bg-gray-400"
 }
 
+// カードの背景・枠線を決める
+// featured（イチオシ）のカードは brand 色で塗り分けて目立たせる
+const CARD_NORMAL =
+  "bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 border-gray-200 dark:border-gray-700"
+const CARD_FEATURED =
+  "bg-brand-50 dark:bg-brand-900/40 hover:bg-brand-100 dark:hover:bg-brand-900/60 border-brand-300 dark:border-brand-700"
+
 export default function AppCard({ app }: Props) {
   const lineColor = getLineColor(app)
   const { play } = useSound()
@@ -48,15 +55,14 @@ export default function AppCard({ app }: Props) {
   return (
     <Link href={app.path} prefetch={false} onClick={() => play(UI_SOUNDS.card)}>
       <div
-        className="
-          bg-white dark:bg-gray-800
-          hover:bg-gray-50 dark:hover:bg-gray-700
-          border border-gray-200 dark:border-gray-700
+        className={`
+          ${app.featured ? CARD_FEATURED : CARD_NORMAL}
+          border
           rounded-lg flex items-stretch
           hover:shadow-sm hover:-translate-y-0.5
           transition-all duration-150 cursor-pointer
           h-full overflow-hidden
-        "
+        `}
       >
         {/* 左端のカラーライン（教科で色分け） */}
         <div className={`${lineColor} w-1 shrink-0`} />

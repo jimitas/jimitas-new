@@ -326,6 +326,8 @@ export const apps: AppItem[] = [
     tags: ["プリント", "教材作成"],
     type: "print",
     path: "/jimipri",
+    // トップページで brand 色に塗り分けて目立たせる（利用率テコ入れ）
+    featured: true,
   },
   {
     id: "kuku-hyo",

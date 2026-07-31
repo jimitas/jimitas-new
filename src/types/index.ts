@@ -59,4 +59,7 @@ export type AppItem = {
 
   /** true のとき、ポータルに表示しない（未実装・開発中アプリ）*/
   disabled?: boolean
+
+  /** true のとき、トップページのカードを強調表示する（イチオシ導線用）*/
+  featured?: boolean
 }

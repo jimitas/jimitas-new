@@ -20,7 +20,11 @@ import FontToggle from "@/components/common/FontToggle"
 import DarkModeToggle from "@/components/common/DarkModeToggle"
 
 // 学年ジャンプナビの定義（page.tsx の SECTIONS の id と対応）
+// ナビは overflow-x-auto なので、狭い画面では後ろの項目が横に切れて見えない。
+// 先生向けのプリント導線を先頭に置き、必ず見えるようにしている。
 const NAV_ITEMS = [
+  { label: "📄 教材作成",     href: "#print" },
+  { label: "🖨️ じみぷり",    href: "/jimipri" },
   { label: "1ねん", href: "#grade-1" },
   { label: "2年",   href: "#grade-2" },
   { label: "3年",   href: "#grade-3" },
@@ -28,8 +32,6 @@ const NAV_ITEMS = [
   { label: "5年",   href: "#grade-5" },
   { label: "6年",   href: "#grade-6" },
   { label: "🎵 音楽・その他", href: "#tools" },
-  { label: "📄 教材作成",     href: "#print" },
-  { label: "🖨️ じみぷり",    href: "/jimipri" },
 ]
 
 export default function Header() {
