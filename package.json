@@ -12,6 +12,7 @@
     "test:watch": "jest --watch",
     "test:e2e": "playwright test",
     "test:e2e:ui": "playwright test --ui",
+    "test:prod": "playwright test -c playwright.prod.config.ts",
     "prepare": "husky"
   },
   "dependencies": {
