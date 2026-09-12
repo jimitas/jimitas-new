@@ -609,8 +609,15 @@ export default function WariHissanPage() {
     // 屋根線: row0（商の行）に下罫線を引く
     // わり算の筆算の「┌──」に相当する横線
     // 被除数の桁数に合わせて、列5（")"）から最後の数字列までに引く
+    //
+    // 色に currentColor を使う理由:
+    //   このテーブルのセルは（rewriteTable の頭で背景を消すため）透明で、
+    //   ページの地の色がそのまま見える。black 固定だとダークモードで
+    //   暗い地に黒い線となり、罫線が見えなくなる。
+    //   currentColor なら文字色に追従するので、ライトでは濃く・ダークでは明るくなり、
+    //   数字と罫線の明るさも揃う。
     for (let j = 5; j <= lastDigitCol; j++) {
-      TBL.rows[0].cells[j].style.borderBottom = "solid black 2px"
+      TBL.rows[0].cells[j].style.borderBottom = "solid currentColor 2px"
     }
 
     // ドロップゾーンと罫線を設定
@@ -624,10 +631,11 @@ export default function WariHissanPage() {
         }
       }
       // 罫線を設定（colStart〜colEnd の全列に borderBottom）
+      // 色は屋根線と同じ理由で currentColor（上のコメント参照）
       for (const [r, colStart, colEnd] of pattern.underlines) {
         if (r < currentRows) {
           for (let j = colStart; j <= colEnd; j++) {
-            TBL.rows[r].cells[j].style.borderBottom = "solid black 2px"
+            TBL.rows[r].cells[j].style.borderBottom = "solid currentColor 2px"
           }
         }
       }
