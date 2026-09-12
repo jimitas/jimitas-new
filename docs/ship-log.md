@@ -1,5 +1,177 @@
 # Ship Log
 
+## 2026-09-12 — ダークモードのリロード解除バグ修正＋隠れていた17アプリのコントラスト
+
+**コミット：** `f97d1b1`
+
+### 背景・目的
+
+「何かまるっとリファクタリングできることはないか」という相談から、現状を実測した。
+ESLint 0件・テスト83件グリーン・配色トークンの役割分けも守られており、**コードの見た目の品質は
+思っていたより健全**だった。一方で、実害が出ている順に並べると次の3つが残っていた。
+
+1. **ダークモードが二重に壊れている**（リロードで解除＋15アプリが `dark:` 未対応）
+2. ボタンが205個の手書きコピー（共通部品 `Btn*` 13個が土台を共有していない）
+3. 26,100行に対してテストが5アプリ分のロジックのみ
+
+「使ってくれている人がタブレットの夜間モードで最初に気づく不具合」である 1 から着手した。
+
+### 変更内容
+
+| 変更 | 内容 |
+|---|---|
+| `globals.css` | `@custom-variant dark` と手書きフォールバック3ルールを `[data-theme="dark"]` へ |
+| `layout.tsx` | チラつき防止スクリプトを `dataset.theme = 'dark'` へ |
+| `DarkModeToggle.tsx` | `dataset.theme` の付け外しへ。**state を廃止** |
+| アプリ17本 | `h1` に `dark:text-gray-100` を追加（1ファイル1行） |
+| `tests/dark-mode.spec.ts` | 新規・永続化7件 |
+| `tests/dark-contrast.spec.ts` | 新規・全アプリの見出しコントラスト検査 |
+
+`localStorage` のキー `jimitas_dark` は据え置きのため、**既にダークにしている人の設定は
+そのまま引き継がれる**。アプリ側の `dark:` 約805箇所は無変更。
+
+### 技術的なポイント
+
+**原因は「class だから消える、属性だから残る」。**
+`layout.tsx` で React が `<html className={...}>`（フォント変数）を管理しているため、
+同期インラインスクリプトが足した `dark` クラスをハイドレーション時に React が書き戻して
+消していた。`suppressHydrationWarning` は警告を消すだけで書き戻しは止めない。
+決定的な傍証は、同じスクリプトが設定する `data-font` **属性**は生き残っていたこと。
+既にフォント切替で実績のある属性方式へ寄せた（追加概念ゼロ）。
+
+**「壊れている機能を直すと、その下に隠れていた不備が露出する」。**
+実機確認で `tokei` の見出しがダークでほぼ読めないことに気づいた（コントラスト **1.21:1**、
+WCAG 下限は 4.5:1）。同じ状態が17アプリ。**これまではリロードで必ずライトに戻っていたため、
+ユーザーがダーク表示のままこれらを見る機会がほとんどなく、抜けていても誰も困らなかった**。
+バグを直すと一斉に表に出る。「設定が黙って忘れられる」を「タイトルが読めない」に
+置き換えては改善にならないので、同じまとまりで対応した。
+
+**テストの穴を、壊して見つけた。**
+最初に書いた永続化テストは `body` / `header` / `footer` の色を見ていたが、この3要素は
+`globals.css` の手書きフォールバックCSSでも暗くなる。試しに `@custom-variant` を壊したところ
+**6件すべてグリーンのまま**通過した。つまり「全アプリの `dark:` が一斉に効かなくなる」という
+最悪の壊れ方を検出できていなかった。`dark:` そのものを見るテスト（トグルのアイコンが
+🌙⇄☀️で切り替わるか）を追加し、これだけが赤くなることを確認した。
+
+**色の比較は文字列一致にしない。**
+ブラウザが返す形式がライト（Tailwind v4 の oklch 由来 → `lab(...)`）とダーク
+（手書き hex → `rgb(...)`）で異なるため、完全一致だと中身が正しくても落ちる。
+永続化テストは「明るさ」に正規化して判定し、コントラストテストは**キャンバスに1px塗って
+読み戻す**方式で sRGB に正規化した。後者は `lab()` / `oklch()` ごとの変換式を書かずに
+「ブラウザが実際に画面へ出す色」で判定できる。
+
+**ついでに直ったもの:** 全ページで `Hydration failed` エラーが出ていた。トグルがアイコンを
+state で出し分けていたため、サーバーは🌙・クライアントは☀️を描画してズレていた。
+state を捨て「状態は DOM に聞き、見た目は CSS に任せる」方式にして解消。
+
+### 検証
+
+「壊して落ちることを確認する」を3回実施。
+
+| 壊したもの | 結果 |
+|---|---|
+| 修正前のコード全体 | 永続化テスト**3件が失敗** — `known-issues.md` の症状表と完全一致 |
+| `@custom-variant` を class 方式に戻す | 既存6件は全部グリーン、**追加したアイコン切替テストだけが失敗** |
+| `tokei` の `dark:text-gray-100` を外す | コントラストテストが `比率 1.21:1（必要 4.5:1）` で失敗 |
+
+最終: Playwright **130件**（スモーク62 + 永続化7 + コントラスト61）全パス /
+Jest 83件 / ESLint 0件 / 本番ビルド成功（108ページ）/ 実機ブラウザで目視確認。
+
+### 持ち越し
+
+- **見出し以外のコントラストは未検査。** `bg-white` に `dark:` がないパネルが残る
+  （`kenban` は21箇所に対し `dark:` が1つ、他に `sansu-note` / `classroom-english` / `sangenshoku`）。
+  読めなくなるわけではないが、ダークで白いパネルだけ眩しく浮く
+- `FontToggle.tsx` がフォントを `data-font` 属性と `body.style.fontFamily` で**二重管理**している。
+  「1回に1つだけ変える」方針により今回は触っていない
+- **ボタン205個の手書きコピー問題**（冒頭の 2）は未着手。共通部品 `Btn*` 13個が同じ8行の
+  className を色違いでコピーしており、`BtnQuestion` は `<div className="flex flex-wrap justify-center">`
+  というレイアウトを内部に抱えているため「2つ横に並べたい」場面で使えない。
+  部品が使われなくなった（62アプリ中8アプリでしか使われていない）理由はここにある可能性が高い
+
+---
+
+## 2026-07-02 — サイン波シミュレーター移植（中学・高校向け）
+
+**コミット：** `e447cea`
+
+### 背景・目的
+外部リポジトリ [jimitas/sign-wave](https://github.com/jimitas/sign-wave)（バニラHTML/JS/CSS）の「サイン波シミュレーター」を jimitas-new（Next.js）へ移植したいという要望。中学・高校の情報・数学で「音は波である」ことを、音と波形グラフの同時フィードバックで体感させる教材ツール。
+
+### 変更内容
+| 変更 | 内容 |
+|---|---|
+| `src/data/apps.ts` | エントリ1件追加（`sign-wave` / その他 / 中学・高校 / `type: "tool"`） |
+| 新規 `src/app/(apps)/sign-wave/layout.tsx` | SEO（metadata + JSON-LD）。koch-curve と同テンプレート |
+| 新規 `src/app/(apps)/sign-wave/page.tsx` | 本体。サイン波固定・周波数(100〜2000Hz)/音量(0〜0.5)スライダー・再生/停止・リアルタイム波形描画 |
+
+- 忠実移植の方針。効果音・コイン・localStorage は元アプリになく追加せず。
+- 既存「音を出そう」(oto-dashiyo) と機能が一部重なるが、**サイン波固定＋音量操作＋波形グラフ＋中高向け**で差別化して並存。
+
+### 技術的なポイント
+- **再生/停止・クリーンアップの土台は oto-dashiyo を流用**（AudioContext 遅延生成・`ctx.resume()`・ゲインで音量抑制・フェードアウト停止）。移植コストを抑えつつ実装パターンを統一。
+- 波形描画は jimitas 内で前例なしのため新規実装。`AnalyserNode`(fftSize=2048・約46ms窓)→`getByteTimeDomainData`→Canvas折れ線。`requestAnimationFrame` で再生中のみループ、停止後は最後の波形を保持。HiDPI は `devicePixelRatio` + `setTransform` で対応。
+- 周波数・音量変更は `setTargetAtTime(…, 0.01)` でなめらかに反映し、元 script.js 準拠でクリックノイズを回避。
+- TypeScript の `getByteTimeDomainData` 型不一致（`Uint8Array<ArrayBufferLike>` 非互換）は、バッファを `new Uint8Array(new ArrayBuffer(n))` で生成し ref を `Uint8Array<ArrayBuffer>` 型にして解消。
+
+---
+
+## 2026-06-14 — UDMinchoフォントCSSを3アプリにscope（render-blocking削減）
+
+**コミット：** `9497498`
+
+### 背景・目的
+PageSpeed Insights のラボデータで「レンダリングをブロックするリクエスト 4本 / 127.8KiB / 最大5,100ms」「未使用CSS 108KiB削減可能」と出ていた。当初は globals.css や Tailwind の purge 漏れを疑ったが、ビルド出力（`.next/static/chunks/*.css`）を実測した結果、4本の正体は **next/font の日本語Webフォント定義CSS** だった。
+
+| ファイル | 中身 | サイズ |
+|---|---|---|
+| chunk A | next/font BIZ UDMincho の @font-face 群 | 189 KB |
+| chunk B | next/font BIZ UDPGothic の @font-face 群 | 189 KB |
+| chunk C | next/font BIZ UDGothic の @font-face 群 | 189 KB |
+| chunk D | Tailwind utilities + globals.css | 89 KB |
+
+日本語Webフォントは CJK 全域を数百個の `@font-face`＋`unicode-range` に分割保持するため、定義CSSだけで1本189KBになる（実woff2は必要字形のみ後追いDL）。「未使用CSS 108KB」も、トップで使われないCJK字形の @font-face が大半。**globals.css・Tailwind purge はいずれも健全で問題なし**だった。
+
+核心は、`BIZ_UDMincho` が jimipri / kanji-print / kanji-test の「UD明朝」オプション専用なのに、root layout 経由で全57ページに render-blocking 読み込みされていた点（`preload:false` は woff2 の preload を止めるだけで @font-face 定義CSS は全ページに載る）。
+
+### 変更内容
+| 変更 | 内容 |
+|---|---|
+| 新規 `src/lib/fonts.ts` | `bizUDMincho`（next/font）を1箇所で宣言・export |
+| `src/app/layout.tsx` | UDMincho の import・宣言・`<html>` className を削除（全ページから除去）。UDPGothic・UDGothic は残す |
+| `kanji-test` / `kanji-print` / `jimipri` の `layout.tsx` | `bizUDMincho` を import し、`children` を `<div className={bizUDMincho.variable} style={{display:"contents"}}>` でラップ |
+
+結果、トップ含む約54ページの critical path から189KB（＋未使用CSSの大半）が外れ、render-blocking CSS が 4本→3本に。視覚変化ゼロ・CLS=0維持。
+
+### 技術的なポイント
+- **`display:contents`** でラッパdiv自体はボックスを生成しないため既存の flex/grid レイアウトに影響を与えず、CSSカスタムプロパティ `--font-biz-ud-mincho` だけを子孫へ継承させた。各page内の `FONT_MINCHO`（`var(--font-biz-ud-mincho)` を含むインライン適用）は従来どおり解決される。
+- 「明朝が静かに消える」失敗モードを潰すため、実装前に `--font-biz-ud-mincho` / `UDMincho` の全参照を Grep（3アプリのみと確認）、実装後はビルドのプリレンダHTMLで①UDMinchoチャンク参照が jimipri系40本＋kanji-print＋kanji-test のみ②variable定義クラスが各wrapperに付与③トップ(index.html)からは消滅、を実測確認した。
+- UDGothic はヘッダーの FontToggle が全ページで使うためグローバル必須＝今回は対象外。weight 700 ドロップ案（各フォントCSS半減）は非Windows端末で擬似ボールドになる視覚トレードオフがあるため見送り。
+
+---
+
+## 2026-06-14 — FCP微改善（フォントpreload絞り込み＋theme-initインライン化）
+
+**コミット：** `984519a`
+
+### 背景・目的
+PageSpeed Insights 実測（5/16〜6/12）で Core Web Vitals（LCP/INP/CLS）は全合格、唯一 **FCP のみ**が目標1.8sに対し +0.1〜0.2s 超過していた。TTFB（0.4〜0.5s）→ FCP（1.9〜2.0s）の約1.4sギャップは「サーバー応答後に render-blocking リソースを待っている」状態を示す。事前に立てた3仮説（A:フォントCDN／B:layoutがclient／C:重い同期import）はコード確認の結果すべて「対応済み or 不成立」だったため、同じ"設定・数行で完結"の方針で critical path のリクエスト/帯域を減らす低コスト改善のみを実施した。
+
+### 変更内容
+| 対策 | 内容 |
+|---|---|
+| **フォント preload の絞り込み** | 初回描画で使わない `bizUDGothic`（ゴシック切替専用）・`bizUDMincho`（kanji-print明朝専用）に `preload: false` を付与。全ページの font preload をデフォルトの `bizUDPGothic` のみに削減 |
+| **theme-init.js のインライン化** | チラつき防止スクリプトを外部ファイル（`/theme-init.js`）から `layout.tsx` の `<head>` にインライン展開し、render-blocking な外部リクエストを1本削減。`public/theme-init.js`・`next.config.ts` のキャッシュヘッダも削除 |
+
+動作・デザイン・CLS=0 に影響なし。build / unit(73) / e2e(60) 全合格。
+
+### 技術的なポイント
+- 3つの仮説がすべて「既に対応済み or 不成立」だったため、無理なリファクタリングはせず副作用ゼロの微調整に絞った。FCPへの効果は小さい想定（数十ms〜0.1s程度）で決定打ではない可能性があることをオーナーにも明示済み。
+- インライン化では「Claudeが推測で中身を書き換えていないか」というオーナーの懸念を受け、原本 `public/theme-init.js` を実装直前に再 Read し、`__html` と1文字単位で一致することを確認してから貼り付けた（変数名・改行も含め verbatim）。
+- フォントは元々 `next/font` + `display:swap` 済みで、`preload:false` でも参照時に従来通り読み込まれCLSは0のまま。ゴシック/明朝はフォールバックから差し替わるだけ。
+
+---
+
 ## 2026-06-14 — Vercelリクエスト削減（prefetch無効化＋印刷ページ静的化）
 
 **コミット：** `7691436`
