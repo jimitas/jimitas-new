@@ -939,7 +939,7 @@ export default function SansuNotePage() {
   return (
     <div className="flex flex-col min-h-screen">
       {/* タイトル */}
-      <h1 className="text-xl font-bold text-center text-gray-800 pt-3 pb-1">
+      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 pt-3 pb-1">
         さんすうノート
       </h1>
 

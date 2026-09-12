@@ -321,7 +321,7 @@ export default function KyotoKuPage() {
   return (
     <div className="max-w-5xl mx-auto px-4 py-6">
       {/* タイトル */}
-      <h1 className="text-xl font-bold text-center text-gray-800 mb-2">
+      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100 mb-2">
         🗾 京都市の11区をおぼえよう
       </h1>
 

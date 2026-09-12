@@ -277,7 +277,7 @@ export default function SakusenBoardPage() {
     <div className="w-full px-2 py-4 space-y-3">
 
       {/* タイトル */}
-      <h1 className="text-xl font-bold text-center text-gray-800">
+      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100">
         作戦ボード
       </h1>
 

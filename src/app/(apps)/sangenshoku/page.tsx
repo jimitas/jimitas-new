@@ -297,7 +297,7 @@ export default function SangenshokuPage() {
     <div className="max-w-5xl mx-auto px-4 py-8">
 
       {/* タイトル */}
-      <h1 className="text-2xl font-bold text-center mb-1 text-gray-800">
+      <h1 className="text-2xl font-bold text-center mb-1 text-gray-800 dark:text-gray-100">
         三原色学習
       </h1>
       <p className="text-sm text-center text-gray-500 mb-5">

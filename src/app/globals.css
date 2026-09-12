@@ -11,11 +11,19 @@
 @import "tailwindcss";
 
 /* -------------------------------------------------------
-   ダークモード設定（class 方式）
-   <html class="dark"> がついたとき dark: プレフィックスが適用される
-   DarkModeToggle.tsx が html 要素の class を操作する
+   ダークモード設定（data属性方式）
+   <html data-theme="dark"> がついたとき dark: プレフィックスが適用される
+   DarkModeToggle.tsx が html 要素の data-theme を操作する
+
+   なぜ class ではなく data 属性なのか:
+     layout.tsx で React が <html className={...}> を管理しているため、
+     class 方式だとハイドレーション時に React が className を書き戻し、
+     チラつき防止スクリプトが足した "dark" を消してしまう。
+     （リロードするとライトに戻る、というバグの原因だった）
+     React が管理していない data 属性なら書き戻されない。
+     同じ理由で先に属性方式にしてあるフォント切替（data-font）と揃えている。
    ------------------------------------------------------- */
-@custom-variant dark (&:where(.dark, .dark *));
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
 /* -------------------------------------------------------
    カラーパレット定義
@@ -185,15 +193,15 @@ select,
    Tailwind の dark: プレフィックスが効かない場合の保険として
    プレーンな CSS セレクタでも背景・文字色を切り替える
    ------------------------------------------------------- */
-.dark body {
+[data-theme="dark"] body {
   background-color: #111827; /* gray-900 */
   color: #f3f4f6;            /* gray-100 */
 }
-.dark header {
+[data-theme="dark"] header {
   background-color: #1f2937; /* gray-800 */
   border-color: #374151;     /* gray-700 */
 }
-.dark footer {
+[data-theme="dark"] footer {
   background-color: #1f2937;
   border-color: #374151;
 }

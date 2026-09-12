@@ -60,7 +60,7 @@ export default function KukuArrayPage() {
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
 
       {/* タイトル */}
-      <h1 className="text-xl font-bold text-center text-gray-800">
+      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100">
         九九のアレイ図
       </h1>
 

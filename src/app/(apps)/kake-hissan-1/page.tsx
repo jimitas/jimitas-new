@@ -319,7 +319,7 @@ export default function KakeHissan1Page() {
     <div className="max-w-5xl mx-auto px-4 py-6 space-y-4">
 
       {/* タイトル */}
-      <h1 className="text-xl font-bold text-center text-gray-800">
+      <h1 className="text-xl font-bold text-center text-gray-800 dark:text-gray-100">
         ✖️ かけ算のひっ算①
       </h1>
 

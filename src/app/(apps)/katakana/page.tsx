@@ -205,7 +205,7 @@ export default function KatakanaPage() {
 
       {/* タイトル＋レベル選択（1行） */}
       <div className="flex items-center justify-between mb-3 gap-2 flex-wrap">
-        <h1 className="text-2xl font-bold text-gray-800 shrink-0">
+        <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 shrink-0">
           カタカナのれんしゅう
         </h1>
         <div className="flex gap-2">

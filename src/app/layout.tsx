@@ -97,9 +97,14 @@ export default function RootLayout({
 }) {
   return (
     // suppressHydrationWarning:
-    //   テーマスクリプトが html の class や data 属性を書き換えるため、
-    //   サーバー側とブラウザ側でHTMLが一致しないことがある。
+    //   テーマスクリプトが html の data 属性（data-theme / data-font）を
+    //   書き換えるため、サーバー側とブラウザ側でHTMLが一致しないことがある。
     //   この警告を抑制するために必要。
+    //
+    //   注意: className は React が管理している。ここに dark を足す方式だと
+    //   ハイドレーション時に React が className を書き戻して消してしまうため、
+    //   ダークモードは data-theme 属性で管理している（globals.css 参照）。
+    //   suppressHydrationWarning は警告を消すだけで、書き戻し自体は止めない。
     // translate="no": Google翻訳などによるアプリUIの自動翻訳を禁止する
     <html
       lang="ja"
@@ -118,7 +123,7 @@ export default function RootLayout({
           dangerouslySetInnerHTML={{
             __html: `(function() {
   if (localStorage.getItem('jimitas_dark') === 'true') {
-    document.documentElement.classList.add('dark');
+    document.documentElement.dataset.theme = 'dark';
   }
   var font = localStorage.getItem('jimitas_font');
   if (font === 'gothic') {
