@@ -106,9 +106,14 @@ const MH_CSS = `
 .mh-tab:hover:not(.mh-tab-active) { background: #eef2f7; }
 .mh-tab-active { background: var(--mh-accent); color: #fff; border-color: var(--mh-accent); }
 
-/* パネル */
+/* パネル
+   color を明示している理由:
+   このアプリは独自の CSS 変数で配色を組んでおり、パネルは白（--mh-card）のまま。
+   色を指定しないと、ダークモード時に body の明るい文字色を継承して
+   白地に白文字になる。パネルは白のままでよいので、文字色だけ固定する。 */
 .mh-panel {
   background: var(--mh-card); border: 1px solid var(--mh-border);
+  color: #1f2937;
   border-radius: var(--mh-radius); padding: 1.5rem; margin-bottom: 1rem;
 }
 

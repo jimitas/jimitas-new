@@ -431,8 +431,9 @@ export default function KyotoKuPage() {
             return (
               <div
                 key={wardId}
+                // カードは明るい色のままにするので、ダークモードでも文字色を固定する
                 className={`px-2 py-1 rounded border-2 cursor-grab select-none
-                  text-center transition-all active:scale-95
+                  text-center text-gray-800 transition-all active:scale-95
                   ${selectedCard === wardId
                     ? "border-blue-500 bg-blue-100 ring-2 ring-blue-300"
                     : "border-gray-300 bg-amber-50 hover:bg-amber-100"

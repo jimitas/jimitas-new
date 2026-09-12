@@ -112,7 +112,7 @@ export default function KakeHissan1Page() {
       div.setAttribute("draggable", "true")
       div.style.cssText = [
         "width:44px", "height:44px", "line-height:44px",
-        "background:white", "font-size:26px", "text-align:center",
+        "background:white", "color:#1f2937", "font-size:26px", "text-align:center",
         "border-radius:10%", "border:1px solid #333",
         "cursor:pointer", "user-select:none", "display:inline-block",
       ].join(";")
@@ -408,6 +408,8 @@ export default function KakeHissan1Page() {
 
           {/* 筆算テーブル（4行×4列、60px セル）*/}
           <table
+            // 紙面は白のままなので、ダークモードでも文字色を固定して継承させる
+            className="text-gray-800"
             ref={tblRef}
             style={{ borderCollapse: "collapse" }}
           >

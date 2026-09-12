@@ -269,7 +269,8 @@ export default function RomajiPage() {
 
       {/* 入力表示ボックス */}
       <div className="text-center text-3xl font-mono font-bold bg-white border-2 border-gray-300 rounded-xl py-4 mb-4 min-h-16 tracking-widest text-gray-700">
-        {myAnswer || <span className="text-gray-300">─</span>}
+        {/* 未入力時のプレースホルダ。gray-300 だと白地に対して 1.47:1 でほぼ見えなかった */}
+        {myAnswer || <span className="text-gray-500">─</span>}
       </div>
 
       {/* コントロールボタン */}

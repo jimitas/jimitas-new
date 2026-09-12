@@ -258,7 +258,8 @@ export default function SuuzuBlockPage() {
         {/* ===== 起動時トースト（使い方説明） ===== */}
         {showToast && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white rounded-2xl shadow-2xl w-[90vw] max-w-md mx-4 flex flex-col max-h-[90vh]">
+            {/* 白いカードのままにするので、ダークモードでも文字色を固定して子へ継承させる */}
+            <div className="bg-white text-gray-800 rounded-2xl shadow-2xl w-[90vw] max-w-md mx-4 flex flex-col max-h-[90vh]">
               <div className="overflow-y-auto p-4 md:p-6 flex-1">
 
                 <h2 className="text-center text-lg md:text-2xl font-bold text-blue-600 mb-3">

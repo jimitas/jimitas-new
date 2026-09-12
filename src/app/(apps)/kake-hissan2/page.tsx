@@ -153,7 +153,7 @@ export default function KakeHissan2Page() {
       div.setAttribute("draggable", "true")
       div.style.cssText = [
         `width:${NUM_SIZE}px`, `height:${NUM_SIZE}px`, `line-height:${NUM_SIZE}px`,
-        "background:white", "font-size:26px", "text-align:center",
+        "background:white", "color:#1f2937", "font-size:26px", "text-align:center",
         "border-radius:10%", "border:1px solid #333",
         "cursor:pointer", "user-select:none", "display:inline-block",
       ].join(";")
@@ -683,8 +683,9 @@ export default function KakeHissan2Page() {
       {/* 筆算テーブル（8行×9列） */}
       <div className="flex items-start gap-2">
         <table
+          // 紙面は白のままなので、ダークモードでも文字色を固定して継承させる
+          className="mx-auto text-gray-800"
           ref={tblRef}
-          className="mx-auto"
           style={{ borderCollapse: "collapse", flexShrink: 0 }}
         >
           <tbody>

@@ -209,8 +209,8 @@ export default function RecorderPage() {
           <RecorderFingering holes={activeFingering} />
 
           {/* 凡例 */}
-          <div className="text-sm text-gray-600">
-            <p className="font-bold text-gray-700 mb-2">●運指の見かた</p>
+          <div className="text-sm text-gray-600 dark:text-gray-300">
+            <p className="font-bold text-gray-700 dark:text-gray-200 mb-2">●運指の見かた</p>
             <div className="flex items-center gap-2 mb-1.5">
               <span className="inline-block w-6 h-6 rounded-full border-2 border-amber-700 bg-amber-100 shrink-0" />
               <span>あける</span>

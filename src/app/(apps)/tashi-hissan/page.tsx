@@ -199,7 +199,7 @@ export default function TashiHissanPage() {
       div.setAttribute("draggable", "true")
       div.style.cssText = [
         "width:50px", "height:50px", "line-height:50px",
-        "background:white", "font-size:30px", "text-align:center",
+        "background:white", "color:#1f2937", "font-size:30px", "text-align:center",
         "border-radius:10%", "border:1px solid #333",
         "cursor:pointer", "user-select:none", "display:inline-block",
       ].join(";")
@@ -563,6 +563,8 @@ export default function TashiHissanPage() {
 
         {/* 筆算テーブル（4行×4列、60×60px） */}
         <table
+          // 紙面は白のままなので、ダークモードでも文字色を固定して継承させる
+          className="text-gray-800"
           ref={tblRef}
           style={{ borderCollapse: "collapse", flexShrink: 0 }}
         >
@@ -610,6 +612,8 @@ export default function TashiHissanPage() {
 
         {/* お金テーブル（4行×4列、200×60px） */}
         <table
+          // 紙面は白のままなので、ダークモードでも文字色を固定して継承させる
+          className="text-gray-800"
           ref={tbl2Ref}
           style={{ marginLeft: 20, borderCollapse: "collapse", flexShrink: 0 }}
         >

@@ -515,7 +515,7 @@ export default function WariHissanPage() {
       div.setAttribute("draggable", "true")
       div.style.cssText = [
         `width:${NUM_SIZE}px`, `height:${NUM_SIZE}px`, `line-height:${NUM_SIZE}px`,
-        "background:white", "font-size:26px", "text-align:center",
+        "background:white", "color:#1f2937", "font-size:26px", "text-align:center",
         "border-radius:10%", "border:1px solid #333",
         "cursor:pointer", "user-select:none", "display:inline-block",
       ].join(";")
@@ -1075,8 +1075,12 @@ export default function WariHissanPage() {
       {/* 筆算テーブル（13列 × 可変行） + ゴミ箱 */}
       <div className="flex items-start gap-2">
         <table
-          ref={tblRef}
+          // 他の筆算と違い、ここでは文字色を固定しないこと。
+          // rewriteTable() が cell.style.backgroundColor = "" で白背景を消すため、
+          // 問題を出したあとのセルは透明（＝ページの地の色）になる。
+          // 固定するとダークモードで暗い地に暗い文字になって読めなくなる。
           className="mx-auto"
+          ref={tblRef}
           style={{ borderCollapse: "collapse", flexShrink: 0 }}
         >
           <tbody>
