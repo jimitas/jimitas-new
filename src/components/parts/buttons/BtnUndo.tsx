@@ -1,15 +1,22 @@
 // ======================================================
 // BtnUndo コンポーネント
 //
-// リセット（元に戻す・もどす）ボタン。
-// 配色: danger（赤系）— リセット・破壊的アクションの統一トークン。
-// 詳細は docs/06_配色設計.md 参照。
+// リセット（元に戻す・もどす）ボタン。アイコンのみ。
+// danger（赤系）— リセット・破壊的アクションの統一トークン。
+// 見た目の定義は Btn.tsx に集約してある。
+//
+// gap-1 を渡していない理由:
+//   他の部品は「アイコン＋文字」なので gap-1 で隙間を空けるが、
+//   この部品はアイコン1つだけなので、元から gap を持っていなかった。
+//   見た目は同じ（子要素が1つなので隙間は生じない）だが、
+//   移行時に「本当に何も変わっていない」ことを機械的に確かめられるよう、
+//   元の状態をそのまま保っている。
 // ======================================================
 
 "use client"
 
 import { FaRotateLeft } from "react-icons/fa6"
-import * as se from "@/lib/se"
+import { Btn } from "./Btn"
 
 interface BtnUndoProps {
   handleEvent: () => void
@@ -17,18 +24,12 @@ interface BtnUndoProps {
 
 export function BtnUndo({ handleEvent }: BtnUndoProps) {
   return (
-    <div className="flex flex-wrap justify-center">
-      <button
-        onClick={() => { se.playSe(se.pi); handleEvent() }}
-        className="flex justify-center items-center font-bold m-2 p-2
-                   w-10 h-12 md:w-12 text-sm md:text-base
-                   bg-danger-400 hover:bg-danger-500 active:bg-danger-600
-                   text-white border-2 border-danger-400
-                   active:translate-y-0.5 transition-colors
-                   rounded-lg shadow-sm"
-      >
-        <FaRotateLeft className="w-4 h-4 md:w-6 md:h-6" />
-      </button>
-    </div>
+    <Btn
+      color="danger"
+      onClick={handleEvent}
+      icon={<FaRotateLeft className="w-4 h-4 md:w-6 md:h-6" />}
+      className="m-2 p-2 w-10 h-12 md:w-12 md:text-base"
+      centerWrapper
+    />
   )
 }

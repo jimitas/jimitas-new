@@ -1,14 +1,14 @@
 // ======================================================
 // BtnShowAnswer コンポーネント
 //
-// 「こたえをみる」ボタン。
-// 問題の正解を答え欄に表示する。
+// 「こたえをみる」ボタン。warm（オレンジ・ヒント系）。
+// 見た目の定義は Btn.tsx に集約してある。
 // ======================================================
 
 "use client"
 
 import { FaEye } from "react-icons/fa6"
-import * as se from "@/lib/se"
+import { Btn } from "./Btn"
 
 interface BtnShowAnswerProps {
   handleEvent: () => void
@@ -17,21 +17,15 @@ interface BtnShowAnswerProps {
 
 export function BtnShowAnswer({ handleEvent, disabled = false }: BtnShowAnswerProps) {
   return (
-    <div className="flex flex-wrap justify-center">
-      <button
-        onClick={() => { se.playSe(se.pi); handleEvent() }}
-        disabled={disabled}
-        className="flex justify-center items-center gap-1 font-bold m-2 p-2
-                   w-32 md:w-36 text-sm md:text-base
-                   bg-warm-400 hover:bg-warm-500 active:bg-warm-600
-                   text-white border-2 border-warm-400
-                   active:translate-y-0.5 transition-colors
-                   rounded-lg shadow-sm
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
-      >
-        <FaEye />
-        こたえをみる
-      </button>
-    </div>
+    <Btn
+      color="warm"
+      onClick={handleEvent}
+      disabled={disabled}
+      icon={<FaEye />}
+      className="gap-1 m-2 p-2 w-32 md:w-36 md:text-base"
+      centerWrapper
+    >
+      こたえをみる
+    </Btn>
   )
 }

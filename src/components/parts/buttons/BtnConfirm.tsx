@@ -43,8 +43,9 @@
 
 import { ReactNode, useState } from "react"
 import { useSound } from "@/hooks/useSound"
+import { BTN_COLOR_CLASS, BTN_SHAPE_CLASS, type BtnColor } from "./Btn"
 
-type ConfirmColor = "brand" | "accent" | "warm" | "danger" | "neutral"
+type ConfirmColor = BtnColor
 type YesColor = "danger" | "brand" | "warm"
 
 type Props = {
@@ -69,19 +70,13 @@ type Props = {
   noLabel?: string
 }
 
-// 通常時ボタンの色クラス（-400 ベース白抜き）
-const COLOR_CLASS: Record<ConfirmColor, string> = {
-  brand:   "bg-brand-400  hover:bg-brand-500  active:bg-brand-600  text-white border-2 border-brand-400",
-  accent:  "bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white border-2 border-accent-400",
-  warm:    "bg-warm-400   hover:bg-warm-500   active:bg-warm-600   text-white border-2 border-warm-400",
-  danger:  "bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white border-2 border-danger-400",
-  neutral: "bg-gray-300   hover:bg-gray-400   active:bg-gray-500   text-gray-800 border-2 border-gray-300 dark:bg-gray-700 dark:text-gray-100 dark:border-gray-600",
-}
+// 通常時ボタンの色・形は Btn.tsx の定義を使う。
+// 以前はこのファイルに同じものが書いてあったが、他のボタン部品と
+// 二重管理になるため Btn.tsx へ引き上げた（値は変わっていない）。
+const COLOR_CLASS = BTN_COLOR_CLASS
 
-// 通常時ボタンの共通クラス（余白・フォント・形状・disabled 時の見た目）
-const COMMON_BUTTON_CLASS =
-  "px-3 py-2 font-bold text-sm rounded-lg shadow-sm active:translate-y-0.5 transition-colors " +
-  "disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
+// 余白（px-3 py-2）だけはこの部品固有なので、形の共通部分に足して使う
+const COMMON_BUTTON_CLASS = `px-3 py-2 ${BTN_SHAPE_CLASS}`
 
 // 「はい」の色テーマ（背景＋ホバー）— 破壊的=danger, 開始=brand, 注意=warm
 const YES_BG: Record<YesColor, string> = {

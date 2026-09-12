@@ -1,13 +1,14 @@
 // ======================================================
 // BtnQuestion コンポーネント
 //
-// 「もんだい」ボタン。
+// 「もんだい」ボタン。brand（緑・開始系）。
+// 見た目の定義は Btn.tsx に集約してある。
 // ======================================================
 
 "use client"
 
 import { FaQuestion } from "react-icons/fa6"
-import * as se from "@/lib/se"
+import { Btn } from "./Btn"
 
 interface BtnQuestionProps {
   handleEvent: () => void
@@ -17,21 +18,15 @@ interface BtnQuestionProps {
 
 export function BtnQuestion({ handleEvent, btnText = "もんだい", disabled = false }: BtnQuestionProps) {
   return (
-    <div className="flex flex-wrap justify-center">
-      <button
-        onClick={() => { se.playSe(se.pi); handleEvent() }}
-        disabled={disabled}
-        className="flex justify-center items-center gap-1 font-bold m-2 p-2
-                   w-24 md:w-32 text-sm md:text-base
-                   bg-brand-400 hover:bg-brand-500 active:bg-brand-600
-                   text-white border-2 border-brand-400
-                   active:translate-y-0.5 transition-colors
-                   rounded-lg shadow-sm
-                   disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
-      >
-        <FaQuestion className="w-4 h-4 md:w-6 md:h-6" />
-        {btnText}
-      </button>
-    </div>
+    <Btn
+      color="brand"
+      onClick={handleEvent}
+      disabled={disabled}
+      icon={<FaQuestion className="w-4 h-4 md:w-6 md:h-6" />}
+      className="gap-1 m-2 p-2 w-24 md:w-32 md:text-base"
+      centerWrapper
+    >
+      {btnText}
+    </Btn>
   )
 }
