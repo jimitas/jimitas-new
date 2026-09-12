@@ -27,6 +27,21 @@
 
 /* -------------------------------------------------------
    カラーパレット定義
+
+   ⚠️ ランプ（-50〜-950）に穴を空けないこと。
+
+   Tailwind v4 では、ここに定義がない濃度のクラス（例 bg-warm-900）は
+   **CSS がまったく生成されない**。エラーにもならず、ただ何も起きない。
+   書いた側は色が付いているつもりでいるので、気づくのが非常に遅れる。
+
+   2026-09-12、実際に9種類の未定義トークンが使われていた。
+   （accent-900 / warm-700,800,900,950 / rose-300,700,800,900）
+   oto-dashiyo の音階ボタンは dark:bg-warm-900 と書いてあるのに
+   ダークモードで背景が明るいまま、という状態が放置されていた。
+
+   値は Tailwind 標準のランプに揃えてある。
+     brand → emerald 系 / accent → blue / warm → orange / rose・danger → rose
+   濃度を足すときも同じランプの値を使うこと。
    ------------------------------------------------------- */
 @theme {
   /* ===== ブランドカラー（緑系・UD配慮） =====
@@ -53,15 +68,22 @@
   --color-accent-500: #3b82f6;
   --color-accent-600: #2563eb;
   --color-accent-700: #1d4ed8;
+  --color-accent-800: #1e40af;  /* ダークモードの背景用 */
+  --color-accent-900: #1e3a8a;  /* ダークモードの背景用 */
 
   /* ===== かけられる数カラー（ローズ系・UD配慮） =====
      青との組み合わせで赤緑色覚異常でも識別しやすい。
      かけられる数（行・段）の色として九九アプリ全体で統一使用 */
+  --color-rose-50:  #fff1f2;
   --color-rose-100: #ffe4e6;
   --color-rose-200: #fecdd3;
+  --color-rose-300: #fda4af;
   --color-rose-400: #fb7185;
   --color-rose-500: #f43f5e;
   --color-rose-600: #e11d48;
+  --color-rose-700: #be123c;   /* ダークモードの背景・濃い文字用 */
+  --color-rose-800: #9f1239;   /* 同上 */
+  --color-rose-900: #881337;   /* 同上 */
 
   /* ===== 補助色（オレンジ系） =====
      コインやアクセントに使う。緑・青と視覚的に区別しやすい */
@@ -72,6 +94,10 @@
   --color-warm-400: #fb923c;  /* 基準濃度（-400 ベース白抜きで使用） */
   --color-warm-500: #f97316;
   --color-warm-600: #ea580c;
+  --color-warm-700: #c2410c;  /* ライトモードの濃い文字用 */
+  --color-warm-800: #9a3412;  /* ダークモードの背景用 */
+  --color-warm-900: #7c2d12;  /* 同上 */
+  --color-warm-950: #431407;  /* 同上 */
 
   /* ===== danger（リセット・停止・破壊的アクション） =====
      現状は rose と同値（赤系・UD配慮で青と組み合わせて識別可能）。
@@ -259,6 +285,8 @@ select,
   transform-origin: 0 0;
   transform: scale(0.5);
   background: white;
+  /* 紙は白のままにするので、ダークモードで body の明るい文字色を継承しないよう固定する */
+  color: #1f2937;
 }
 
 /* 印刷時 */
@@ -310,6 +338,8 @@ select,
   transform-origin: 0 0;
   transform: scale(0.75);
   background: white;
+  /* 紙は白のままにするので、ダークモードで body の明るい文字色を継承しないよう固定する */
+  color: #1f2937;
   border: dotted 0.5px #888;
 }
 
@@ -395,6 +425,8 @@ select,
   transform-origin: 0 0;
   transform: scale(0.7);
   background: white;
+  /* 紙は白のままにするので、ダークモードで body の明るい文字色を継承しないよう固定する */
+  color: #1f2937;
   border: dotted 0.5px #888;
   font-family: "UD Digi Kyokasho N-R", "UD デジタル 教科書体 N-R", var(--font-biz-udp-gothic), sans-serif;
 }
@@ -473,6 +505,8 @@ select,
   border-top: dashed 1px black;
   box-sizing: border-box;
   background: white;
+  /* 紙は白のままにするので、ダークモードで body の明るい文字色を継承しないよう固定する */
+  color: #1f2937;
 }
 
 /* 印刷時 */
