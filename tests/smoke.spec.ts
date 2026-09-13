@@ -17,6 +17,13 @@ import { apps } from "../src/data/apps"
 // disabled: true のアプリは除外
 const targets = apps.filter(a => !a.disabled)
 
+// ハイドレーション完了を待つための上乗せ時間（ms）
+//
+// 実測に基づく値で、機械が遅ければ足りなくなりうる。
+// 「たまに落ちる」ようになったら、まず疑うのは実装ではなくこの値。
+// 逆に**ここを短くすると、エラーが出ていても緑になる**（検出できなくなる）。
+const HYDRATION_SETTLE_MS = 600
+
 for (const app of targets) {
   test(`[${app.id}] ページが表示される`, async ({ page }) => {
     const consoleErrors: string[] = []
@@ -44,6 +51,21 @@ for (const app of targets) {
 
     // 4. <h1> が見える
     await expect(page.locator("h1").first(), `${app.id}: <h1> 要素`).toBeVisible()
+
+    // 5. ハイドレーションが済むまで待ってから console.error を見る
+    //
+    // ⚠️ この待ちを外さないこと。
+    //    goto は domcontentloaded で返ってくるが、React のハイドレーションは
+    //    そのあとに走る。待たずに判定すると、ハイドレーション不整合のエラーが
+    //    届く前にテストが終わってしまい、**エラーが出ていても緑になる。**
+    //    実際 nanbanme は不整合を出したまま191件グリーンを通過していた（2026-09-13）。
+    //
+    //    networkidle だけでは足りない。React 19 のハイドレーションはネットワークが
+    //    静止したあとにも走り、実測すると **エラー到達が networkidle の前後にばらける**
+    //    （561〜1151ms / networkidle は 1053〜1240ms）。待ちなしで3回試すと2回落ちて
+    //    1回通る、という不安定なテストになる。静止後にもう少し待って確定させる。
+    await page.waitForLoadState("networkidle")
+    await page.waitForTimeout(HYDRATION_SETTLE_MS)
 
     // console.error が出ていないことを確認
     // （外部フォント読み込み失敗など既知の無害なものは除外）

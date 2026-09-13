@@ -35,13 +35,22 @@ const ANIMALS = ["dog", "cat", "monkey", "frog", "usagi", "niwatori", "ika", "ta
 const DIRS    = ["ひだり", "みぎ"]
 const NUMS    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 
+// 開いた直後の並び順（ANIMALS の並びそのまま）
+const INITIAL_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
 // ── コンポーネント ───────────────────────────────────
 
 export default function NanbanmePage() {
   // ── 状態管理 ─────────────────────────────────────
 
-  // 動物の並び順（ANIMALS 配列のインデックスをシャッフルした配列）
-  const [order, setOrder] = useState<number[]>(() => shuffled([0,1,2,3,4,5,6,7,8,9]))
+  // 動物の並び順（ANIMALS 配列のインデックス）
+  //
+  // ⚠️ ここで shuffled() を呼ばないこと。
+  //    初期stateの計算は SSR でもサーバー側で走るため、サーバーとクライアントで
+  //    違う並びを描いてハイドレーション不整合になる（実際に起きていた）。
+  //    ブラウザ側で Math.random を差し替えても、サーバーの乱数までは止められない。
+  //    並びを変えるのは「シャッフル」ボタンを押したときだけ。
+  const [order, setOrder] = useState<number[]>(INITIAL_ORDER)
 
   // 現在のモード（0=初期, 1=もんだい1, 2=もんだい2）
   const [mode, setMode] = useState<0 | 1 | 2>(0)
@@ -196,7 +205,7 @@ export default function NanbanmePage() {
 
   const handleShuffle = useCallback(() => {
     se.playSe(se.seikai1)
-    setOrder(shuffled([0,1,2,3,4,5,6,7,8,9]))
+    setOrder(shuffled(INITIAL_ORDER))
     setMode(0)
     setFlag(false)
     setQ2Animal("")
