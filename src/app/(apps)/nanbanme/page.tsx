@@ -38,6 +38,26 @@ const NUMS    = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
 // 開いた直後の並び順（ANIMALS の並びそのまま）
 const INITIAL_ORDER = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
+// 画像の元の大きさ（public/images/*.png の実寸）
+//
+// next/image には**元画像の比率**を渡す。表示サイズは CSS（w-20 / w-[72px]）で決める。
+// ここに表示サイズ（80×80）を書くと、正方形でない画像で嘘になる。
+// monkey だけ 455×570 で、Tailwind preflight の img { height:auto } により
+// 実際は 80×100 で描画されるため、80×80 と申告すると
+// Next.js が「片側だけ CSS で変えられている」と警告を出していた。
+const ANIMAL_SIZE: Record<string, { w: number; h: number }> = {
+  dog:       { w: 400, h: 400 },
+  cat:       { w: 150, h: 150 },
+  monkey:    { w: 455, h: 570 },
+  frog:      { w: 150, h: 150 },
+  usagi:     { w: 480, h: 480 },
+  niwatori:  { w: 400, h: 400 },
+  ika:       { w: 400, h: 400 },
+  tako:      { w: 400, h: 400 },
+  iruka:     { w: 400, h: 400 },
+  butterfly: { w: 600, h: 600 },
+}
+
 // ── コンポーネント ───────────────────────────────────
 
 export default function NanbanmePage() {
@@ -237,9 +257,9 @@ export default function NanbanmePage() {
           <Image
             src={`/images/${q2Animal}.png`}
             alt={q2Animal}
-            width={72}
-            height={72}
-            className="object-contain"
+            width={ANIMAL_SIZE[q2Animal]?.w ?? 72}
+            height={ANIMAL_SIZE[q2Animal]?.h ?? 72}
+            className="object-contain w-[72px] h-auto"
           />
         </div>
       )}
@@ -254,12 +274,13 @@ export default function NanbanmePage() {
                        hover:scale-110 transition-transform"
             aria-label={ANIMALS[animalIdx]}
           >
+            {/* 幅は CSS（w-20 = 80px）で決め、高さは元画像の比率に従わせる */}
             <Image
               src={`/images/${ANIMALS[animalIdx]}.png`}
               alt={ANIMALS[animalIdx]}
-              width={80}
-              height={80}
-              className="object-contain"
+              width={ANIMAL_SIZE[ANIMALS[animalIdx]].w}
+              height={ANIMAL_SIZE[ANIMALS[animalIdx]].h}
+              className="object-contain w-20 h-auto"
             />
           </button>
         ))}

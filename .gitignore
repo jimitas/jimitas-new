@@ -48,3 +48,10 @@ next-env.d.ts
 /playwright-report/
 /test-results/
 
+# docs に貼り付けた一時的な確認用スクショ
+# （調査中に画面を貼るためのもの。ドキュメント本文から参照する図は
+#   別名を付けてここに引っかからないようにする）
+/docs/image.png
+/docs/image copy.png
+/docs/image*.png
+
