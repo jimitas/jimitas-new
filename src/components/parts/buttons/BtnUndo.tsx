@@ -29,7 +29,6 @@ export function BtnUndo({ handleEvent }: BtnUndoProps) {
       onClick={handleEvent}
       icon={<FaRotateLeft className="w-4 h-4 md:w-6 md:h-6" />}
       className="m-2 p-2 w-10 h-12 md:w-12 md:text-base"
-      centerWrapper
     />
   )
 }

@@ -21,7 +21,6 @@ export function BtnSet({ handleEvent }: BtnSetProps) {
       onClick={handleEvent}
       icon={<FaPenToSquare />}
       className="gap-1 m-2 p-2 w-20 md:w-24 md:text-base"
-      centerWrapper
     >
       セット
     </Btn>

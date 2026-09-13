@@ -24,7 +24,6 @@ export function BtnCheck({ handleEvent, btnText = "こたえあわせ", disabled
       disabled={disabled}
       icon={<FaCheck className="w-4 h-4 md:w-6 md:h-6" />}
       className="gap-1 m-2 p-2 w-32 md:w-36 md:text-base"
-      centerWrapper
     >
       {btnText}
     </Btn>

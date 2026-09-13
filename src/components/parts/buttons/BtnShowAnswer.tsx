@@ -23,7 +23,6 @@ export function BtnShowAnswer({ handleEvent, disabled = false }: BtnShowAnswerPr
       disabled={disabled}
       icon={<FaEye />}
       className="gap-1 m-2 p-2 w-32 md:w-36 md:text-base"
-      centerWrapper
     >
       こたえをみる
     </Btn>

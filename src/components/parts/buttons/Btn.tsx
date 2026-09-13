@@ -53,8 +53,13 @@ export const BTN_COLOR_CLASS: Record<BtnColor, string> = {
 //   例: 名前付き部品は "m-2 p-2 w-24 md:w-32"
 //       BtnConfirm は "px-3 py-2"（中身に合わせて伸びる）
 // -------------------------------------------------------
+// shrink-0 は必須。
+// 折り返さない flex 行（例: 式表示 ＋ こたえあわせ）の中に置かれると、
+// ボタンは指定した幅（w-32 など）より小さく潰され、ラベルが2行になって
+// 高さが変わる。日本語ラベルは文字単位で折り返せるため min-content が
+// とても小さく、かなり潰れる。スマホ幅で実際に起きていた。
 export const BTN_SHAPE_CLASS =
-  "font-bold text-sm rounded-lg shadow-sm active:translate-y-0.5 transition-colors " +
+  "shrink-0 font-bold text-sm rounded-lg shadow-sm active:translate-y-0.5 transition-colors " +
   "disabled:opacity-40 disabled:cursor-not-allowed disabled:active:translate-y-0"
 
 // 中身を中央に並べる形。
@@ -86,15 +91,6 @@ interface BtnProps {
    * 既定の形（BTN_SHAPE_CLASS）を上書きしたい場合もここへ書く。
    */
   className?: string
-  /**
-   * 外側を <div className="flex flex-wrap justify-center"> で囲む。
-   * 既存部品の見た目を変えないために用意している互換用の指定。
-   *
-   * ⚠️ 新しく使うときは付けないこと。
-   *    このラッパーがあるとボタンを横に2つ並べられない。
-   *    既存部品が使われなくなっていた理由でもある。
-   */
-  centerWrapper?: boolean
   /** アイコンだけのボタンで読み上げ用のラベルを付けたいとき */
   ariaLabel?: string
 }
@@ -106,10 +102,9 @@ export function Btn({
   icon,
   disabled = false,
   className = "",
-  centerWrapper = false,
   ariaLabel,
 }: BtnProps) {
-  const button = (
+  return (
     <button
       onClick={() => { se.playSe(se.pi); onClick() }}
       disabled={disabled}
@@ -120,8 +115,4 @@ export function Btn({
       {children}
     </button>
   )
-
-  return centerWrapper
-    ? <div className="flex flex-wrap justify-center">{button}</div>
-    : button
 }
