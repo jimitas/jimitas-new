@@ -711,6 +711,17 @@ export const apps: AppItem[] = [
     type: "app",
     path: "/triangle-ratio",
   },
+  {
+    id: "algorithm",
+    title: "アルゴリズムシミュレーター",
+    description: "ソートと探索の しくみを アニメーションで 確かめよう",
+    seoDescription: "選択ソート・バブルソート・挿入ソート・線形探索・二分探索の動きをアニメーションで可視化。比較回数と交換回数を実測して計算量 O(n²)・O(log n) を体感でき、Python・JavaScript・共通テスト用プログラム表記のコードが動きに合わせて行ハイライトされる。高校情報Ⅰの教材に",
+    grades: ["中学", "高校"],
+    subjects: ["その他"],
+    tags: ["情報", "アルゴリズム", "ソート", "探索", "計算量", "プログラミング", "情報Ⅰ", "共通テスト"],
+    type: "tool",
+    path: "/algorithm",
+  },
 
   {
     id: "monty-hall",

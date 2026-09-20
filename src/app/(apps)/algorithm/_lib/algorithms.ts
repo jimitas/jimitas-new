@@ -1,0 +1,187 @@
+// ======================================================
+// アルゴリズムの登録表と、ステップ列の入口
+//
+// ALGOS は Record<AlgoId, AlgoDef>。AlgoId に1つ足すとここが
+// 型エラーになるので、タブ・生成器・計算量表の書き忘れが起きない。
+// ======================================================
+
+import { CountRecorder, StepRecorder, type Recorder } from "./recorder"
+import { bubbleSort, exchangeSort, insertionSort, selectionSort } from "./sorts"
+import type { AlgoId, PointerName, Step } from "./types"
+
+export type AlgoDef = {
+  id: AlgoId
+  /** タブに出す名前 */
+  label: string
+  category: "sort" | "search"
+  /** アルゴリズム本体。Recorder に対してだけ書く */
+  run: (rec: Recorder, options: RunOptions) => void
+  /** 理論計算量の表に出す文字列 */
+  complexity: { best: string; average: string; worst: string; space: string }
+  /** 比較回数の理論値（段階3のグラフの線に使う） */
+  theory: (n: number) => number
+  /** 入力がソート済みである必要があるか（二分探索だけ true になる予定） */
+  requiresSorted: boolean
+  /** しくみの解説。画面の解説パネルに出す */
+  explanation: {
+    /** どうやって並べる（さがす）か。番号つきで出す */
+    how: readonly string[]
+    /** 長所・短所などのポイント */
+    points: readonly string[]
+  }
+  /**
+   * 矢印 → コード例での変数名。
+   * 「m」がコードの saisho のことだと初学者が気づけるよう、凡例に添える。
+   * ここに書いた名前が3言語すべてのコード例に出てくることは単体テストで固定する。
+   */
+  pointerVars: Partial<Record<PointerName, string>>
+}
+
+export type RunOptions = {
+  /** 探索アルゴリズムでさがす値（段階2で使う） */
+  target?: number
+}
+
+export const ALGOS: Record<AlgoId, AlgoDef> = {
+  selection: {
+    id: "selection",
+    label: "選択ソート",
+    category: "sort",
+    run: (rec) => selectionSort(rec),
+    complexity: {
+      best: "O(n²)",
+      average: "O(n²)",
+      worst: "O(n²)",
+      space: "O(1)",
+    },
+    theory: (n) => (n * (n - 1)) / 2,
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "まだ並んでいない範囲の中から、いちばん小さい値をさがす（矢印 m がその場所）",
+        "見つけたら、その範囲のいちばん前（矢印 i の場所）と入れかえる",
+        "前から1つずつ確定していくので、範囲を1つせまくして 1 にもどる",
+      ],
+      points: [
+        "くらべる回数は、はじめの並びかたに関係なく いつも n×(n−1)÷2 回。ほとんど並んでいても手をぬけないのが短所（「ほぼ順番」や「全部同じ」をえらんで確かめてみよう）",
+        "入れかえは1巡につき1回だけ。入れかえの回数が n−1 回ですむのは長所で、1つのデータが大きいときほど効いてくる",
+        "配列の中だけで並べかえるので、別の入れものを用意しなくてよい（つかうメモリは O(1)）",
+      ],
+    },
+    pointerVars: { i: "i", j: "j", min: "saisho" },
+  },
+
+  bubble: {
+    id: "bubble",
+    label: "バブルソート",
+    category: "sort",
+    run: (rec) => bubbleSort(rec),
+    complexity: {
+      // 早期終了があるので、ならんでいる入力は1巡（n-1回）で終わる
+      best: "O(n)",
+      average: "O(n²)",
+      worst: "O(n²)",
+      space: "O(1)",
+    },
+    theory: (n) => (n * (n - 1)) / 2,
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "左はしから、となりどうし（矢印 j と その右）をくらべる",
+        "左のほうが大きければ入れかえる。これを右はしまでくり返す",
+        "1巡すると いちばん大きい値が右はしに来るので、そこを確定して また左はしから",
+      ],
+      points: [
+        "1巡のあいだ1回も入れかえが起きなければ、もう並んでいるので途中でやめる。だから「ほぼ順番」や「全部同じ」だと くらべる回数が n−1 回ですむ（最良 O(n)）",
+        "逆順のときがいちばん苦手で、くらべる回数も入れかえの回数も n×(n−1)÷2 回になる",
+        "となりどうししか くらべないので、値は1マスずつしか動けない。入れかえの回数が多くなりやすいのが短所",
+      ],
+    },
+    pointerVars: { j: "j" },
+  },
+
+  insertion: {
+    id: "insertion",
+    label: "挿入ソート",
+    category: "sort",
+    run: (rec) => insertionSort(rec),
+    complexity: {
+      best: "O(n)",
+      average: "O(n²)",
+      worst: "O(n²)",
+      space: "O(1)",
+    },
+    theory: (n) => (n * (n - 1)) / 4,
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "左はしの1個は、それだけで「ならんでいる」とみなす",
+        "つぎの1個（矢印 i）を取り上げ、左のとなりとくらべる",
+        "自分のほうが小さいあいだ、左へ1マスずつ入れかえて進む。止まったら さしこみ完了",
+      ],
+      points: [
+        "ならんでいる範囲に「さしこむ」ので、すでに正しい位置にあれば1回くらべるだけで next へ行ける。「ほぼ順番」がいちばん得意（最良 O(n)）",
+        "逆順のときは毎回 左はしまで歩くので、くらべる回数も入れかえの回数も n×(n−1)÷2 回になる",
+        "トランプの手札を並べかえるときの動きとほぼ同じ。データが少しずつ増えていく場面に向いている",
+      ],
+    },
+    pointerVars: { i: "i", j: "j" },
+  },
+
+  exchange: {
+    id: "exchange",
+    label: "交換ソート",
+    category: "sort",
+    run: (rec) => exchangeSort(rec),
+    complexity: {
+      best: "O(n²)",
+      average: "O(n²)",
+      worst: "O(n²)",
+      space: "O(1)",
+    },
+    theory: (n) => (n * (n - 1)) / 2,
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "A[i]（矢印 i）を、そのうしろ全部（矢印 j）と1つずつくらべる",
+        "うしろのほうが小さければ、その場で入れかえる",
+        "うしろを見終わると A[i] がいちばん小さい値になっているので、i を1つ進める",
+      ],
+      points: [
+        "バブルソートと名前も動きも似ているが、くらべる相手がちがう。バブルは「となりどうし」、交換は「i とそのうしろ全部」",
+        "くらべる回数は並びかたに関係なく いつも n×(n−1)÷2 回。早期終了のしくみがないのが短所",
+        "選択ソートとほぼ同じ手順だが、いちばん小さい値を見つけてから1回だけ入れかえる選択ソートとちがい、小さい値を見つけるたびに入れかえるので入れかえの回数が多くなる",
+      ],
+    },
+    pointerVars: { i: "i", j: "j" },
+  },
+}
+
+/** タブに並べる順番。似ているもの同士を となりに置いて見くらべやすくする */
+export const ALGO_ORDER: readonly AlgoId[] = ["selection", "exchange", "bubble", "insertion"]
+
+/** アニメーション用のステップ列を作る */
+export function generateSteps(
+  algoId: AlgoId,
+  input: readonly number[],
+  options: RunOptions = {},
+): Step[] {
+  const rec = new StepRecorder(input)
+  ALGOS[algoId].run(rec, options)
+  return rec.steps
+}
+
+/**
+ * 回数だけ数える（段階3の計算量グラフ用）。
+ * 生成器は generateSteps と同じものを通すので、
+ * グラフの数値とアニメーションのカウンタが食いちがうことがない。
+ */
+export function countOperations(
+  algoId: AlgoId,
+  input: readonly number[],
+  options: RunOptions = {},
+): { compares: number; swaps: number } {
+  const rec = new CountRecorder(input)
+  ALGOS[algoId].run(rec, options)
+  return rec.counts
+}
