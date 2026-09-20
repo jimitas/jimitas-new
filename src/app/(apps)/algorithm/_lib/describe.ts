@@ -37,6 +37,23 @@ export function describePutDown(index: number, value: number): string {
   return `あいた A[${index}] に ${value} を さしこみました`
 }
 
+// ── マージソートの作業用配列の説明文 ──────────────────
+
+export function describeCopyToAux(lo: number, hi: number): string {
+  return `A[${lo}] から A[${hi}] までを 作業用の入れものに 写しました`
+}
+
+export function describeAuxCompare(
+  p: number,
+  a: number | null | undefined,
+  q: number,
+  b: number | null | undefined,
+): string {
+  if (a === null || a === undefined) return `右がわの ${b} を もどします`
+  if (b === null || b === undefined) return `左がわの ${a} を もどします`
+  return `作業用の ${a} と ${b} を くらべています。小さいほうを 先に もどします`
+}
+
 /**
  * ステップの定型説明文を作る。
  *

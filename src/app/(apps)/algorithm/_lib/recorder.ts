@@ -14,12 +14,14 @@
 // ======================================================
 
 import {
+  describeAuxCompare,
+  describeCopyToAux,
   describeHeldCompare,
   describePutDown,
   describeStep,
   describeTakeOut,
 } from "./describe"
-import type { CodeTag, Pointers, Step, StepInput, StepKind } from "./types"
+import type { AuxView, CodeTag, Pointers, Range, Step, StepInput, StepKind } from "./types"
 
 /**
  * 打ち切りガード。
@@ -69,6 +71,21 @@ export type Recorder = {
   shiftRight(j: number, codeTag: CodeTag, pointers?: Pointers): void
   /** 手に持っている値を穴に置く（Data[j+1] = tmp）。数えない */
   putDown(codeTag: CodeTag, pointers?: Pointers): void
+
+  // ── マージソートの作業用配列 ─────────────────────
+  // 添字は元の配列とそろえる。写していない場所は null のまま。
+
+  /** A[lo..hi] を作業用の入れものに写す。数えない */
+  copyToAux(lo: number, hi: number, codeTag: CodeTag, pointers?: Pointers): void
+  /** 作業用の p と q をくらべる（小さいほうを先に書きもどす）。比較として数える */
+  auxLessThan(p: number, q: number, codeTag: CodeTag, pointers?: Pointers): boolean
+  /** 作業用の p 番目を A[k] に書きもどす。移動として数える */
+  writeBack(k: number, p: number, codeTag: CodeTag, pointers?: Pointers, message?: string): void
+  /** 作業用の入れものを片づける */
+  clearAux(): void
+
+  /** これから処理する範囲の控え（クイックソートの表示用） */
+  setPending(ranges: readonly Range[]): void
 }
 
 /** 交換回数として数える kind */
@@ -85,6 +102,13 @@ abstract class BaseRecorder implements Recorder {
   /** 手に持っている値と、あいている場所。持っていなければ undefined */
   protected held: number | undefined
   protected gap: number | undefined
+
+  /** 作業用の入れもの（マージソート）。使っていなければ undefined */
+  protected auxValues: (number | null)[] | undefined
+  protected auxSource: Range | undefined
+  protected auxReading: number[] | undefined
+  /** これから処理する範囲の控え（クイックソート） */
+  protected pending: readonly Range[] = []
 
   constructor(input: readonly number[]) {
     this.array = [...input]
@@ -177,6 +201,68 @@ abstract class BaseRecorder implements Recorder {
       message: at === undefined || value === undefined ? undefined : describePutDown(at, value),
     })
   }
+
+  copyToAux(lo: number, hi: number, codeTag: CodeTag, pointers: Pointers = {}): void {
+    const values: (number | null)[] = Array<number | null>(this.array.length).fill(null)
+    for (let i = lo; i <= hi; i++) values[i] = this.array[i]
+    this.auxValues = values
+    this.auxSource = { lo, hi }
+    this.auxReading = undefined
+    this.push({
+      kind: "focus",
+      codeTag,
+      range: { lo, hi },
+      pointers,
+      message: describeCopyToAux(lo, hi),
+    })
+  }
+
+  auxLessThan(p: number, q: number, codeTag: CodeTag, pointers: Pointers = {}): boolean {
+    this.auxReading = [p, q]
+    const a = this.auxValues?.[p]
+    const b = this.auxValues?.[q]
+    this.push({
+      kind: "compare",
+      codeTag,
+      pointers,
+      message: describeAuxCompare(p, a, q, b),
+    })
+    if (a === null || a === undefined || b === null || b === undefined) return false
+    return a <= b
+  }
+
+  writeBack(
+    k: number,
+    p: number,
+    codeTag: CodeTag,
+    pointers: Pointers = {},
+    message?: string,
+  ): void {
+    const v = this.auxValues?.[p]
+    if (v !== null && v !== undefined) this.array[k] = v
+    this.auxReading = [p]
+    this.push({ kind: "write", codeTag, wrote: k, pointers, message })
+  }
+
+  clearAux(): void {
+    this.auxValues = undefined
+    this.auxSource = undefined
+    this.auxReading = undefined
+  }
+
+  setPending(ranges: readonly Range[]): void {
+    this.pending = [...ranges]
+  }
+
+  /** いまの作業用配列のようす。ステップに付けるために使う */
+  protected auxView(): AuxView | undefined {
+    if (this.auxValues === undefined || this.auxSource === undefined) return undefined
+    return {
+      values: this.auxValues,
+      reading: this.auxReading,
+      source: this.auxSource,
+    }
+  }
 }
 
 // ── アニメーション用 ──────────────────────────────
@@ -230,8 +316,9 @@ export class StepRecorder extends BaseRecorder {
         sorted: this.sortedSnap,
         range: input.range,
         pointers: input.pointers ?? {},
-        aux: input.aux,
-        pendingRanges: input.pendingRanges,
+        // 作業用の入れものと待ち行列も、手の状態と同じく自動で付ける
+        aux: input.aux ?? this.auxView(),
+        pendingRanges: input.pendingRanges ?? (this.pending.length > 0 ? this.pending : undefined),
         codeTag: input.codeTag,
         message: input.message ?? describeStep(input, this.arraySnap),
         compares: this.compares,

@@ -29,12 +29,12 @@ const POINTER_LABEL: Record<PointerName, string> = {
 const POINTER_HELP: Record<PointerName, string> = {
   i: "いま決める場所",
   j: "しらべている場所",
-  k: "書きこむ場所",
+  k: "書きもどす場所",
   min: "いまのところ いちばん小さい場所",
-  left: "探す範囲の左はし",
-  right: "探す範囲の右はし",
+  left: "範囲の左はし（合体のときは 左がわの読み位置）",
+  right: "範囲の右はし（合体のときは 右がわの読み位置）",
   mid: "範囲の まん中",
-  pivot: "基準の値",
+  pivot: "基準にえらんだ場所",
   key: "取り出して 手に持っている値",
 }
 
@@ -52,6 +52,8 @@ type Props = {
   pointerVars: Partial<Record<PointerName, string>>
   /** 値を取り出して手に持つアルゴリズムか（挿入ソート） */
   usesHand?: boolean
+  /** あとで並べかえる範囲を控えるアルゴリズムか（クイックソート） */
+  usesPending?: boolean
 }
 
 function barClass(step: Step, index: number): string {
@@ -70,7 +72,13 @@ function barClass(step: Step, index: number): string {
   return "bg-accent-400"
 }
 
-export function ArrayView({ step, maxValue, pointerVars, usesHand = false }: Props) {
+export function ArrayView({
+  step,
+  maxValue,
+  pointerVars,
+  usesHand = false,
+  usesPending = false,
+}: Props) {
   const n = step.array.length
   const showLabels = n <= LABEL_LIMIT
 
@@ -185,6 +193,61 @@ export function ArrayView({ step, maxValue, pointerVars, usesHand = false }: Pro
           )
         })}
       </div>
+
+      {/*
+        あとで並べかえる範囲（クイックソート）。
+        「いま見ている範囲を片づけたら、次はここに戻ってくる」を見せる。
+        行は usesPending のあいだ確保して、レイアウトが跳ねないようにする。
+      */}
+      {usesPending && (
+        <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 min-h-[1.25rem]">
+          {step.pendingRanges && step.pendingRanges.length > 0
+            ? `あとで並べかえる範囲：${step.pendingRanges
+                .map((r) => `${r.lo}〜${r.hi}`)
+                .join("、")}`
+            : "あとで並べかえる範囲：なし"}
+        </p>
+      )}
+
+      {/*
+        作業用の入れもの（マージソート）。
+        添字を元の配列とそろえて真下に並べるので、
+        「どこから写して どこへ書きもどすか」が縦に見える。
+      */}
+      {step.aux && (
+        <div className="mt-2 pt-2 border-t border-dashed border-gray-300 dark:border-gray-600">
+          <p className="text-[11px] text-gray-500 dark:text-gray-400 mb-1">
+            作業用の入れもの（コードの Sagyou）
+          </p>
+          <div className="flex gap-[2px] h-12 items-end" aria-hidden="true">
+            {step.aux.values.map((v, index) => {
+              if (v === null) return <div key={index} className="flex-1 min-w-0" />
+              const reading = step.aux?.reading?.includes(index)
+              return (
+                <div
+                  key={index}
+                  className={`flex-1 min-w-0 rounded-t-sm ${
+                    reading ? "bg-warm-400" : "bg-accent-300 dark:bg-accent-700"
+                  }`}
+                  style={{ height: `${Math.max(8, (v / maxValue) * 100)}%` }}
+                />
+              )
+            })}
+          </div>
+          {showLabels && (
+            <div className="flex gap-[2px] mt-1" aria-hidden="true">
+              {step.aux.values.map((v, index) => (
+                <div
+                  key={index}
+                  className="flex-1 min-w-0 text-center text-[11px] text-gray-500 dark:text-gray-400 tabular-nums"
+                >
+                  {v === null ? "" : v}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
 
       {/* 読み上げ用。バーは装飾なので、内容はここで文章にして渡す */}
       <p className="sr-only" aria-live="polite">

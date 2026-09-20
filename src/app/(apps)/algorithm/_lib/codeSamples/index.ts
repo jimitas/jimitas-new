@@ -10,6 +10,8 @@ import { bubbleCode } from "./bubble"
 import { exchangeCode } from "./exchange"
 import { insertionCode } from "./insertion"
 import { linearCode } from "./linear"
+import { mergeCode } from "./merge"
+import { quickCode } from "./quick"
 import { selectionCode } from "./selection"
 import type { CodeBook } from "./types"
 
@@ -20,6 +22,8 @@ export const CODE_BOOK: CodeBook = {
   exchange: exchangeCode,
   linear: linearCode,
   binary: binaryCode,
+  quick: quickCode,
+  merge: mergeCode,
 }
 
 export { buildTagIndex, tagsOf } from "./types"

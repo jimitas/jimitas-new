@@ -85,9 +85,16 @@ export function expectSortInvariants(algoId: AlgoId, input: readonly number[]): 
   expect(last.kind).toBe("done")
   expect(isAscending(last.array)).toBe(true)
 
-  // 2. 多重集合不変（in-place 族。マージソートは段階4で条件を分ける）
-  //    取り出している最中は gap に held を戻してから見る
+  // 2. 多重集合不変。取り出している最中は gap に held を戻してから見る。
+  //
+  //    マージソートだけは、合体の最中（作業用の入れものを使っているあいだ）
+  //    本体の配列に同じ値が2つ見える瞬間が必ずある。
+  //    「まだ書きもどしていない場所に 古い値が残っている」ためで、
+  //    これはアルゴリズムの性質なのでごまかさず、ここでは飛ばす。
+  //    そのかわり expectMergeInvariants で**合体1回ごとに**
+  //    「中身が入れかわっていないこと」と「並んだこと」を確認する。
   for (const [k, s] of steps.entries()) {
+    if (s.aux !== undefined) continue
     if (!sameMultiset(effectiveArray(s), input)) {
       throw new Error(`ステップ ${k}（${s.kind}）で要素が変わった: ${JSON.stringify(s.array)}`)
     }
@@ -135,6 +142,56 @@ export function expectSortInvariants(algoId: AlgoId, input: readonly number[]): 
   expect(last.sorted.length).toBe(n)
 
   return steps
+}
+
+/**
+ * マージソート専用の不変条件。
+ *
+ * 合体1回ぶん（作業用の入れものを使っているあいだ）を取り出して、
+ *   - 合体した範囲の中身が入れかわっていない（多重集合が同じ）
+ *   - 合体し終わった範囲が ちゃんと並んでいる
+ * を確認する。
+ *
+ * 全体の多重集合不変は合体の最中だけ成り立たない。
+ * そこを「検査しない」で済ませずに、この形で埋める。
+ */
+export function expectMergeInvariants(input: readonly number[]): void {
+  const steps = generateSteps("merge", input)
+
+  let start: number | null = null
+  let merges = 0
+
+  for (let k = 0; k <= steps.length; k++) {
+    const inMerge = k < steps.length && steps[k].aux !== undefined
+    if (inMerge && start === null) start = k
+    if (inMerge || start === null) continue
+
+    // start..k-1 が 合体1回ぶん
+    const first = steps[start]
+    const last = steps[k - 1]
+    const { lo, hi } = first.aux!.source
+
+    const before = first.array.slice(lo, hi + 1)
+    const after = last.array.slice(lo, hi + 1)
+
+    if (!sameMultiset(before, after)) {
+      throw new Error(
+        `ステップ ${start}〜${k - 1} の合体（${lo}〜${hi}）で中身が入れかわった: ` +
+          `${JSON.stringify(before)} → ${JSON.stringify(after)}`,
+      )
+    }
+    if (!isAscending(after)) {
+      throw new Error(
+        `ステップ ${start}〜${k - 1} の合体（${lo}〜${hi}）の結果が並んでいない: ${JSON.stringify(after)}`,
+      )
+    }
+
+    merges++
+    start = null
+  }
+
+  // 2個以上あるなら必ず1回は合体するはず（合体を飛ばす実装を検出する）
+  if (input.length >= 2) expect(merges).toBeGreaterThan(0)
 }
 
 /** 探索テスト用のならんだ配列。二分探索にもそのまま渡せる */

@@ -4,8 +4,9 @@ import {
   generateSteps,
   countOperations,
 } from "@/app/(apps)/algorithm/_lib/algorithms"
+import { makeRng } from "@/app/(apps)/algorithm/_lib/random"
 import type { AlgoId } from "@/app/(apps)/algorithm/_lib/types"
-import { expectSortInvariants, sortCases } from "./helpers"
+import { expectMergeInvariants, expectSortInvariants, sortCases } from "./helpers"
 
 // category で選ぶ。段階2で探索を足しても、ここを直さなくて済む
 const SORTS = ALGO_ORDER.filter((id) => ALGOS[id].category === "sort")
@@ -201,5 +202,93 @@ describe("挿入ソートの性質", () => {
     expect(counts("insertion", nearly).compares).toBeLessThan(
       counts("insertion", descending(n)).compares / 2,
     )
+  })
+})
+
+// =======================================================
+// 分割統治の2本（段階4）
+// =======================================================
+describe("クイックソートの性質", () => {
+  // 1回の仕分けで くらべる回数は「範囲の長さ-1」ちょうど。
+  // 仕分けのループ範囲を変えるとここが崩れる。
+  test.each(SIZES)("くらべる回数は n-1 以上 n(n-1)/2 以下（n=%i）", (n) => {
+    for (const input of [ascending(n), descending(n), allSame(n)]) {
+      const c = counts("quick", input).compares
+      expect(c).toBeGreaterThanOrEqual(Math.max(0, n - 1))
+      expect(c).toBeLessThanOrEqual(pairs(n))
+    }
+  })
+
+  // 右はしを基準にしているので、ならんだ入力がいちばん苦手。
+  // これは解説パネルに書いている内容そのものなので、等式で固定する。
+  test.each([5, 12, 20])("ならんだ入力は最悪で n(n-1)/2 回になる（n=%i）", (n) => {
+    expect(counts("quick", ascending(n)).compares).toBe(pairs(n))
+  })
+
+  // ばらばらの入力なら O(n log n) の範囲におさまる
+  test("ばらばらの入力では n log2 n の3倍を超えない", () => {
+    const n = 50
+    const rng = makeRng(424242)
+    const input = Array.from({ length: n }, () => 1 + Math.floor(rng() * 99))
+    expect(counts("quick", input).compares).toBeLessThan(3 * n * Math.log2(n))
+  })
+
+  // 基準の場所は、仕分けのあと必ず確定する（もう動かない）
+  test("確定した基準の位置は そのあと二度と動かない", () => {
+    const steps = generateSteps("quick", [5, 3, 8, 1, 9, 2, 7])
+    for (const [k, s] of steps.entries()) {
+      for (const idx of s.sorted) {
+        expect({ k, idx, v: s.array[idx] }).toEqual({
+          k,
+          idx,
+          v: steps[steps.length - 1].array[idx],
+        })
+      }
+    }
+  })
+})
+
+describe("マージソートの性質", () => {
+  test.each(sortCases())("合体1回ごとに 中身が変わらず 並ぶ: $name", ({ input }) => {
+    expectMergeInvariants(input)
+  })
+
+  // 分かれかたが はじめから決まっているので、並びかたで回数がほとんど変わらない。
+  // これがクイックソートとの決定的なちがい。
+  test("どんな並びでも くらべる回数がほぼ同じ", () => {
+    const n = 32
+    const got = [ascending(n), descending(n), allSame(n)].map(
+      (input) => counts("merge", input).compares,
+    )
+    const min = Math.min(...got)
+    const max = Math.max(...got)
+    expect(max - min).toBeLessThanOrEqual(n / 2)
+  })
+
+  test.each([2, 5, 12, 20])("くらべる回数は n log2 n 以下（n=%i）", (n) => {
+    for (const input of [ascending(n), descending(n)]) {
+      expect(counts("merge", input).compares).toBeLessThanOrEqual(Math.ceil(n * Math.log2(n)))
+    }
+  })
+
+  // ならんだ入力でクイックソートが n(n-1)/2 になるのに対し、マージは崩れない
+  test("ならんだ入力では クイックソートより ずっと少ない", () => {
+    const n = 50
+    expect(counts("merge", ascending(n)).compares).toBeLessThan(
+      counts("quick", ascending(n)).compares / 5,
+    )
+  })
+
+  test("作業用の入れものは 使い終わったら必ず片づける", () => {
+    const steps = generateSteps("merge", [5, 3, 8, 1, 9, 2, 7])
+    expect(steps[steps.length - 1].aux).toBeUndefined()
+    // 使っているあいだは、写した範囲の外が必ず空である
+    for (const s of steps) {
+      if (!s.aux) continue
+      s.aux.values.forEach((v, i) => {
+        const inside = i >= s.aux!.source.lo && i <= s.aux!.source.hi
+        expect({ i, empty: v === null }).toEqual({ i, empty: !inside })
+      })
+    }
   })
 })

@@ -19,6 +19,8 @@ export type AlgoId =
   | "exchange" // 交換ソート（単純交換）
   | "linear" // 線形探索
   | "binary" // 二分探索
+  | "quick" // クイックソート
+  | "merge" // マージソート
 
 // ── コード例の言語 ────────────────────────────────
 // kyotsu = 大学入学共通テスト用プログラム表記（疑似言語）
@@ -65,8 +67,8 @@ export type CodeTag =
 export type AuxView = {
   /** 中身。まだコピーされていない場所は null */
   values: readonly (number | null)[]
-  /** 今このステップで読み書きした位置 */
-  cursor?: number
+  /** 今このステップで読んでいる場所（合体のときは くらべている2か所） */
+  reading?: readonly number[]
   /** 元の配列のどの範囲を写したものか（元配列の真下に位置を揃えて描くのに使う） */
   source: Range
 }

@@ -6,6 +6,8 @@
 // ======================================================
 
 import { CountRecorder, StepRecorder, type Recorder } from "./recorder"
+import { mergeSort } from "./mergeSort"
+import { quickSort } from "./quickSort"
 import { binarySearch, linearSearch } from "./searches"
 import { bubbleSort, exchangeSort, insertionSort, selectionSort } from "./sorts"
 import type { AlgoId, PointerName, Step } from "./types"
@@ -229,6 +231,68 @@ export const ALGOS: Record<AlgoId, AlgoDef> = {
     },
     pointerVars: { left: "hidari", right: "migi", mid: "aida" },
   },
+
+  quick: {
+    id: "quick",
+    label: "クイックソート",
+    category: "sort",
+    run: (rec) => quickSort(rec),
+    complexity: {
+      best: "O(n log n)",
+      average: "O(n log n)",
+      // 基準の選び方が悪いと範囲が1ずつしか減らない
+      worst: "O(n²)",
+      space: "O(log n)",
+    },
+    // 平均。だいたい n log2 n くらい
+    theory: (n) => (n <= 1 ? 0 : Math.round(n * Math.log2(n))),
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "範囲の右はし（矢印 P）を 基準の値にする",
+        "基準より小さい値を 範囲の左がわへ 集めていく（矢印 j で1つずつ見る）",
+        "集め終わったところが 基準の正しい場所。そこで確定する",
+        "基準より左・右に分かれた範囲を、それぞれ同じやり方で 並べかえる",
+      ],
+      points: [
+        "1回の仕分けで 範囲が だいたい半分ずつに分かれるので、くらべる回数が n×log₂n くらいですむ。O(n²) の4つより けた違いに速い",
+        "**ただし「ならび」を『ほぼ順番』や『逆順』にすると急に遅くなる**。右はしを基準にしているため、範囲が1つずつしか減らず n×(n−1)÷2 回になってしまう。グラフで確かめてみよう",
+        "分かれた範囲を あとで処理するために覚えておく必要があるので、メモリを少し使う（O(log n)）",
+      ],
+    },
+    moveLabel: "入れかえた回数",
+    pointerVars: { left: "hidari", right: "migi", pivot: "kijun", i: "i", j: "j" },
+  },
+
+  merge: {
+    id: "merge",
+    label: "マージソート",
+    category: "sort",
+    run: (rec) => mergeSort(rec),
+    complexity: {
+      best: "O(n log n)",
+      average: "O(n log n)",
+      worst: "O(n log n)",
+      // 作業用の入れものが要る
+      space: "O(n)",
+    },
+    theory: (n) => (n <= 1 ? 0 : Math.round(n * Math.log2(n))),
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "はじめは「1個ずつのかたまり」が n 個ならんでいると考える",
+        "となりあう2つのかたまりを 作業用の入れものに写し、小さいほうから 順に書きもどす（＝合体）",
+        "かたまりの幅を 1 → 2 → 4 → 8 … と倍にしながら、全部が1つになるまで くり返す",
+      ],
+      points: [
+        "分かれかたが はじめから決まっているので、**どんな並びでも いつも O(n log n)**。クイックソートのように苦手な並びが無いのが長所",
+        "合体のために 別の入れものが必要で、つかうメモリが O(n) になる。ほかのソートが O(1) なのに対してここだけ多い",
+        "「ならび」を いろいろ変えても くらべる回数がほとんど変わらないことを、グラフで確かめてみよう",
+      ],
+    },
+    moveLabel: "書きもどした回数",
+    pointerVars: { left: "p", right: "q", k: "k" },
+  },
 }
 
 /** タブに並べる順番。似ているもの同士を となりに置いて見くらべやすくする */
@@ -237,6 +301,8 @@ export const ALGO_ORDER: readonly AlgoId[] = [
   "exchange",
   "bubble",
   "insertion",
+  "quick",
+  "merge",
   "linear",
   "binary",
 ]

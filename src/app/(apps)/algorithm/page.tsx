@@ -29,6 +29,7 @@ import { BtnMode } from "@/components/parts/buttons/BtnMode";
 import { AlgoExplain } from "./_components/AlgoExplain";
 import { ArrayView } from "./_components/ArrayView";
 import { CodePanel } from "./_components/CodePanel";
+import { ComplexityChart } from "./_components/ComplexityChart";
 import {
   PlayerControls,
   N_MAX,
@@ -60,6 +61,7 @@ type SavedSettings = {
   speedMs?: number;
   codeOpen?: boolean;
   explainOpen?: boolean;
+  chartOpen?: boolean;
 };
 
 const DATA_KINDS: DataKind[] = ["random", "nearly", "reverse", "same"];
@@ -82,6 +84,9 @@ export default function AlgorithmPage() {
   const [codeOpen, setCodeOpen] = useState(true);
   // しくみの解説の開閉。こちらは補足なので、はじめは たたんでおく
   const [explainOpen, setExplainOpen] = useState(false);
+  // 計算量グラフの開閉と、見くらべる相手。こちらも補足なので たたんでおく
+  const [chartOpen, setChartOpen] = useState(false);
+  const [compareWith, setCompareWith] = useState<AlgoId[]>([]);
   // localStorage の復元が済んだか。済むまで書き戻さない（初期値で上書きしてしまうため）
   const [loaded, setLoaded] = useState(false);
 
@@ -218,6 +223,7 @@ export default function AlgorithmPage() {
         }
         if (typeof data.codeOpen === "boolean") setCodeOpen(data.codeOpen);
         if (typeof data.explainOpen === "boolean") setExplainOpen(data.explainOpen);
+        if (typeof data.chartOpen === "boolean") setChartOpen(data.chartOpen);
       }
     } catch {
       // 破損データは無視する
@@ -229,12 +235,21 @@ export default function AlgorithmPage() {
   useEffect(() => {
     if (!loaded) return;
     try {
-      const data: SavedSettings = { algoId, n, dataKind, lang, speedMs, codeOpen, explainOpen };
+      const data: SavedSettings = {
+        algoId,
+        n,
+        dataKind,
+        lang,
+        speedMs,
+        codeOpen,
+        explainOpen,
+        chartOpen,
+      };
       localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
     } catch {
       // 容量超過などは無視（次回の保存で再試行される）
     }
-  }, [loaded, algoId, n, dataKind, lang, speedMs, codeOpen, explainOpen]);
+  }, [loaded, algoId, n, dataKind, lang, speedMs, codeOpen, explainOpen, chartOpen]);
 
   // ── 操作 ────────────────────────────────────
   // 条件を変えるとステップ列が作り直される。そのたびに最初へ戻して止める。
@@ -318,6 +333,8 @@ export default function AlgorithmPage() {
     setTargetValue(null);
     setSeed((s) => s + 1);
   };
+  const handleToggleCompare = (id: AlgoId) =>
+    setCompareWith((ids) => (ids.includes(id) ? ids.filter((x) => x !== id) : [...ids, id]));
   const handlePickTarget = (hit: boolean) => {
     resetPlayback();
     // seed は動かさない。動かすと配列そのものが変わってしまい、
@@ -361,6 +378,7 @@ export default function AlgorithmPage() {
         maxValue={maxValue}
         pointerVars={algo.pointerVars}
         usesHand={algo.usesHand}
+        usesPending={algoId === "quick"}
       />
 
       <PlayerControls
@@ -403,6 +421,16 @@ export default function AlgorithmPage() {
         compares={step.compares}
         swaps={step.swaps}
         n={n}
+      />
+
+      <ComplexityChart
+        algoId={algoId}
+        dataKind={dataKind}
+        seed={seed}
+        compareWith={compareWith}
+        onToggleCompare={handleToggleCompare}
+        open={chartOpen}
+        onToggle={() => setChartOpen((v) => !v)}
       />
     </div>
   );
