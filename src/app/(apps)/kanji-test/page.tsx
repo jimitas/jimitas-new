@@ -22,6 +22,7 @@
 //   印刷時は scale(1) に戻す（globals.css の @media print で制御）。
 // ======================================================
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import { useState, useRef, useEffect } from "react"
 import * as se                         from "@/lib/se"
 import { shuffled }                    from "@/lib/utils"
@@ -446,27 +447,15 @@ export default function KanpuriPage() {
 
           {/* アクションボタン */}
           <div className="flex flex-wrap gap-2">
-            <button
-              onClick={handleCheck}
-              className="px-4 py-2 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
-                         text-white font-bold text-sm shadow transition-colors"
-            >
+            <Btn color="accent" onClick={handleCheck} className="px-4 py-2">
               ✅ 作　成
-            </button>
-            <button
-              onClick={handleShuffle}
-              className="px-4 py-2 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 active:translate-y-0.5
-                         text-white font-bold text-sm shadow transition-colors"
-            >
+            </Btn>
+            <Btn color="brand" onClick={handleShuffle} className="px-4 py-2">
               🔀 シャッフル
-            </button>
-            <button
-              onClick={() => { se.playSe(se.pi); window.print() }}
-              className="px-4 py-2 rounded-lg bg-warm-400 hover:bg-warm-500 active:bg-warm-600 active:translate-y-0.5
-                         text-white font-bold text-sm shadow transition-colors"
-            >
+            </Btn>
+            <Btn color="warm" onClick={() => window.print()} className="px-4 py-2">
               🖨️ 印　刷
-            </button>
+            </Btn>
           </div>
 
           {/* 保存・読み込み */}
@@ -480,13 +469,9 @@ export default function KanpuriPage() {
                          focus:outline-none focus:border-accent-500
                          dark:bg-gray-800 dark:text-gray-100 dark:border-gray-600"
             />
-            <button
-              onClick={handleSave}
-              className="px-3 py-1 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
-                         text-white text-sm font-bold shadow transition-colors"
-            >
+            <Btn color="accent" onClick={handleSave} className="px-3 py-1">
               💾 保存
-            </button>
+            </Btn>
             <label className="px-3 py-1 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
                               text-white text-sm font-bold shadow transition-colors cursor-pointer">
               📂 読込

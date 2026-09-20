@@ -18,6 +18,7 @@
 
 "use client"
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import React, { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react"
 import Image from "next/image"
 import * as se from "@/lib/se"
@@ -588,28 +589,16 @@ export default function OkanePage() {
                          text-gray-800 dark:text-gray-100 dark:bg-gray-700"
             />
             <span className="font-bold text-gray-700 dark:text-gray-300">円</span>
-            <button onClick={handleSet}
-              className="px-3 py-2 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white rounded-lg font-bold transition-colors"
-            >セット</button>
-            <button onClick={handleIkura}
-              className="px-3 py-2 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white rounded-lg font-bold transition-colors"
-            >いくら？</button>
-            <button onClick={handleResetSet}
-              className="px-3 py-2 bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white rounded-lg font-bold transition-colors"
-            >リセット</button>
+            <Btn color="brand" onClick={handleSet} className="px-3 py-2 text-[1rem] leading-6">セット</Btn>
+            <Btn color="accent" onClick={handleIkura} className="px-3 py-2 text-[1rem] leading-6">いくら？</Btn>
+            <Btn color="danger" onClick={handleResetSet} className="px-3 py-2 text-[1rem] leading-6">リセット</Btn>
           </>)}
           {mode === "narabeyou" && (<>
-            <button onClick={handleNarabeyouQuestion}
-              className="px-3 py-2 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white rounded-lg font-bold transition-colors"
-            >もんだい</button>
-            <button onClick={handleNarabeyouCheck}
-              className="px-3 py-2 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white rounded-lg font-bold transition-colors"
-            >こたえあわせ</button>
+            <Btn color="brand" onClick={handleNarabeyouQuestion} className="px-3 py-2 text-[1rem] leading-6">もんだい</Btn>
+            <Btn color="accent" onClick={handleNarabeyouCheck} className="px-3 py-2 text-[1rem] leading-6">こたえあわせ</Btn>
           </>)}
           {mode === "mondai" && (<>
-            <button onClick={handleMondaiQuestion}
-              className="px-3 py-2 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white rounded-lg font-bold transition-colors"
-            >もんだい</button>
+            <Btn color="brand" onClick={handleMondaiQuestion} className="px-3 py-2 text-[1rem] leading-6">もんだい</Btn>
             <input
               ref={el_answer}
               type="number" min={0} max={99999}
@@ -618,9 +607,7 @@ export default function OkanePage() {
                          text-gray-800 dark:text-gray-100 dark:bg-gray-700"
             />
             <span className="font-bold text-gray-700 dark:text-gray-300">円</span>
-            <button onClick={handleMondaiCheck}
-              className="px-3 py-2 bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white rounded-lg font-bold transition-colors"
-            >こたえあわせ</button>
+            <Btn color="accent" onClick={handleMondaiCheck} className="px-3 py-2 text-[1rem] leading-6">こたえあわせ</Btn>
           </>)}
         </div>
 
