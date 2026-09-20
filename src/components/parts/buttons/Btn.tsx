@@ -93,6 +93,17 @@ interface BtnProps {
   className?: string
   /** アイコンだけのボタンで読み上げ用のラベルを付けたいとき */
   ariaLabel?: string
+  /**
+   * 鳴らす効果音。既定は "pi"。
+   *
+   * "none" にすると部品側では鳴らさないので、呼び出し側が自分で
+   * 意味のある音（se.reset / se.alertSound など）を鳴らせる。
+   * 指定しなければ今までどおり pi が鳴るので、既存の呼び出しには影響しない。
+   *
+   * ⚠ 手書きのボタンを Btn に寄せるとき、元が自前で音を鳴らしていたら
+   *   ここを "none" にしないと2つ同時に鳴る。
+   */
+  sound?: "pi" | "set" | "none"
 }
 
 export function Btn({
@@ -103,10 +114,15 @@ export function Btn({
   disabled = false,
   className = "",
   ariaLabel,
+  sound = "pi",
 }: BtnProps) {
   return (
     <button
-      onClick={() => { se.playSe(se.pi); onClick() }}
+      onClick={() => {
+        if (sound === "pi") se.playSe(se.pi)
+        else if (sound === "set") se.playSe(se.set)
+        onClick()
+      }}
       disabled={disabled}
       aria-label={ariaLabel}
       className={`${BTN_LAYOUT} ${BTN_SHAPE_CLASS} ${BTN_COLOR_CLASS[color]} ${className}`}

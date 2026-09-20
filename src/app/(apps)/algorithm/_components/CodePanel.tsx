@@ -124,6 +124,21 @@ function CodePanelInner({ algoId, lang, onLangChange, codeTag, open, onToggle }:
         </pre>
       </div>
 
+      {/*
+        クイックソートだけ「関数の定義」を補っている。
+        自分自身を呼ぶ形がアルゴリズムの本質なので書き方は変えず、
+        公式の例示に載っていないことを画面に断る。
+      */}
+      {open && lang === "kyotsu" && algoId === "quick" && (
+        <p className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 border-l-4 border-l-warm-400 bg-white dark:bg-gray-900 px-3 py-2 text-[11px] text-gray-700 dark:text-gray-200">
+          <strong>関数の定義のしかたは、公式の例示には出ていません。</strong>
+          クイックソートは「自分自身をもう一度よぶ」ことがしくみの中心なので、
+          ここでは Python の書き方に合わせて{" "}
+          <code className="font-mono">関数 名前(引数):</code> と書いています。
+          共通テストでこの形が出るとはかぎりません。
+        </p>
+      )}
+
       {open && lang === "kyotsu" && (
         <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
           大学入学共通テスト『情報Ⅰ』で使われる表記です。｜と⎿ が処理のまとまりを表し、

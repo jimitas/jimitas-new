@@ -20,6 +20,7 @@
 
 "use client";
 
+import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 import { Btn } from "@/components/parts/buttons/Btn"
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import Image from "next/image";
@@ -91,7 +92,6 @@ export default function KazoeBouPage() {
   const [question, setQuestion] = useState<number | null>(null);
   const [ikutsuAnswer, setIkutsuAnswer] = useState("");        // いくつかな: テキスト入力
   const [freeInput, setFreeInput] = useState("");        // じゆうにならべる: 数字入力
-  const [confirmReset, setConfirmReset] = useState(false);
   // 各段（0:1段目 1:2段目 2:3段目）の min-height。百/十/一が同じ値を共有
   const [cellMinHs, setCellMinHs] = useState<[number, number, number]>(
     [CELL_MIN_H_DEFAULT, CELL_MIN_H_DEFAULT, CELL_MIN_H_DEFAULT]
@@ -390,7 +390,6 @@ export default function KazoeBouPage() {
     clearTable();
     refillStock();
     hasAnswered.current = false;
-    setConfirmReset(false);
     setQuestion(null);
     setIkutsuAnswer("");
     if (el_msg.current) el_msg.current.innerHTML = "";
@@ -406,7 +405,6 @@ export default function KazoeBouPage() {
     setQuestion(null);
     setIkutsuAnswer("");
     hasAnswered.current = false;
-    setConfirmReset(false);
     showMsg(MODE_DESC[m], 3000);
   };
 
@@ -816,25 +814,23 @@ export default function KazoeBouPage() {
             {mode === "free" ? "いくつ？" : "こたえあわせ"}
           </Btn>
 
-          {/* リセット */}
-          {!confirmReset ? (
-            <button
-              onClick={() => { se.playSe(se.alertSound); setConfirmReset(true); }}
-              className="px-3 py-2 bg-danger-400 text-white rounded-lg font-bold
-                           hover:bg-danger-500 active:bg-danger-600 transition-colors text-sm">
-              リセット
-            </button>
-          ) : (
-            <div className="flex items-center gap-1.5">
-              <span className="text-sm font-bold text-gray-700 dark:text-gray-300">ほんとうに？</span>
-              <button onClick={handleReset}
-                className="px-2 py-1.5 bg-danger-400 text-white rounded-lg font-bold
-                             hover:bg-danger-500 active:bg-danger-600 transition-colors text-sm">はい</button>
-              <button onClick={() => setConfirmReset(false)}
-                className="px-2 py-1.5 bg-gray-300 text-gray-700 rounded-lg font-bold
-                             hover:bg-gray-400 transition-colors text-sm">いいえ</button>
-            </div>
-          )}
+          {/*
+            リセット。
+            「押す → ほんとうに？ → はい/いいえ」を自前で組んでいたが、
+            それは BtnConfirm がもともと持っている動き（警告音つき）なので寄せた。
+            confirmReset の state も不要になる。
+          */}
+          {/*
+            buttonClassName はクラス全体を置き換える（色ごと消える）ので渡さない。
+            color だけ指定して、他のアプリの BtnConfirm と同じ見た目にそろえる。
+          */}
+          <BtnConfirm
+            label="リセット"
+            color="danger"
+            promptLabel="ほんとうに？"
+            yesColor="danger"
+            onConfirm={handleReset}
+          />
         </div>
 
         {/* コイン表示 */}

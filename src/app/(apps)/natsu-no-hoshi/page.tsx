@@ -21,6 +21,7 @@
 
 "use client"
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import { useState, useRef, useMemo, useCallback, useEffect, useLayoutEffect } from "react"
 import * as se from "@/lib/se"
 import { useCoins } from "@/hooks/useCoins"
@@ -566,14 +567,15 @@ export default function NatsuNoHoshiPage() {
                 >
                   {isPlaying ? "ストップ" : "さいせい"}
                 </button>
-                <button
+                {/* 自分で se.reset を鳴らすので、部品側の pi は止める */}
+                <Btn
+                  color="danger"
+                  sound="none"
                   onClick={() => { se.playSe(se.reset); setIsPlaying(false); setMinutes(MIN_TIME) }}
-                  className="px-3 py-2 rounded-lg text-sm font-bold text-white border-2
-                    bg-danger-400 hover:bg-danger-500 active:bg-danger-600 border-danger-400
-                    active:translate-y-0.5 transition-colors"
+                  className="px-3 py-2"
                 >
                   もどす
-                </button>
+                </Btn>
               </div>
 
               <div className="rounded-xl bg-brand-50 border-2 border-brand-200 p-3 text-sm text-gray-800 leading-relaxed">
@@ -612,14 +614,10 @@ export default function NatsuNoHoshiPage() {
                   )
                 })}
               </div>
-              <button
-                onClick={resetQuiz}
-                className="px-3 py-2 rounded-lg text-sm font-bold text-white border-2
-                  bg-danger-400 hover:bg-danger-500 active:bg-danger-600 border-danger-400
-                  active:translate-y-0.5 transition-colors"
-              >
+              {/* resetQuiz が中で se.reset を鳴らすので、部品側の pi は止める */}
+              <Btn color="danger" sound="none" onClick={resetQuiz} className="px-3 py-2">
                 リセット
-              </button>
+              </Btn>
             </>
           )}
         </div>

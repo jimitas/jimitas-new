@@ -18,6 +18,7 @@
 
 "use client";
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import { useRef, useState, useEffect, useCallback, useLayoutEffect } from "react";
 
 // ── IFS変換の定義 ─────────────────────────────────────
@@ -288,20 +289,12 @@ export default function BarnsleyFernPage() {
 
         {/* 開始/停止/リセット */}
         <div className="flex flex-wrap gap-2">
-          <button
-            onClick={handleStart}
-            disabled={isRunning}
-            className="px-5 py-2 rounded-lg text-sm font-bold bg-brand-500 text-white hover:bg-brand-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
-          >
+          <Btn color="brand" onClick={handleStart} disabled={isRunning} className="px-5 py-2">
             ▶ 開始
-          </button>
-          <button
-            onClick={handleStop}
-            disabled={!isRunning}
-            className="px-5 py-2 rounded-lg text-sm font-bold bg-accent-500 text-white hover:bg-accent-600 disabled:opacity-40 disabled:cursor-not-allowed transition-all active:scale-95"
-          >
+          </Btn>
+          <Btn color="accent" onClick={handleStop} disabled={!isRunning} className="px-5 py-2">
             ⏸ 停止
-          </button>
+          </Btn>
           <button
             onClick={handleReset}
             className="px-5 py-2 rounded-lg text-sm font-bold bg-white border-2 border-gray-300 text-gray-600 hover:bg-gray-100 transition-all active:scale-95"
