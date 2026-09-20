@@ -31,6 +31,27 @@ import { scanUnreadable } from "./helpers/darkScan"
 
 const targets = apps.filter(a => !a.disabled)
 
+/**
+ * 初期表示では「もんだい」ボタンが出ないアプリの前準備。
+ *
+ * この2本はモードを切りかえないと出題できず、長いあいだ未カバーだった。
+ * 「ボタンが無いから skip」で済ませると、**カバーできていないことが
+ * skip の数に埋もれて見えなくなる**ので、ここに明示的に書く。
+ */
+const SETUP: Record<string, (page: import("@playwright/test").Page) => Promise<void>> = {
+  // 既定は「しらべる」（出題しないモード）。出題するモードに切りかえる
+  tokei: async (page) => {
+    await page.selectOption("select", "nanji")
+  },
+  // 最初に「はじめる！」のモーダルが覆っているので、まず閉じる。
+  // そのあとモードを切りかえる（既定は mode 1 ＝ たしかめ のみ。出題は mode 2・3）
+  "suuzu-block": async (page) => {
+    const start = page.getByRole("button", { name: "はじめる！" })
+    if (await start.count() > 0) await start.click()
+    await page.getByRole("button", { name: "ならべたかずはいくつ？" }).click()
+  },
+}
+
 test.describe("もんだいを出したあとのダーク表示", () => {
   test.beforeEach(async ({ page }) => {
     await page.addInitScript(() => localStorage.setItem("jimitas_dark", "true"))
@@ -43,6 +64,13 @@ test.describe("もんだいを出したあとのダーク表示", () => {
 
       const theme = await page.evaluate(() => document.documentElement.dataset.theme)
       expect(theme, "ダークモードが適用されていない").toBe("dark")
+
+      // 出題できる状態にする（必要なアプリだけ）
+      const setup = SETUP[app.id]
+      if (setup) {
+        await setup(page)
+        await page.waitForTimeout(300)
+      }
 
       // 「もんだい」ボタンを探す。
       //
@@ -58,19 +86,54 @@ test.describe("もんだいを出したあとのダーク表示", () => {
       // 問題の描画（罫線の付与を含む）が終わるのを待つ
       await page.waitForTimeout(600)
 
-      const found = await page.evaluate(scanUnreadable, { includeBorders: true })
+      const describe = (found: Awaited<ReturnType<typeof scan>>) =>
+        found
+          .map(f => `  ${f.ratio}:1  [${f.kind}] <${f.tag}> "${f.text}"\n` +
+                    `        色 ${f.fg} / 背景 ${f.bg}\n` +
+                    (f.cls ? `        class: ${f.cls}\n` : ""))
+          .join("")
 
-      const report = found
-        .map(f => `  ${f.ratio}:1  [${f.kind}] <${f.tag}> "${f.text}"\n` +
-                  `        色 ${f.fg} / 背景 ${f.bg}\n` +
-                  (f.cls ? `        class: ${f.cls}\n` : ""))
-        .join("")
+      const scan = () => page.evaluate(scanUnreadable, { includeBorders: true })
 
+      const afterQuestion = await scan()
       expect(
-        found.length,
-        `もんだいを出したあと、背景に溶けている箇所が ${found.length} 件:\n${report}\n` +
+        afterQuestion.length,
+        `もんだいを出したあと、背景に溶けている箇所が ${afterQuestion.length} 件:\n` +
+        `${describe(afterQuestion)}\n` +
         `罫線が出ている場合、色に black を固定していないか確認する。\n` +
         `セルが透明なテーブルでは currentColor を使う（文字色に追従して明暗が揃う）。`
+      ).toBe(0)
+
+      // ── 答えを画面に出したあとも見る ──────────────────
+      // 正誤の色分け・「せいかい！」の演出・ヒントの追記は
+      // **こたえあわせ（または「こたえ」）を押してはじめて出る**ので、
+      // もんだい直後の検査だけでは届かない。
+      // 押せるアプリだけ続けて見る（無い・無効なら ここで終わり）。
+      //
+      // ⚠️ ラベルの表記ゆれを取りこぼさないこと。
+      //    最初 /こたえあわせ|たしかめ/ だけで書いたところ、
+      //    **筆算5本が1つも引っかからなかった。**
+      //    わり算・かけ算2 は漢字の「答え合わせ」、
+      //    たし算・ひき算・かけ算1 はそもそも合わせるボタンが無く「こたえ」だった。
+      //    2026-09-12 のダーク罫線バグが出たのはその筆算で、
+      //    **いちばん見たいアプリが静かに検査外になっていた。**
+      //    そこで「正解を画面に出すボタン」まで広げて拾う。
+      //    表記を数え直すコマンド:
+      //      grep -rhoE "(こたえ|答え|たしかめ)[^<\"]{0,6}" "src/app/(apps)" --include=*.tsx | sort -u
+      const check = page
+        .locator("button", { hasText: /こたえ|答え合わせ|答えを見る|たしかめ/ })
+        .first()
+      if (await check.count() === 0 || await check.isDisabled()) return
+
+      await check.click()
+      await page.waitForTimeout(600)
+
+      const afterCheck = await scan()
+      expect(
+        afterCheck.length,
+        `こたえあわせのあと、背景に溶けている箇所が ${afterCheck.length} 件:\n` +
+        `${describe(afterCheck)}\n` +
+        `正誤の色分けや「せいかい！」の演出で、ダークに合わない色を使っていないか確認する。`
       ).toBe(0)
     })
   }

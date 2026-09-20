@@ -17,12 +17,19 @@ import { apps } from "../src/data/apps"
 // disabled: true のアプリは除外
 const targets = apps.filter(a => !a.disabled)
 
-// ハイドレーション完了を待つための上乗せ時間（ms）
+// ハイドレーション完了を待つ（2026-09-20 に固定時間をやめた）
 //
-// 実測に基づく値で、機械が遅ければ足りなくなりうる。
-// 「たまに落ちる」ようになったら、まず疑うのは実装ではなくこの値。
-// 逆に**ここを短くすると、エラーが出ていても緑になる**（検出できなくなる）。
-const HYDRATION_SETTLE_MS = 600
+// 以前は「たぶんこれくらいで終わるだろう」という 600ms の固定待ちだった。
+// 短ければエラーを見逃して緑になり、長ければ全アプリぶん遅くなる。
+// 機械の速さに結果が左右されるのも良くなかった。
+//
+// いまは NoContextMenu（全ページ共通のクライアント部品）が
+// ハイドレーション後の effect で <html data-hydrated="1"> を付けるので、
+// **それを待てば「不整合のエラーは出そろった」と言い切れる。**
+//
+// そのあとの少しの待ちは、CDP がコンソールを運んでくるぶんの余裕。
+// 判定の根拠は data-hydrated 側にあるので、この値は当てずっぽうではない。
+const CONSOLE_DELIVERY_MS = 150
 
 for (const app of targets) {
   test(`[${app.id}] ページが表示される`, async ({ page }) => {
@@ -64,8 +71,12 @@ for (const app of targets) {
     //    静止したあとにも走り、実測すると **エラー到達が networkidle の前後にばらける**
     //    （561〜1151ms / networkidle は 1053〜1240ms）。待ちなしで3回試すと2回落ちて
     //    1回通る、という不安定なテストになる。静止後にもう少し待って確定させる。
-    await page.waitForLoadState("networkidle")
-    await page.waitForTimeout(HYDRATION_SETTLE_MS)
+    await page.waitForFunction(
+      () => document.documentElement.dataset.hydrated === "1",
+      undefined,
+      { timeout: 20_000 },
+    )
+    await page.waitForTimeout(CONSOLE_DELIVERY_MS)
 
     // console.error が出ていないことを確認
     // （外部フォント読み込み失敗など既知の無害なものは除外）

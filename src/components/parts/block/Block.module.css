@@ -91,6 +91,12 @@
   margin: 2px;
   margin-bottom: 5px;
   min-width: 45%;
+  /* 木箱の中だけは黒固定のままにする。
+     下の background-color で白を55%かぶせており、
+     **地はライトでもダークでも明るいクリーム色**になる。
+     ここで currentColor にすると、ダークでは文字色（ほぼ白）を拾って
+     明るい地に白い線を引くことになり、かえって消える。
+     地の明るさが決まっている面では、線も固定でよい。 */
   border: 2px solid rgba(0, 0, 0, 0.3);
   background-color: rgba(255, 255, 255, 0.55);
 }
@@ -107,8 +113,24 @@
   height: max(4vw, 40px) !important;
   min-height: max(4vw, 40px) !important;
   max-height: max(4vw, 40px) !important;
-  border: 1px solid rgba(0, 0, 0, 0.3);
   border-collapse: collapse;
+}
+
+/* ── マス目の罫線は、上と下で地の明るさが違うので分けて指定する ──
+   同じ黒い線を両方に引いていたため、ダークで上エリアだけが消えていた
+   （2026-09-20、dark-after-question が 1.28:1 として検出）。 */
+
+/* 上エリア：地はページの背景そのもの（ライト＝白／ダーク＝紺）。
+   明暗がテーマで反転するので、線も文字色に追いかけさせる。 */
+.upperArea td {
+  border: 1px solid color-mix(in srgb, currentColor 30%, transparent);
+}
+
+/* 下エリア（木箱の中）：地は白55%のクリーム色で、テーマによらず明るい。
+   ここを currentColor にするとダークで白い線になって消える。上の
+   .lowerGrid table と同じ理由で、黒固定のままが正しい。 */
+.lowerGrid td {
+  border: 1px solid rgba(0, 0, 0, 0.3);
 }
 
 /* ==============================
