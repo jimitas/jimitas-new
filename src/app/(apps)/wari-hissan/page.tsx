@@ -544,7 +544,9 @@ export default function WariHissanPage() {
       for (let c = 0; c < COLS; c++) {
         const cell = TBL.rows[r].cells[c]
         cell.innerHTML = ""
-        cell.style.backgroundColor = ""
+        // 他の筆算4本と同じく白い紙面にする。
+        // 透明のままだとダークモードでマス目が地の色に溶けて見えなくなる。
+        cell.style.backgroundColor = "white"
         cell.style.borderBottom = ""
         cell.classList.remove("droppable-elem")
         cell.classList.remove("hissan2-diagonal")
@@ -1083,11 +1085,11 @@ export default function WariHissanPage() {
       {/* 筆算テーブル（13列 × 可変行） + ゴミ箱 */}
       <div className="flex items-start gap-2">
         <table
-          // 他の筆算と違い、ここでは文字色を固定しないこと。
-          // rewriteTable() が cell.style.backgroundColor = "" で白背景を消すため、
-          // 問題を出したあとのセルは透明（＝ページの地の色）になる。
-          // 固定するとダークモードで暗い地に暗い文字になって読めなくなる。
-          className="mx-auto"
+          // 紙面は白のままなので、ダークモードでも文字色を固定して継承させる
+          //（他の筆算4本と同じ扱い）。
+          // ここと rewriteTable() の backgroundColor = "white" は必ず対で直すこと。
+          // 片方だけ変えると「白地に明るい文字」か「暗い地に暗い文字」になる。
+          className="mx-auto text-gray-800"
           ref={tblRef}
           style={{ borderCollapse: "collapse", flexShrink: 0 }}
         >
