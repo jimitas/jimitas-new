@@ -1,6 +1,7 @@
 "use client"
 import { useState, useRef } from "react"
 import { calcAmari, isValidManualInput } from "./_lib/amariLogic"
+import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
@@ -258,12 +259,9 @@ export default function AmariPage() {
             onChange={e => setManualJ(e.target.value)}
             className="w-16 px-2 py-1 border-2 border-brand-400 rounded text-center font-bold text-lg"
           />
-          <button
-            onClick={setManual}
-            className="px-3 py-1.5 bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold rounded-lg text-sm"
-          >
+          <Btn color="brand" onClick={setManual} className="px-3 py-1.5">
             セット
-          </button>
+          </Btn>
           <span className="text-xs text-gray-400 dark:text-gray-500">（あまりが出る数にしてね）</span>
         </div>
       </details>

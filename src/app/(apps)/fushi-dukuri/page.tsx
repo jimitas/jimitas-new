@@ -20,6 +20,7 @@
 
 import { useState, useRef, useCallback, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
+import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
 // ── 音符・休符パレット定義 ─────────────────────────────
@@ -669,18 +670,12 @@ export default function FushiDukuriPage() {
       {/* 再生・停止・音の数 */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-4">
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <button
-            onClick={handlePlay}
-            className="px-5 py-2 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold"
-          >
+          <Btn color="brand" onClick={handlePlay} className="px-5 py-2 text-[1rem]">
             ▶ 再生
-          </button>
-          <button
-            onClick={handleStop}
-            className="px-5 py-2 rounded-lg bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white font-bold"
-          >
+          </Btn>
+          <Btn color="danger" onClick={handleStop} className="px-5 py-2 text-[1rem]">
             ■ 停止
-          </button>
+          </Btn>
           {/* バックグラウンド・メトロノーム（メロディと同時に1拍ごとクリック） */}
           <label className={`flex items-center gap-1.5 px-3 py-2 rounded-lg cursor-pointer text-sm font-bold border-2 transition-colors ${
             withCount

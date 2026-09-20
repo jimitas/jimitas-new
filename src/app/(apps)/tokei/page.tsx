@@ -28,6 +28,7 @@ import { useCoins } from "@/hooks/useCoins"
 import { CoinDisplay } from "@/components/parts/displays/CoinDisplay"
 import { useAnswerCheck } from "@/hooks/useAnswerCheck"
 import { drawClock, type HintLevel } from "@/lib/clockDrawing"
+import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnQuestion } from "@/components/parts/buttons/BtnQuestion"
 import { BtnCheck } from "@/components/parts/buttons/BtnCheck"
 import { BtnShowAnswer } from "@/components/parts/buttons/BtnShowAnswer"
@@ -281,15 +282,13 @@ export default function TokeiPage() {
           とけいのはりは　スライダーで　うごかせます
         </p>
         <div className="flex items-center gap-2">
-          <button
+          <Btn
+            color="brand"
             onClick={() => applyRange(rangeValue - step)}
-            className="px-5 py-2 text-xl font-bold shrink-0
-                       bg-brand-400 hover:bg-brand-500 active:bg-brand-600
-                       text-white border-2 border-brand-400
-                       active:translate-y-0.5 rounded-lg shadow-sm transition-colors"
+            className="px-5 py-2 text-xl"
           >
             −
-          </button>
+          </Btn>
           <input
             type="range"
             min={0}
@@ -299,15 +298,13 @@ export default function TokeiPage() {
             onChange={e => applyRange(parseInt(e.target.value))}
             className="flex-1 h-8 cursor-pointer accent-blue-500"
           />
-          <button
+          <Btn
+            color="brand"
             onClick={() => applyRange(rangeValue + step)}
-            className="px-5 py-2 text-xl font-bold shrink-0
-                       bg-brand-400 hover:bg-brand-500 active:bg-brand-600
-                       text-white border-2 border-brand-400
-                       active:translate-y-0.5 rounded-lg shadow-sm transition-colors"
+            className="px-5 py-2 text-xl"
           >
             ＋
-          </button>
+          </Btn>
         </div>
       </div>
 
