@@ -6,6 +6,7 @@
 // ======================================================
 
 import { CountRecorder, StepRecorder, type Recorder } from "./recorder"
+import { binarySearch, linearSearch } from "./searches"
 import { bubbleSort, exchangeSort, insertionSort, selectionSort } from "./sorts"
 import type { AlgoId, PointerName, Step } from "./types"
 
@@ -155,10 +156,75 @@ export const ALGOS: Record<AlgoId, AlgoDef> = {
     },
     pointerVars: { i: "i", j: "j" },
   },
+
+  linear: {
+    id: "linear",
+    label: "線形探索",
+    category: "search",
+    run: (rec, options) => linearSearch(rec, options.target ?? 0),
+    complexity: {
+      best: "O(1)",
+      average: "O(n)",
+      worst: "O(n)",
+      space: "O(1)",
+    },
+    // 見つからない場合が n 回。平均すると およそ半分
+    theory: (n) => n,
+    requiresSorted: false,
+    explanation: {
+      how: [
+        "左はし（矢印 i）から 1つずつ さがす値とくらべる",
+        "同じ値が見つかったら そこで終わり",
+        "右はしまで見て見つからなければ「ありません」",
+      ],
+      points: [
+        "ならんでいなくても使える。これが最大の長所で、二分探索にはできない",
+        "運がよければ1回、悪いと n 回くらべる。**ありません**と答えるには必ず n 回かかる",
+        "n を大きくすると くらべる回数も同じだけ増える（O(n)）。二分探索と同じ n で試すと差がはっきりする",
+      ],
+    },
+    pointerVars: { i: "i" },
+  },
+
+  binary: {
+    id: "binary",
+    label: "二分探索",
+    category: "search",
+    run: (rec, options) => binarySearch(rec, options.target ?? 0),
+    complexity: {
+      best: "O(1)",
+      average: "O(log n)",
+      worst: "O(log n)",
+      space: "O(1)",
+    },
+    // 最悪でも ⌊log2 n⌋ + 1 回
+    theory: (n) => (n <= 0 ? 0 : Math.floor(Math.log2(n)) + 1),
+    requiresSorted: true,
+    explanation: {
+      how: [
+        "しらべる範囲の左はし（矢印 L）と右はし（矢印 R）を決める",
+        "まん中（矢印 M）を見て、さがす値と くらべる",
+        "さがす値のほうが大きければ右半分、小さければ左半分だけを しらべる。これを くり返す",
+      ],
+      points: [
+        "1回くらべるたびに しらべる範囲が およそ半分になる。n=50 でも 6回くらべれば答えが出る（O(log n)）",
+        "**ならんでいる配列にしか使えない**のが条件。この画面では二分探索を選ぶと自動でならべている",
+        "線形探索と同じ n で「ありません」をさがしてみると、くらべる回数の差がいちばんはっきりする",
+      ],
+    },
+    pointerVars: { left: "hidari", right: "migi", mid: "aida" },
+  },
 }
 
 /** タブに並べる順番。似ているもの同士を となりに置いて見くらべやすくする */
-export const ALGO_ORDER: readonly AlgoId[] = ["selection", "exchange", "bubble", "insertion"]
+export const ALGO_ORDER: readonly AlgoId[] = [
+  "selection",
+  "exchange",
+  "bubble",
+  "insertion",
+  "linear",
+  "binary",
+]
 
 /** アニメーション用のステップ列を作る */
 export function generateSteps(

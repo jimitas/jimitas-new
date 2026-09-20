@@ -53,7 +53,11 @@ type Props = {
 }
 
 function barClass(step: Step, index: number): string {
-  // 範囲が指定されているアルゴリズム（二分探索など）では、範囲外を灰色にする
+  // 見つかった場所は、範囲の灰色より優先して緑で見せる
+  if ((step.kind === "found" || step.kind === "done") && step.pointers.i === index) {
+    return "bg-brand-400"
+  }
+  // 範囲が決まっているアルゴリズム（二分探索など）では、範囲外を灰色にする
   if (step.range && (index < step.range.lo || index > step.range.hi)) {
     return "bg-gray-300 dark:bg-gray-600"
   }
@@ -81,8 +85,21 @@ export function ArrayView({ step, maxValue, pointerVars }: Props) {
   // そちらに目が行ってしまい、かえって分かりにくい。
   const legendPointers = Object.keys(pointerVars) as PointerName[]
 
+  // 探索かどうか。target はそのアルゴリズムの全ステップに入っているので、
+  // ステップごとに切りかわることはない
+  const isSearch = step.target !== undefined
+
   return (
     <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4">
+      {/* さがす値。探索のときだけ、配列のすぐ上に大きく出す */}
+      {isSearch && (
+        <p className="mb-2 text-center text-sm text-gray-600 dark:text-gray-300">
+          さがす値：
+          <strong className="text-xl text-accent-600 dark:text-accent-300 tabular-nums">
+            {step.target}
+          </strong>
+        </p>
+      )}
       {/*
         バー本体。
         高さは「棒グラフとコード例を1画面で見くらべられること」を優先して決めている。
@@ -138,15 +155,26 @@ export function ArrayView({ step, maxValue, pointerVars }: Props) {
 
       {/* 凡例 */}
       <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-[11px] text-gray-500 dark:text-gray-400">
+        {/*
+          凡例の並びはアルゴリズムごとに固定（探索かソートかでしか変わらない）。
+          ステップごとに増えたり減ったりすると、そちらに目が行ってしまう。
+
+          緑は「決まった」ではなく「ならんだ」。挿入ソートの緑は“もう並んでいる
+          範囲”で、あとから中身がずれることがあるため。
+        */}
         <Legend className="bg-accent-400" label="まだ" />
         <Legend className="bg-warm-400" label="くらべている" />
-        <Legend className="bg-danger-400" label="入れかえた" />
-        {/*
-          「決まった」ではなく「ならんだ」。
-          挿入ソートの緑は“もう並んでいる範囲”で、あとから中身がずれることがある。
-          選択ソートのように確定している場合も含めて正しく言えるのはこちら。
-        */}
-        <Legend className="bg-brand-400" label="ならんだ" />
+        {isSearch ? (
+          <>
+            <Legend className="bg-gray-300 dark:bg-gray-600" label="しらべる範囲の外" />
+            <Legend className="bg-brand-400" label="見つかった" />
+          </>
+        ) : (
+          <>
+            <Legend className="bg-danger-400" label="入れかえた" />
+            <Legend className="bg-brand-400" label="ならんだ" />
+          </>
+        )}
         {legendPointers.map((name) => (
           <span key={name}>
             <strong className="text-gray-700 dark:text-gray-200">{POINTER_LABEL[name]}</strong>

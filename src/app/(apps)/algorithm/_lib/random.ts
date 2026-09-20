@@ -85,3 +85,28 @@ export function makeData(n: number, kind: DataKind, seed: number): number[] {
 export function sortedCopy(items: readonly number[]): number[] {
   return [...items].sort((a, b) => a - b)
 }
+
+/**
+ * 探索でさがす値を決める。
+ *
+ * hit=true なら配列の中にある値、false なら無い値を返す。
+ * 「ある値」と「ない値」で くらべる回数がどう変わるかが探索の学習点なので、
+ * どちらもボタン1つで試せるようにしている。
+ *
+ * Math.random() は使わない（SSR で食いちがうため）。
+ */
+export function pickTarget(items: readonly number[], hit: boolean, seed: number): number {
+  if (items.length === 0) return 1
+  const rng = makeRng(seed)
+
+  if (hit) return items[Math.floor(rng() * items.length)]
+
+  // 無い値。1〜99 の中から、配列に含まれないものをさがす
+  const used = new Set(items)
+  for (let attempt = 0; attempt < 200; attempt++) {
+    const v = 1 + Math.floor(rng() * MAX_VALUE)
+    if (!used.has(v)) return v
+  }
+  // 1〜99 が全部うまっている場合（n=99 のとき）だけここに来る
+  return 0
+}

@@ -10,7 +10,7 @@
 
 import { makeRng } from "@/app/(apps)/algorithm/_lib/random"
 import type { AlgoId, CodeTag, Step } from "@/app/(apps)/algorithm/_lib/types"
-import { generateSteps } from "@/app/(apps)/algorithm/_lib/algorithms"
+import { ALGOS, generateSteps } from "@/app/(apps)/algorithm/_lib/algorithms"
 
 /** テストに使う入力の一覧。名前つきで出すと、失敗時にどの並びかが分かる */
 export function sortCases(): { name: string; input: number[] }[] {
@@ -110,11 +110,37 @@ export function expectSortInvariants(algoId: AlgoId, input: readonly number[]): 
   return steps
 }
 
-/** そのアルゴリズムが実際に出したタグの集合 */
-export function emittedTags(algoId: AlgoId, inputs: readonly (readonly number[])[]): Set<CodeTag> {
+/** 探索テスト用のならんだ配列。二分探索にもそのまま渡せる */
+export function searchCases(): number[][] {
+  return sortCases().map(({ input }) => [...input].sort((a, b) => a - b))
+}
+
+/**
+ * そのアルゴリズムが実際に出したタグの集合。
+ *
+ * 探索は「ある値」と「ない値」の両方を試さないと
+ * found と notfound がそろわない。
+ * また二分探索はならんでいる配列しか受けつけないので、入力も分ける。
+ */
+export function emittedTags(algoId: AlgoId): Set<CodeTag> {
   const tags = new Set<CodeTag>()
-  for (const input of inputs) {
-    for (const s of generateSteps(algoId, input)) tags.add(s.codeTag)
+  const isSearch = ALGOS[algoId].category === "search"
+
+  if (!isSearch) {
+    for (const { input } of sortCases()) {
+      for (const s of generateSteps(algoId, input)) tags.add(s.codeTag)
+    }
+    return tags
+  }
+
+  for (const input of searchCases()) {
+    const targets =
+      input.length > 0
+        ? [input[0], input[input.length - 1], input[Math.floor(input.length / 2)], 1000]
+        : [1000]
+    for (const target of targets) {
+      for (const s of generateSteps(algoId, input, { target })) tags.add(s.codeTag)
+    }
   }
   return tags
 }

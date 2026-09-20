@@ -29,24 +29,51 @@ import { BtnMode } from "@/components/parts/buttons/BtnMode";
 import { AlgoExplain } from "./_components/AlgoExplain";
 import { ArrayView } from "./_components/ArrayView";
 import { CodePanel } from "./_components/CodePanel";
-import { PlayerControls, N_MAX, N_MIN } from "./_components/PlayerControls";
+import {
+  PlayerControls,
+  N_MAX,
+  N_MIN,
+  SPEED_MAX,
+  SPEED_MIN,
+} from "./_components/PlayerControls";
 import { StatsPanel } from "./_components/StatsPanel";
 import { ALGOS, ALGO_ORDER, generateSteps } from "./_lib/algorithms";
-import { makeData } from "./_lib/random";
+import { makeData, pickTarget, sortedCopy } from "./_lib/random";
 import type { AlgoId, DataKind, LangId } from "./_lib/types";
 
 // 初期状態は決め打ち。
 // "use client" でも SSR されるので、初期 state に Math.random() を書くと
 // サーバとクライアントで配列が食い違う。乱数はシード固定で作る。
+// localStorage も同じ理由で、初期値には使わずマウント後に読み込む。
 const INITIAL_SEED = 20260920;
 const INITIAL_N = 12;
 const INITIAL_SPEED_MS = 350;
+
+// 保存する設定（state の構造を変えたらバージョンを上げる）
+const STORAGE_KEY = "jimitas_algorithm_v1";
+
+type SavedSettings = {
+  algoId?: AlgoId;
+  n?: number;
+  dataKind?: DataKind;
+  lang?: LangId;
+  speedMs?: number;
+  codeOpen?: boolean;
+  explainOpen?: boolean;
+};
+
+const DATA_KINDS: DataKind[] = ["random", "nearly", "reverse", "same"];
+const LANG_IDS: LangId[] = ["python", "javascript", "kyotsu"];
 
 export default function AlgorithmPage() {
   const [algoId, setAlgoId] = useState<AlgoId>("selection");
   const [n, setN] = useState(INITIAL_N);
   const [dataKind, setDataKind] = useState<DataKind>("random");
   const [seed, setSeed] = useState(INITIAL_SEED);
+  // 探索でさがす値。null なら「配列の中にある値」を自動で選ぶ
+  const [targetValue, setTargetValue] = useState<number | null>(null);
+  // 「ある値／ない値」を押すたびに別の値を出すためのカウンタ
+  const [targetNonce, setTargetNonce] = useState(0);
   const [lang, setLang] = useState<LangId>("python");
   const [speedMs, setSpeedMs] = useState(INITIAL_SPEED_MS);
   const [stepIndex, setStepIndex] = useState(0);
@@ -55,9 +82,26 @@ export default function AlgorithmPage() {
   const [codeOpen, setCodeOpen] = useState(true);
   // しくみの解説の開閉。こちらは補足なので、はじめは たたんでおく
   const [explainOpen, setExplainOpen] = useState(false);
+  // localStorage の復元が済んだか。済むまで書き戻さない（初期値で上書きしてしまうため）
+  const [loaded, setLoaded] = useState(false);
 
-  const input = useMemo(() => makeData(n, dataKind, seed), [n, dataKind, seed]);
-  const steps = useMemo(() => generateSteps(algoId, input), [algoId, input]);
+  // 二分探索はならんでいる配列にしか使えないので、自動でならべる。
+  // _lib 側にもガードがあり、ならんでいない配列を渡すと例外になる。
+  const requiresSorted = ALGOS[algoId].requiresSorted;
+  const input = useMemo(() => {
+    const base = makeData(n, dataKind, seed);
+    return requiresSorted ? sortedCopy(base) : base;
+  }, [n, dataKind, seed, requiresSorted]);
+
+  // 探索でさがす値。使う側が選んでいなければ「配列の中にある値」を既定にする。
+  // Math.random() は使わない（SSR で食いちがうため）。
+  const isSearch = ALGOS[algoId].category === "search";
+  const target = targetValue ?? pickTarget(input, true, seed);
+
+  const steps = useMemo(
+    () => generateSteps(algoId, input, { target }),
+    [algoId, input, target],
+  );
 
   // steps が入れかわった直後の1レンダーだけ、添字が範囲外になりうる
   const safeIndex = Math.min(stepIndex, steps.length - 1);
@@ -156,6 +200,42 @@ export default function AlgorithmPage() {
     };
   }, []);
 
+  // ── 設定の保存と復元 ────────────────────────────
+  // SSR 後のハイドレーションが終わってから読む。
+  // 初期 state に localStorage を使うとサーバ側と食いちがう。
+  useEffect(() => {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const data = JSON.parse(raw) as SavedSettings;
+        // 壊れた値・古い値でアプリが動かなくならないよう、1つずつ検査する
+        if (data.algoId && ALGO_ORDER.includes(data.algoId)) setAlgoId(data.algoId);
+        if (typeof data.n === "number" && data.n >= N_MIN && data.n <= N_MAX) setN(data.n);
+        if (data.dataKind && DATA_KINDS.includes(data.dataKind)) setDataKind(data.dataKind);
+        if (data.lang && LANG_IDS.includes(data.lang)) setLang(data.lang);
+        if (typeof data.speedMs === "number" && data.speedMs >= SPEED_MIN && data.speedMs <= SPEED_MAX) {
+          setSpeedMs(data.speedMs);
+        }
+        if (typeof data.codeOpen === "boolean") setCodeOpen(data.codeOpen);
+        if (typeof data.explainOpen === "boolean") setExplainOpen(data.explainOpen);
+      }
+    } catch {
+      // 破損データは無視する
+    } finally {
+      setLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+    try {
+      const data: SavedSettings = { algoId, n, dataKind, lang, speedMs, codeOpen, explainOpen };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    } catch {
+      // 容量超過などは無視（次回の保存で再試行される）
+    }
+  }, [loaded, algoId, n, dataKind, lang, speedMs, codeOpen, explainOpen]);
+
   // ── 操作 ────────────────────────────────────
   // 条件を変えるとステップ列が作り直される。そのたびに最初へ戻して止める。
   // これは effect ではなくハンドラー側でやる（effect 内の setState は
@@ -165,34 +245,87 @@ export default function AlgorithmPage() {
     goTo(0);
   }, [pause, goTo]);
 
-  const handleTogglePlay = () => (isPlayingRef.current ? pause() : play());
-  const handleStepBack = () => {
+  const handleTogglePlay = useCallback(
+    () => (isPlayingRef.current ? pause() : play()),
+    [pause, play],
+  );
+  const handleStepBack = useCallback(() => {
     pause();
     goTo(stepIndexRef.current - 1);
-  };
-  const handleStepForward = () => {
+  }, [pause, goTo]);
+  const handleStepForward = useCallback(() => {
     pause();
     goTo(stepIndexRef.current + 1);
-  };
-  const handleRestart = () => {
+  }, [pause, goTo]);
+  const handleRestart = useCallback(() => {
     pause();
     goTo(0);
-  };
+  }, [pause, goTo]);
+
+  // ── キーボード操作 ─────────────────────────────
+  // スペース＝再生/一時停止、← →＝コマ送り、R＝さいしょへ。
+  // スライダーやボタンにフォーカスがあるときは何もしない。
+  // スライダーの上で ← → を押したら値を変えたいし、ボタンの上でスペースを
+  // 押すとブラウザがクリックを起こすので、二重に反応してしまう。
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+      const el = e.target as HTMLElement | null;
+      const tag = el?.tagName;
+      if (tag === "INPUT" || tag === "TEXTAREA" || tag === "SELECT" || tag === "BUTTON") return;
+
+      switch (e.key) {
+        case " ":
+          e.preventDefault();
+          handleTogglePlay();
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          handleStepBack();
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          handleStepForward();
+          break;
+        case "r":
+        case "R":
+          e.preventDefault();
+          handleRestart();
+          break;
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [handleTogglePlay, handleStepBack, handleStepForward, handleRestart]);
   const handleAlgoChange = (id: AlgoId) => {
     resetPlayback();
     setAlgoId(id);
   };
+  // 配列の中身が変わると、選んでいた「さがす値」がもう入っていないかもしれない。
+  // 意図しない「見つかりません」になるのを避けるため、いったん自動選択に戻す。
   const handleNChange = (next: number) => {
     resetPlayback();
+    setTargetValue(null);
     setN(Math.max(N_MIN, Math.min(N_MAX, next)));
   };
   const handleDataKindChange = (kind: DataKind) => {
     resetPlayback();
+    setTargetValue(null);
     setDataKind(kind);
   };
   const handleShuffle = () => {
     resetPlayback();
+    setTargetValue(null);
     setSeed((s) => s + 1);
+  };
+  const handlePickTarget = (hit: boolean) => {
+    resetPlayback();
+    // seed は動かさない。動かすと配列そのものが変わってしまい、
+    // せっかく選んだ「ある値」が新しい配列に入っていないことになる。
+    // 押すたびに別の値が出るよう、別のカウンタでずらす。
+    const nonce = targetNonce + 1;
+    setTargetNonce(nonce);
+    setTargetValue(pickTarget(input, hit, seed + nonce * 7919));
   };
 
   return (
@@ -240,6 +373,9 @@ export default function AlgorithmPage() {
         dataKind={dataKind}
         onDataKindChange={handleDataKindChange}
         onShuffle={handleShuffle}
+        target={isSearch ? target : undefined}
+        onPickTarget={isSearch ? handlePickTarget : undefined}
+        autoSorted={requiresSorted}
       />
 
       {/*

@@ -1,10 +1,9 @@
 import { ALGOS, ALGO_ORDER } from "@/app/(apps)/algorithm/_lib/algorithms"
 import { CODE_BOOK, buildTagIndex, tagsOf } from "@/app/(apps)/algorithm/_lib/codeSamples"
 import type { LangId } from "@/app/(apps)/algorithm/_lib/types"
-import { emittedTags, sortCases } from "./helpers"
+import { emittedTags } from "./helpers"
 
 const LANGS: LangId[] = ["python", "javascript", "kyotsu"]
-const INPUTS = sortCases().map((c) => c.input)
 
 // =======================================================
 // コード行ハイライトの生命線。
@@ -15,9 +14,16 @@ const INPUTS = sortCases().map((c) => c.input)
 //
 // 壊し方の例: コード例から1行消す / タグの綴りを変える /
 //             生成器の codeTag を別のものに書きかえる
+//
+// ■ このテストで検出できないこと（意図的に書き残す）
+//   同じタグが複数行に付いている場合、そのうち1行だけを消しても落ちない。
+//   例: 二分探索の Python で「else:」と「migi = aida - 1」がどちらも
+//       narrowLeft なので、後者だけ消してもタグは残っている。
+//   ここが守っているのは「行ハイライトの対応が壊れていないこと」であって、
+//   「コードの文面が正しいこと」ではない。文面の正しさは人のレビューで見る。
 // =======================================================
 describe.each(ALGO_ORDER)("コード例のタグ網羅: %s", (algoId) => {
-  const emitted = emittedTags(algoId, INPUTS)
+  const emitted = emittedTags(algoId)
 
   test("生成されるタグが1つも欠けていない（どの言語にも対応する行がある）", () => {
     for (const lang of LANGS) {

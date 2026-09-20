@@ -38,6 +38,14 @@ export type Recorder = {
   push(input: StepInput): void
   /** A[i] < A[j] か。比較の記録とカウントも同時に行う */
   lessThan(i: number, j: number, codeTag: CodeTag, pointers?: Pointers): boolean
+  /**
+   * A[i] と さがす値をくらべる（探索用）。
+   * 小さければ -1、同じなら 0、大きければ 1 を返す。
+   *
+   * 「同じか」「小さいか」をコード上は2行に分けて書くが、
+   * 人が数える「くらべた回数」は1回なので、ここでも1回として数える。
+   */
+  compareWith(i: number, value: number, codeTag: CodeTag, pointers?: Pointers): number
   /** A[i] と A[j] を入れかえる。交換の記録とカウントも同時に行う */
   swap(i: number, j: number, codeTag: CodeTag, pointers?: Pointers): void
   /** その位置が確定したことにする。message を省くと定型文になる */
@@ -82,6 +90,13 @@ abstract class BaseRecorder implements Recorder {
     return this.array[i] < this.array[j]
   }
 
+  compareWith(i: number, value: number, codeTag: CodeTag, pointers: Pointers = {}): number {
+    this.push({ kind: "compare", codeTag, compared: [i], target: value, pointers })
+    const v = this.array[i]
+    if (v === value) return 0
+    return v < value ? -1 : 1
+  }
+
   swap(i: number, j: number, codeTag: CodeTag, pointers: Pointers = {}): void {
     // 先に入れかえてから記録する。
     // 画面には「入れかえた結果」が出たほうが動きとして読みやすい。
@@ -124,6 +139,7 @@ export class StepRecorder extends BaseRecorder {
         kind: input.kind,
         array: this.arraySnap,
         compared: input.compared,
+        target: input.target,
         swapped: input.swapped,
         wrote: input.wrote,
         marked: input.marked,

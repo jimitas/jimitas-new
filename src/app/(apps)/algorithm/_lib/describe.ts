@@ -32,7 +32,11 @@ export function describeStep(input: StepInput, array: readonly number[]): string
       return "はじめの ならびです"
 
     case "compare": {
-      if (!input.compared) return "くらべています"
+      if (!input.compared || input.compared.length === 0) return "くらべています"
+      // 探索は「A[i] と さがす値」。ソートは「A[i] と A[j]」
+      if (input.target !== undefined) {
+        return `${cell(array, input.compared[0])} と さがす値 ${input.target} を くらべています`
+      }
       const [a, b] = input.compared
       return `${cell(array, a)} と ${cell(array, b)} を くらべています`
     }

@@ -17,6 +17,15 @@ export const SPEED_MAX = 1000
 export const N_MIN = 5
 export const N_MAX = 50
 
+/** キーの見た目。既存アプリ（barnsley-fern）の kbd の書き方にそろえる */
+function Kbd({ children }: { children: React.ReactNode }) {
+  return (
+    <kbd className="mx-1 px-1 rounded bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-200">
+      {children}
+    </kbd>
+  )
+}
+
 const DATA_LABEL: Record<DataKind, string> = {
   random: "ばらばら",
   nearly: "ほぼ順番",
@@ -42,6 +51,12 @@ type Props = {
   dataKind: DataKind
   onDataKindChange: (kind: DataKind) => void
   onShuffle: () => void
+
+  /** 探索アルゴリズムのときだけ出す。さがす値 */
+  target?: number
+  onPickTarget?: (hit: boolean) => void
+  /** 二分探索のように、配列を自動でならべているとき true */
+  autoSorted?: boolean
 }
 
 export function PlayerControls({
@@ -59,6 +74,9 @@ export function PlayerControls({
   dataKind,
   onDataKindChange,
   onShuffle,
+  target,
+  onPickTarget,
+  autoSorted = false,
 }: Props) {
   const atStart = stepIndex <= 0
   const atEnd = stepIndex >= stepCount - 1
@@ -141,11 +159,35 @@ export function PlayerControls({
         </label>
       </div>
 
+      {/* さがす値（探索アルゴリズムのときだけ） */}
+      {onPickTarget && (
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="text-sm text-gray-700 dark:text-gray-200 shrink-0">
+            さがす値
+            <strong className="ml-2 text-lg text-accent-600 dark:text-accent-300 tabular-nums">
+              {target}
+            </strong>
+          </span>
+          <Btn color="brand" onClick={() => onPickTarget(true)} className="px-4 py-2">
+            🎯 ある値
+          </Btn>
+          <Btn color="warm" onClick={() => onPickTarget(false)} className="px-4 py-2">
+            ❌ ない値
+          </Btn>
+        </div>
+      )}
+
       {/* データの並び方 */}
       <div className="flex flex-wrap items-center justify-center gap-2">
         <span className="text-sm text-gray-700 dark:text-gray-200 shrink-0">ならび</span>
         {(Object.keys(DATA_LABEL) as DataKind[]).map((kind) => (
-          <BtnMode key={kind} value={kind} current={dataKind} onChange={onDataKindChange}>
+          <BtnMode
+            key={kind}
+            value={kind}
+            current={dataKind}
+            onChange={onDataKindChange}
+            disabled={autoSorted}
+          >
             {DATA_LABEL[kind]}
           </BtnMode>
         ))}
@@ -153,6 +195,22 @@ export function PlayerControls({
           🔀 シャッフル
         </Btn>
       </div>
+
+      {/*
+        二分探索はならんでいる配列にしか使えない。
+        confirm/alert は使わない方針なので、その場に文で出す。
+      */}
+      {autoSorted && (
+        <p className="text-center text-xs text-warm-700 dark:text-warm-300">
+          二分探索は ならんでいる配列にしか使えないので、自動で 小さい順に ならべています
+        </p>
+      )}
+
+      {/* キーボードでも操作できることの案内。スマホでは出さない */}
+      <p className="hidden sm:block text-center text-[11px] text-gray-400 dark:text-gray-500">
+        キーボード：<Kbd>Space</Kbd> 再生／一時停止　<Kbd>←</Kbd> <Kbd>→</Kbd> コマ送り
+        <Kbd>R</Kbd> さいしょへ
+      </p>
     </div>
   )
 }

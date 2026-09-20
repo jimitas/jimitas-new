@@ -17,6 +17,8 @@ export type AlgoId =
   | "bubble" // バブルソート
   | "insertion" // 挿入ソート
   | "exchange" // 交換ソート（単純交換）
+  | "linear" // 線形探索
+  | "binary" // 二分探索
 
 // ── コード例の言語 ────────────────────────────────
 // kyotsu = 大学入学共通テスト用プログラム表記（疑似言語）
@@ -74,8 +76,13 @@ export type Step = {
   kind: StepKind
   /** その時点の配列。変化していないステップは1つ前と同じ配列を使いまわす（構造共有） */
   array: readonly number[]
-  /** くらべている2か所（kind が "compare" のとき） */
-  compared?: readonly [number, number]
+  /**
+   * くらべている場所（kind が "compare" のとき）。
+   * ソートは2か所、探索は「A[i] と さがす値」なので1か所になる。
+   */
+  compared?: readonly number[]
+  /** 探索でさがしている値。探索アルゴリズムだけが設定する */
+  target?: number
   /** 入れかえた2か所（kind が "swap" のとき） */
   swapped?: readonly [number, number]
   /** 書きこんだ場所（kind が "shift" / "write" のとき） */
@@ -109,7 +116,8 @@ export type StepInput = {
   kind: StepKind
   codeTag: CodeTag
   pointers?: Pointers
-  compared?: readonly [number, number]
+  compared?: readonly number[]
+  target?: number
   swapped?: readonly [number, number]
   wrote?: number
   marked?: number
