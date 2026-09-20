@@ -20,6 +20,7 @@
 
 "use client";
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import { useState, useRef, useEffect, useLayoutEffect, useCallback } from "react";
 import Image from "next/image";
 import * as se from "@/lib/se";
@@ -778,30 +779,22 @@ export default function KazoeBouPage() {
                              text-lg font-bold text-center
                              dark:bg-gray-700 dark:border-brand-600 dark:text-white"
               />
-              <button
-                onClick={handleFreeSet}
-                className="px-3 py-2 bg-accent-400 text-white rounded-lg font-bold
-                             hover:bg-accent-500 active:bg-accent-600 transition-colors text-sm"
-              >
+              <Btn color="accent" onClick={handleFreeSet} className="px-3 py-2">
                 ならべる
-              </button>
+              </Btn>
             </>
           )}
 
           {/* もんだいボタン */}
           {mode === "narabe" && (
-            <button onClick={handleNarabeQuestion}
-              className="px-3 py-2 bg-accent-400 text-white rounded-lg font-bold
-                           hover:bg-accent-500 active:bg-accent-600 transition-colors text-sm">
+            <Btn color="accent" onClick={handleNarabeQuestion} className="px-3 py-2">
               もんだい
-            </button>
+            </Btn>
           )}
           {mode === "ikutsu" && (
-            <button onClick={handleIkutsuQuestion}
-              className="px-3 py-2 bg-accent-400 text-white rounded-lg font-bold
-                           hover:bg-accent-500 active:bg-accent-600 transition-colors text-sm">
+            <Btn color="accent" onClick={handleIkutsuQuestion} className="px-3 py-2">
               もんだい
-            </button>
+            </Btn>
           )}
 
           {/* いくつかな: 答え入力欄 */}
@@ -819,11 +812,9 @@ export default function KazoeBouPage() {
           )}
 
           {/* けいさん / こたえあわせ */}
-          <button onClick={handleCalc}
-            className="px-3 py-2 bg-brand-400 text-white rounded-lg font-bold
-                         hover:bg-brand-500 active:bg-brand-600 transition-colors text-sm">
+          <Btn color="brand" onClick={handleCalc} className="px-3 py-2">
             {mode === "free" ? "いくつ？" : "こたえあわせ"}
-          </button>
+          </Btn>
 
           {/* リセット */}
           {!confirmReset ? (

@@ -15,6 +15,7 @@
 
 "use client";
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import { useState } from "react";
 import Image from "next/image";
 import * as se from "@/lib/se";
@@ -395,12 +396,9 @@ export default function SangenshokuPage() {
               placeholder="#RRGGBB"
               className="flex-1 text-sm font-mono bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/40 focus:outline-none focus:border-white/50"
             />
-            <button
-              onClick={applyRgbInput}
-              className="text-sm px-4 py-2 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold transition-colors"
-            >
+            <Btn color="brand" onClick={applyRgbInput} className="px-4 py-2">
               適用
-            </button>
+            </Btn>
           </div>
         </div>
         )}
