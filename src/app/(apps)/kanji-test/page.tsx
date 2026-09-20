@@ -472,8 +472,14 @@ export default function KanpuriPage() {
             <Btn color="accent" onClick={handleSave} className="px-3 py-1">
               💾 保存
             </Btn>
+            {/*
+              となりの「保存」は Btn なので、背景と同色の border-2 のぶん 4px 大きい。
+              こちらは <input type="file"> を包む label で Btn にできないため、
+              同じ枠線を手で足して高さをそろえる。
+            */}
             <label className="px-3 py-1 rounded-lg bg-accent-400 hover:bg-accent-500 active:bg-accent-600 active:translate-y-0.5
-                              text-white text-sm font-bold shadow transition-colors cursor-pointer">
+                              border-2 border-accent-400
+                              text-white text-sm font-bold shadow-sm transition-colors cursor-pointer">
               📂 読込
               <input
                 ref={fileInputRef}
