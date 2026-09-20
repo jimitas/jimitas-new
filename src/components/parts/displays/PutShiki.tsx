@@ -31,8 +31,8 @@ export function PutShiki({ el_left_input, el_right_input, el_answer, kigo }: Put
         min="0"
         max="20"
         step="1"
-        className="h-[max(3vw,30px)] w-[max(4vw,42px)] text-[max(2vw,20px)]
-                   text-center font-bold m-[5px] px-[5px]
+        className="h-[max(3vw,30px)] w-[max(5vw,52px)] text-[max(2vw,20px)]
+                   text-center font-bold m-[5px] px-0
                    text-brand-700 border-2 border-brand-600 bg-white rounded-[10%] cursor-pointer"
       />
       {/* 演算子（＋） */}
@@ -46,8 +46,8 @@ export function PutShiki({ el_left_input, el_right_input, el_answer, kigo }: Put
         min="0"
         max="20"
         step="1"
-        className="h-[max(3vw,30px)] w-[max(4vw,42px)] text-[max(2vw,20px)]
-                   text-center font-bold m-[5px] px-[5px]
+        className="h-[max(3vw,30px)] w-[max(5vw,52px)] text-[max(2vw,20px)]
+                   text-center font-bold m-[5px] px-0
                    text-brand-700 border-2 border-brand-600 bg-white rounded-[10%] cursor-pointer"
       />
       {/* ＝ */}
@@ -61,8 +61,8 @@ export function PutShiki({ el_left_input, el_right_input, el_answer, kigo }: Put
         min="0"
         max="40"
         step="1"
-        className="h-[max(3vw,30px)] w-[max(4vw,42px)] text-[max(2vw,20px)]
-                   text-center font-bold m-[5px] px-[5px]
+        className="h-[max(3vw,30px)] w-[max(5vw,52px)] text-[max(2vw,20px)]
+                   text-center font-bold m-[5px] px-0
                    text-brand-700 border-2 border-brand-600 bg-white rounded-[10%] cursor-pointer"
       />
     </div>

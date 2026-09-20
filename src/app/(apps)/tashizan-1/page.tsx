@@ -197,17 +197,14 @@ export default function Tashizan1Page() {
     if (el_text.current) el_text.current.innerHTML = ""
   }
 
-  // 「こたえをみる」ボタン：答えを答え欄に表示する
+  // 「こたえをみる」ボタン：答えを答え欄に表示して、その問題を終了する
+  // 答えを見たあとに「こたえあわせ」でコインがもらえてしまわないよう、
+  // hasProblem を false にして判定経路ごと閉じる（tokei・amari・number-line と同じ扱い）
   const showAnswer = () => {
     if (!hasProblem) return
     se.playSe(se.seikai1)
-    if (el_answer.current) {
-      // すでに正解が入っていたら空にする（トグル動作）
-      el_answer.current.value =
-        parseInt(el_answer.current.value) === answerRef.current
-          ? ""
-          : answerRef.current.toString()
-    }
+    setHasProblem(false)
+    if (el_answer.current) el_answer.current.value = answerRef.current.toString()
   }
 
   // 正誤を判定して結果を表示する（数字ボタン・こたえあわせ共通）
