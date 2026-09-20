@@ -35,6 +35,33 @@ const SELECT_ITEMS = [5, 6, 7, 8, 9, 10]
 // セレクト値（5〜10）に対応する動物画像ファイル名
 const ANIMALS = ["apple", "banana", "cat", "monkey", "frog", "dog"]
 
+// ── 助数詞（数え方） ─────────────────────────────────
+// 絵によって数え方が変わるので、絵ごとに正しい助数詞を出す。
+// （以前はコイン表示を流用して「5まい」と出しており、りんごや動物では意味が通らなかった）
+//   ko   … りんご → こ（音が変わらない）
+//   hon  … バナナ → 1ぽん・3ぼん・6ぽん のように音が変わる
+//   hiki … 動物   → 1ぴき・3びき・8ぴき のように音が変わる
+const COUNTER_TYPE: Record<string, "ko" | "hon" | "hiki"> = {
+  apple:  "ko",
+  banana: "hon",
+  cat:    "hiki",
+  monkey: "hiki",
+  frog:   "hiki",
+  dog:    "hiki",
+}
+
+// 1〜10 の読み方（index 0 は使わないので空文字）
+const HON_READING  = ["", "ぽん", "ほん", "ぼん", "ほん", "ほん", "ぽん", "ほん", "ぽん", "ほん", "ぽん"]
+const HIKI_READING = ["", "ぴき", "ひき", "びき", "ひき", "ひき", "ぴき", "ひき", "ぴき", "ひき", "ぴき"]
+
+// かずと絵から「5こ」「3ぼん」「8ぴき」のような文字列を作る
+function counterText(n: number, animal: string): string {
+  const type = COUNTER_TYPE[animal] ?? "ko"
+  if (type === "hon")  return `${n}${HON_READING[n]  ?? "ほん"}`
+  if (type === "hiki") return `${n}${HIKI_READING[n] ?? "ひき"}`
+  return `${n}こ`
+}
+
 // ── コンポーネント ───────────────────────────────────
 
 export default function KazoeyouPage() {
@@ -61,6 +88,10 @@ export default function KazoeyouPage() {
   const answerRef = useRef<number>(0)
   useEffect(() => { answerRef.current = answer }, [answer])
 
+  // 表示中の絵の最新値を ref で保持（助数詞の判定に使う）
+  const animalSrcRef = useRef<string>("")
+  useEffect(() => { animalSrcRef.current = animalSrc }, [animalSrc])
+
   // コインシステム
   const { coins, addCoins } = useCoins()
 
@@ -72,11 +103,12 @@ export default function KazoeyouPage() {
     // 不正解後に戻すテキストは固定の "いくつかな？"
     getPrevText: () => "いくつかな？",
     el_text,
-    // 正解テキストを枚数付きに上書きする
+    // 正解テキストを「5こ」「3ぼん」「8ぴき」のように助数詞つきで上書きする
     onCorrect: () => {
       if (el_text.current) {
+        const count = counterText(answerRef.current, animalSrcRef.current)
         el_text.current.innerHTML =
-          `<span style="color:red;">せいかい！　${answerRef.current} まい</span>`
+          `<span style="color:red;">せいかい！　${count}</span>`
       }
     },
     // 不正解後1秒で再入力可能に（flag を true に戻す）
