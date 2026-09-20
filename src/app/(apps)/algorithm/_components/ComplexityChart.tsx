@@ -87,6 +87,15 @@ function ComplexityChartInner({
   const maxY = maxCompares(series)
   const ticks = yTicks(maxY)
 
+  // ソートと探索を同時に出しているか。
+  // この2つは やっていることがちがうので、回数をそのままくらべられない。
+  // 禁止はしない（「先にならべてから二分探索」の話につながるので混ぜる価値がある）が、
+  // 混ぜたときだけ 断りを出す。
+  const shown = [algoId, ...compareWith.filter((id) => id !== algoId)]
+  const mixed =
+    shown.some((id) => ALGOS[id].category === "sort") &&
+    shown.some((id) => ALGOS[id].category === "search")
+
   return (
     <section className="mt-4">
       <div className="flex justify-center">
@@ -222,6 +231,26 @@ function ComplexityChartInner({
             </span>
           ))}
         </div>
+
+        {/*
+          ソートと探索を重ねたときの断り。
+          線形探索の線は ソートの横では ほぼ平らに見えるので、
+          「線形探索はソートより速い」と読まれてしまう。解いている問題がちがう。
+        */}
+        {mixed && (
+          <div className="mt-2 rounded-lg border border-gray-200 dark:border-gray-700 border-l-4 border-l-warm-400 dark:border-l-warm-400 bg-white dark:bg-gray-900 px-3 py-2 text-xs text-gray-700 dark:text-gray-200">
+            <strong className="block mb-1">
+              ソートと探索は やっていることが ちがいます
+            </strong>
+            並べかえと 探しものなので、くらべた回数を そのまま くらべることはできません。
+            そのうえで、こう考えると つながります。
+            <br />
+            <span className="text-gray-600 dark:text-gray-300">
+              1回だけ探すなら 線形探索で十分。何度も探すなら、
+              先に ならべておいて（その回数がソートの線）二分探索にしたほうが 得をします。
+            </span>
+          </div>
+        )}
 
         <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400">
           n を {CHART_N_MIN} から {CHART_N_MAX} まで変えて、実際に走らせた「くらべた回数」です。
