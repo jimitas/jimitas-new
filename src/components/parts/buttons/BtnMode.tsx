@@ -55,12 +55,14 @@ export function BtnMode<T extends string | number>({
       className={`px-4 py-2 rounded-lg text-sm font-bold transition-all active:scale-95
         disabled:opacity-40 disabled:cursor-not-allowed
         ${isActive
-          // 選択中も枠線を引く。背景と同色なので見た目は変わらないが、
-          // これが無いと非選択（border あり）より 1.78px 小さくなり、
-          // 押した瞬間にボタンが縮んで見える。
-          // Btn が背景と同色の枠線を持っているのと同じ理由。
-          ? "bg-brand-500 text-white border border-brand-500"
-          : "bg-white border border-brand-300 text-brand-600 hover:bg-brand-100 dark:bg-gray-800 dark:text-brand-300 dark:border-brand-700 dark:hover:bg-brand-900"}
+          // 枠線は border-2。理由が2つある。
+          //   1. 選択中にも引く（背景と同色）。無いと非選択より小さくなり、
+          //      押した瞬間にボタンが縮んで見える
+          //   2. 太さを Btn とそろえる。Btn は border-2 なので、
+          //      ここが 1px だと同じ行にならべたとき 2px 合わない
+          //      （例: algorithm の「シャッフル」と「ばらばら」）
+          ? "bg-brand-500 text-white border-2 border-brand-500"
+          : "bg-white border-2 border-brand-300 text-brand-600 hover:bg-brand-100 dark:bg-gray-800 dark:text-brand-300 dark:border-brand-700 dark:hover:bg-brand-900"}
         ${className}`}
     >
       {children}

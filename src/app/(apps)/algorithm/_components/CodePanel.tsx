@@ -63,7 +63,8 @@ function CodePanelInner({ algoId, lang, onLangChange, codeTag, open, onToggle }:
         見出しそのものを開閉ボタンにして、1行で済ませている。
       */}
       <div className="flex flex-wrap items-center gap-2 mb-2">
-        <Btn color="neutral" onClick={onToggle} className="px-3 py-1.5">
+        {/* 同じ行にならぶ言語タブ（BtnMode）と高さをそろえるため py-2 */}
+        <Btn color="neutral" onClick={onToggle} className="px-3 py-2">
           <span aria-hidden="true" className="mr-1">
             {open ? "▼" : "▶"}
           </span>

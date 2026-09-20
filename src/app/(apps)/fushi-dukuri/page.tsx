@@ -670,10 +670,10 @@ export default function FushiDukuriPage() {
       {/* 再生・停止・音の数 */}
       <section className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-3 mb-4">
         <div className="flex flex-wrap items-center justify-center gap-2">
-          <Btn color="brand" onClick={handlePlay} className="px-5 py-2 text-[1rem]">
+          <Btn color="brand" onClick={handlePlay} className="px-5 py-2">
             ▶ 再生
           </Btn>
-          <Btn color="danger" onClick={handleStop} className="px-5 py-2 text-[1rem]">
+          <Btn color="danger" onClick={handleStop} className="px-5 py-2">
             ■ 停止
           </Btn>
           {/* バックグラウンド・メトロノーム（メロディと同時に1拍ごとクリック） */}

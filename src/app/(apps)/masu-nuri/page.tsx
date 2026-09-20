@@ -269,30 +269,30 @@ export default function MasuNuriPage() {
           <div className="flex gap-1">
             <button
               onClick={() => { playSwitchSound(); setMode("cells") }}
-              className={`px-3 py-2 rounded-lg text-sm font-bold ${
+              className={`px-3 py-2 rounded-lg text-sm font-bold border-2 ${
                 mode === "cells"
-                  ? "bg-brand-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  ? "bg-brand-500 text-white border-brand-500"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-700"
               }`}
             >
               ますをぬる
             </button>
             <button
               onClick={() => { playSwitchSound(); setMode("lines") }}
-              className={`px-3 py-2 rounded-lg text-sm font-bold ${
+              className={`px-3 py-2 rounded-lg text-sm font-bold border-2 ${
                 mode === "lines"
-                  ? "bg-brand-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  ? "bg-brand-500 text-white border-brand-500"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-700"
               }`}
             >
               せんをひく
             </button>
             <button
               onClick={() => { playSwitchSound(); setMode("tegaki") }}
-              className={`px-3 py-2 rounded-lg text-sm font-bold ${
+              className={`px-3 py-2 rounded-lg text-sm font-bold border-2 ${
                 mode === "tegaki"
-                  ? "bg-brand-500 text-white"
-                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
+                  ? "bg-brand-500 text-white border-brand-500"
+                  : "bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border-gray-100 dark:border-gray-700"
               }`}
             >
               てがき
