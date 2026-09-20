@@ -356,7 +356,12 @@ export default function AlgorithmPage() {
         onToggle={() => setExplainOpen((v) => !v)}
       />
 
-      <ArrayView step={step} maxValue={maxValue} pointerVars={algo.pointerVars} />
+      <ArrayView
+        step={step}
+        maxValue={maxValue}
+        pointerVars={algo.pointerVars}
+        usesHand={algo.usesHand}
+      />
 
       <PlayerControls
         isPlaying={isPlaying}

@@ -35,7 +35,7 @@ const POINTER_HELP: Record<PointerName, string> = {
   right: "探す範囲の右はし",
   mid: "範囲の まん中",
   pivot: "基準の値",
-  key: "取り出しておいた値",
+  key: "取り出して 手に持っている値",
 }
 
 /** 値のラベルを出す上限。これより多いと文字がつぶれる */
@@ -50,6 +50,8 @@ type Props = {
    * 「m」が saisho のことだと気づけないと、動きとコードがつながらない。
    */
   pointerVars: Partial<Record<PointerName, string>>
+  /** 値を取り出して手に持つアルゴリズムか（挿入ソート） */
+  usesHand?: boolean
 }
 
 function barClass(step: Step, index: number): string {
@@ -68,7 +70,7 @@ function barClass(step: Step, index: number): string {
   return "bg-accent-400"
 }
 
-export function ArrayView({ step, maxValue, pointerVars }: Props) {
+export function ArrayView({ step, maxValue, pointerVars, usesHand = false }: Props) {
   const n = step.array.length
   const showLabels = n <= LABEL_LIMIT
 
@@ -101,31 +103,67 @@ export function ArrayView({ step, maxValue, pointerVars }: Props) {
         </p>
       )}
       {/*
+        取り出して手に持っている値（挿入ソートの tmp）。
+        穴の真上に浮かせて描くので、穴が左へ動くとカードも一緒に動く。
+        行そのものは usesHand のあいだ常に確保して、レイアウトが跳ねないようにする。
+      */}
+      {usesHand && (
+        <div className="flex gap-[2px] h-9 items-end mb-1" aria-hidden="true">
+          {step.array.map((_, index) => (
+            <div key={index} className="flex-1 min-w-0 flex justify-center">
+              {step.gap === index && step.held !== undefined && (
+                <span className="px-1 rounded bg-warm-400 text-white text-[11px] font-bold tabular-nums leading-5">
+                  {step.held}
+                </span>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/*
         バー本体。
         高さは「棒グラフとコード例を1画面で見くらべられること」を優先して決めている。
         1024×768 のタブレットで、両方が同時に入る範囲にとどめること。
       */}
       <div className="flex items-end gap-[2px] h-40 sm:h-48" aria-hidden="true">
-        {step.array.map((value, index) => (
-          <div
-            key={index}
-            className={`flex-1 min-w-0 rounded-t-sm ${barClass(step, index)}`}
-            style={{ height: `${Math.max(4, (value / maxValue) * 100)}%` }}
-          />
-        ))}
+        {step.array.map((value, index) =>
+          // あいている場所は、取り出した値の高さの点線わくで描く。
+          // ここに実際に入っている値は「まだ上書きされていない古い値」なので、
+          // そのまま描くと同じ値が2つあるように見えてしまう。
+          step.gap === index && step.held !== undefined ? (
+            <div
+              key={index}
+              className="flex-1 min-w-0 rounded-t-sm border-2 border-dashed border-warm-400 bg-transparent"
+              style={{ height: `${Math.max(4, (step.held / maxValue) * 100)}%` }}
+            />
+          ) : (
+            <div
+              key={index}
+              className={`flex-1 min-w-0 rounded-t-sm ${barClass(step, index)}`}
+              style={{ height: `${Math.max(4, (value / maxValue) * 100)}%` }}
+            />
+          ),
+        )}
       </div>
 
       {/* 値 */}
       {showLabels && (
         <div className="flex gap-[2px] mt-1" aria-hidden="true">
-          {step.array.map((value, index) => (
-            <div
-              key={index}
-              className="flex-1 min-w-0 text-center text-[11px] text-gray-600 dark:text-gray-300 tabular-nums"
-            >
-              {value}
-            </div>
-          ))}
+          {step.array.map((value, index) => {
+            // あいている場所は空欄にする。
+            // ここに残っているのは まだ上書きされていない古い値なので、
+            // そのまま出すと同じ数字が2つ並んで見えてしまう。
+            const isGap = step.gap === index && step.held !== undefined
+            return (
+              <div
+                key={index}
+                className="flex-1 min-w-0 text-center text-[11px] text-gray-600 dark:text-gray-300 tabular-nums"
+              >
+                {isGap ? "" : value}
+              </div>
+            )
+          })}
         </div>
       )}
 
@@ -171,8 +209,26 @@ export function ArrayView({ step, maxValue, pointerVars }: Props) {
           </>
         ) : (
           <>
-            <Legend className="bg-danger-400" label="入れかえた" />
+            <Legend className="bg-danger-400" label={usesHand ? "ずらした" : "入れかえた"} />
             <Legend className="bg-brand-400" label="ならんだ" />
+          </>
+        )}
+        {usesHand && (
+          <>
+            {/*
+              札の見本には本物の数字を出さない。
+              いま持っている値とちがう数字が並ぶと、そちらを読んでしまう。
+            */}
+            <span className="flex items-center gap-1">
+              <span className="px-1 rounded bg-warm-400 text-white text-[10px] font-mono font-bold leading-4">
+                tmp
+              </span>
+              取り出して 手に持っている値
+            </span>
+            <span className="flex items-center gap-1">
+              <span className="inline-block w-3 h-3 rounded-sm border-2 border-dashed border-warm-400" />
+              あいた場所（ここに さしこむ）
+            </span>
           </>
         )}
         {legendPointers.map((name) => (

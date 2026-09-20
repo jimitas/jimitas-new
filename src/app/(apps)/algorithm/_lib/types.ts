@@ -42,6 +42,8 @@ export type StepKind =
   | "swap"      // 2つの値を入れかえた           → 交換回数 +1
   | "shift"     // 値を1つずらした（挿入ソート） → 交換回数 +1
   | "write"     // 配列に書きこんだ（マージ）     → 交換回数 +1
+  | "take"      // 値を取り出して手に持った（挿入ソートの tmp = Data[i]）※数えない
+  | "place"     // 手に持っていた値を置いた（Data[j+1] = tmp）※数えない
   | "mark"      // その位置が確定した
   | "focus"     // 見ている場所・範囲が変わっただけ（数えない）
   | "found"     // 探している値が見つかった
@@ -53,7 +55,7 @@ export type StepKind =
 // しかも無言で間違った行が光るため）。
 export type CodeTag =
   | "init" | "outerLoop" | "innerLoop" | "compare" | "swap" | "shift"
-  | "insert" | "updateMin" | "markSorted" | "finish"
+  | "takeOut" | "insert" | "updateMin" | "markSorted" | "finish"
   | "pivotSelect" | "partition" | "recurseLeft" | "recurseRight"
   | "split" | "mergeCopy" | "mergeBack" | "mergeRest"
   | "searchLoop" | "midCalc" | "narrowLeft" | "narrowRight"
@@ -83,6 +85,16 @@ export type Step = {
   compared?: readonly number[]
   /** 探索でさがしている値。探索アルゴリズムだけが設定する */
   target?: number
+  /**
+   * いま手に持っている値（挿入ソートの tmp）。持っていなければ undefined。
+   *
+   * ずらしている途中は配列の中に同じ値が2つ見える状態になる。
+   * 「取り出した値」と「そのあいた場所（gap）」を分けて持つことで、
+   * 画面では穴として描き、値が増えたように見えるのを防ぐ。
+   */
+  held?: number
+  /** 手に持っているあいだ、あいている場所の添字 */
+  gap?: number
   /** 入れかえた2か所（kind が "swap" のとき） */
   swapped?: readonly [number, number]
   /** 書きこんだ場所（kind が "shift" / "write" のとき） */

@@ -20,6 +20,23 @@ function cell(array: readonly number[], index: number): string {
   return v === undefined ? `A[${index}]` : `A[${index}] (=${v})`
 }
 
+// ── 挿入ソートの「手に持つ」操作の説明文 ──────────────
+// Recorder からしか値が分からないので、ここに関数だけ置いて呼んでもらう。
+// 文面の置き場所をこのファイルに1本化しておく。
+
+export function describeTakeOut(index: number, value: number): string {
+  return `A[${index}] (=${value}) を いったん 取り出します。ここが あきます`
+}
+
+export function describeHeldCompare(j: number, atJ: number, held: number | undefined): string {
+  if (held === undefined) return `A[${j}] を くらべています`
+  return `A[${j}] (=${atJ}) は 取り出した ${held} より 大きい？`
+}
+
+export function describePutDown(index: number, value: number): string {
+  return `あいた A[${index}] に ${value} を さしこみました`
+}
+
 /**
  * ステップの定型説明文を作る。
  *
@@ -52,8 +69,14 @@ export function describeStep(input: StepInput, array: readonly number[]): string
 
     case "shift": {
       if (input.wrote === undefined) return "ずらしました"
-      return `A[${input.wrote}] に となりの 値を ずらしました`
+      return `大きいので、A[${input.wrote - 1}] を A[${input.wrote}] へ 1つ 右に ずらします`
     }
+
+    case "take":
+      return "取り出しました"
+
+    case "place":
+      return "さしこみました"
 
     case "write": {
       if (input.wrote === undefined) return "書きこみました"

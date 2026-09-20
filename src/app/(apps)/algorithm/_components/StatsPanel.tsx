@@ -30,10 +30,14 @@ function StatsPanelInner({ algo, message, compares, swaps, n }: Props) {
         {message}
       </p>
 
-      {/* 実測の回数 */}
-      <div className="mt-3 grid grid-cols-2 gap-2 sm:gap-3">
+      {/*
+        実測の回数。
+        2つめのラベルはアルゴリズムごとに変える（入れかえ／ずらし）。
+        探索は常に0で意味がないので、そもそも出さない。
+      */}
+      <div className={`mt-3 grid gap-2 sm:gap-3 ${algo.moveLabel ? "grid-cols-2" : "grid-cols-1"}`}>
         <Counter label="くらべた回数" value={compares} tone="warm" />
-        <Counter label="入れかえた回数" value={swaps} tone="danger" />
+        {algo.moveLabel && <Counter label={algo.moveLabel} value={swaps} tone="danger" />}
       </div>
 
       {/* 理論計算量 */}

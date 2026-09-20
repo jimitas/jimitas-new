@@ -13,7 +13,12 @@
 // 「2つが常に一致すること」は単体テストで固定する。
 // ======================================================
 
-import { describeStep } from "./describe"
+import {
+  describeHeldCompare,
+  describePutDown,
+  describeStep,
+  describeTakeOut,
+} from "./describe"
 import type { CodeTag, Pointers, Step, StepInput, StepKind } from "./types"
 
 /**
@@ -50,6 +55,20 @@ export type Recorder = {
   swap(i: number, j: number, codeTag: CodeTag, pointers?: Pointers): void
   /** その位置が確定したことにする。message を省くと定型文になる */
   mark(index: number, codeTag: CodeTag, pointers?: Pointers, message?: string): void
+
+  // ── 挿入ソートの「手に持つ」操作 ────────────────
+  // tmp = Data[i] ／ Data[j+1] = Data[j] ／ Data[j+1] = tmp を
+  // Recorder 側で組にして扱う。手の状態は push のたびに自動で全ステップへ
+  // 付くので、生成器が付け忘れることがない。
+
+  /** A[i] を取り出して手に持つ（tmp = Data[i]）。その場所が穴になる */
+  takeOut(index: number, codeTag: CodeTag, pointers?: Pointers): void
+  /** A[j] が 手に持っている値より大きいか（Data[j] > tmp）。比較として数える */
+  greaterThanHeld(j: number, codeTag: CodeTag, pointers?: Pointers): boolean
+  /** A[j] を1つ右へずらす（Data[j+1] = Data[j]）。穴が j へ移る。移動として数える */
+  shiftRight(j: number, codeTag: CodeTag, pointers?: Pointers): void
+  /** 手に持っている値を穴に置く（Data[j+1] = tmp）。数えない */
+  putDown(codeTag: CodeTag, pointers?: Pointers): void
 }
 
 /** 交換回数として数える kind */
@@ -62,6 +81,10 @@ abstract class BaseRecorder implements Recorder {
   protected compares = 0
   protected swaps = 0
   private stepCount = 0
+
+  /** 手に持っている値と、あいている場所。持っていなければ undefined */
+  protected held: number | undefined
+  protected gap: number | undefined
 
   constructor(input: readonly number[]) {
     this.array = [...input]
@@ -109,6 +132,51 @@ abstract class BaseRecorder implements Recorder {
   mark(index: number, codeTag: CodeTag, pointers: Pointers = {}, message?: string): void {
     this.push({ kind: "mark", codeTag, marked: index, pointers, message })
   }
+
+  takeOut(index: number, codeTag: CodeTag, pointers: Pointers = {}): void {
+    this.held = this.array[index]
+    this.gap = index
+    // 矢印は足さない。取り出した値はオレンジの札として穴の上に出しているので、
+    // 矢印も出すと二重になるうえ、取り出したステップだけ凡例が増えて目が散る。
+    this.push({
+      kind: "take",
+      codeTag,
+      pointers,
+      message: describeTakeOut(index, this.held),
+    })
+  }
+
+  greaterThanHeld(j: number, codeTag: CodeTag, pointers: Pointers = {}): boolean {
+    this.push({
+      kind: "compare",
+      codeTag,
+      compared: [j],
+      pointers,
+      message: describeHeldCompare(j, this.array[j], this.held),
+    })
+    return this.held !== undefined && this.array[j] > this.held
+  }
+
+  shiftRight(j: number, codeTag: CodeTag, pointers: Pointers = {}): void {
+    this.array[j + 1] = this.array[j]
+    this.gap = j
+    this.push({ kind: "shift", codeTag, wrote: j + 1, pointers })
+  }
+
+  putDown(codeTag: CodeTag, pointers: Pointers = {}): void {
+    const at = this.gap
+    const value = this.held
+    if (at !== undefined && value !== undefined) this.array[at] = value
+    this.held = undefined
+    this.gap = undefined
+    this.push({
+      kind: "place",
+      codeTag,
+      wrote: at,
+      pointers,
+      message: at === undefined || value === undefined ? undefined : describePutDown(at, value),
+    })
+  }
 }
 
 // ── アニメーション用 ──────────────────────────────
@@ -123,10 +191,23 @@ export class StepRecorder extends BaseRecorder {
     this.arraySnap = Object.freeze([...this.array])
   }
 
+  /** 配列の中身が1つ前のスナップショットから変わったか */
+  private hasChanged(): boolean {
+    if (this.array.length !== this.arraySnap.length) return true
+    for (let i = 0; i < this.array.length; i++) {
+      if (this.array[i] !== this.arraySnap[i]) return true
+    }
+    return false
+  }
+
   protected record(input: StepInput): void {
     // 構造共有：配列が変わったステップだけ新しい配列を作り、
     // 変わらないステップは1つ前の配列をそのまま指す。
-    if (isSwapKind(input.kind)) {
+    //
+    // 「どの kind が配列を変えるか」を表で持つのはやめて、中身を見て決める。
+    // 新しい操作を足したときに表の更新を忘れると、画面が1つ前の配列を
+    // 出しつづけて**無言で嘘をつく**ため。n は 50 までなので比較のコストは無視できる。
+    if (this.hasChanged()) {
       this.arraySnap = Object.freeze([...this.array])
     }
     if (input.kind === "mark" && input.marked !== undefined) {
@@ -143,6 +224,9 @@ export class StepRecorder extends BaseRecorder {
         swapped: input.swapped,
         wrote: input.wrote,
         marked: input.marked,
+        // 手の状態は毎ステップ自動で付ける（生成器が付け忘れられない）
+        held: this.held,
+        gap: this.gap,
         sorted: this.sortedSnap,
         range: input.range,
         pointers: input.pointers ?? {},

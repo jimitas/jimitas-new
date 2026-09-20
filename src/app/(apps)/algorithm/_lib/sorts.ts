@@ -119,12 +119,17 @@ export function bubbleSort(rec: Recorder): void {
  *
  * 「もう並んでいる範囲」に、次の1つを正しい位置までもっていく。
  *
- * 教科書では作業用の変数に値を取り出して、うしろへ1つずつ「ずらす」書き方が
- * 多いが、ここでは**となりと入れかえながら左へ歩かせる書き方**を採っている。
- * 理由は2つ:
- *   - 取り出している途中は配列の中に同じ値が2つ見える状態になり、
- *     画面で見たときに「値が増えた」ように誤解される
- *   - くらべる回数はどちらの書き方でも同じなので、計算量の話は変わらない
+ * 書き方は共通テスト方式（作業用の変数に取り出して、うしろへ1つずつ「ずらす」）。
+ *   tmp = Data[i]        … 取り出して手に持つ。その場所が穴になる
+ *   Data[j+1] = Data[j]  … 穴へ向けて1つずつ右へずらす
+ *   Data[j+1] = tmp      … 穴にさしこむ
+ *
+ * ずらしている途中は、配列の中に同じ値が2つ並んで見える。
+ * そのままだと「値が増えた」と誤解されるので、取り出した値（held）と
+ * あいた場所（gap）を Recorder が持ち、画面では穴として描く。
+ *
+ * 「ずらした回数」は Data[j+1] = Data[j] が動いた回数だけを数える。
+ * 取り出しとさしこみは必ず n-1 回ずつ起きるので、数えても情報にならない。
  */
 export function insertionSort(rec: Recorder): void {
   const n = rec.length
@@ -139,18 +144,20 @@ export function insertionSort(rec: Recorder): void {
     rec.push({
       kind: "focus",
       codeTag: "outerLoop",
-      pointers: { i, j: i },
+      pointers: { i },
       message: `A[${i}] (=${rec.array[i]}) を ならんでいる範囲に さしこみます`,
     })
 
-    let j = i
-    while (j > 0 && rec.lessThan(j, j - 1, "compare", { i, j })) {
-      rec.swap(j - 1, j, "swap", { i, j })
+    rec.takeOut(i, "takeOut", { i })
+
+    let j = i - 1
+    while (j >= 0 && rec.greaterThanHeld(j, "compare", { i, j })) {
+      rec.shiftRight(j, "shift", { i, j })
       j--
     }
 
-    // 1つぶん さしこみ終わり。対応するのは外側の繰り返しの行（つぎの i へ進む）
-    rec.mark(i, "outerLoop", { i, j }, `A[0] から A[${i}] までが ならびました`)
+    rec.putDown("insert", { i, j: j + 1 })
+    rec.mark(i, "outerLoop", { i }, `A[0] から A[${i}] までが ならびました`)
   }
 
   rec.push({ kind: "done", codeTag: "finish" })

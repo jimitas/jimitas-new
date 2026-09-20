@@ -49,6 +49,23 @@ export function isAscending(a: readonly number[]): boolean {
 }
 
 /**
+ * 「本当の中身」を取り出す。
+ *
+ * 挿入ソートは値を tmp に取り出してからずらすので、その途中は
+ * 配列の中に同じ値が2つ見える（あいた場所にまだ古い値が残っている）。
+ * あいた場所（gap）に 手に持っている値（held）を戻せば、
+ * どの瞬間でも中身は元の配列と同じになる。
+ *
+ * この形なら「取り出している最中は検査しない」と逃げずに、
+ * **全ステップで**多重集合不変を要求できる。
+ */
+export function effectiveArray(s: Step): number[] {
+  const a = [...s.array]
+  if (s.held !== undefined && s.gap !== undefined) a[s.gap] = s.held
+  return a
+}
+
+/**
  * ソート生成器の不変条件をまとめて確認する。
  *
  * 1. 最後のステップの配列が昇順          … 交換処理を消すと落ちる
@@ -69,11 +86,21 @@ export function expectSortInvariants(algoId: AlgoId, input: readonly number[]): 
   expect(isAscending(last.array)).toBe(true)
 
   // 2. 多重集合不変（in-place 族。マージソートは段階4で条件を分ける）
+  //    取り出している最中は gap に held を戻してから見る
   for (const [k, s] of steps.entries()) {
-    if (!sameMultiset(s.array, input)) {
+    if (!sameMultiset(effectiveArray(s), input)) {
       throw new Error(`ステップ ${k}（${s.kind}）で要素が変わった: ${JSON.stringify(s.array)}`)
     }
   }
+
+  // 2b. 手の後始末。取り出したまま終わる／持っていないのに穴がある、を防ぐ
+  for (const [k, s] of steps.entries()) {
+    if ((s.held === undefined) !== (s.gap === undefined)) {
+      throw new Error(`ステップ ${k}（${s.kind}）で held と gap がちぐはぐ`)
+    }
+  }
+  expect(last.held).toBeUndefined()
+  expect(last.gap).toBeUndefined()
 
   // 3. カウンタ整合＋単調非減少
   let compares = 0

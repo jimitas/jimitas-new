@@ -124,14 +124,73 @@ describe("バブルソートの性質", () => {
 })
 
 describe("挿入ソートの性質", () => {
-  test.each(SIZES)("ならんだ入力は n-1 回くらべるだけ（n=%i）", (n) => {
+  test.each(SIZES)("ならんだ入力は n-1 回くらべるだけ・1回もずらさない（n=%i）", (n) => {
     for (const input of [ascending(n), allSame(n)]) {
       expect(counts("insertion", input)).toEqual({ compares: Math.max(0, n - 1), swaps: 0 })
     }
   })
 
-  test.each(SIZES)("逆順ではくらべる回数も入れかえも n(n-1)/2（n=%i）", (n) => {
+  test.each(SIZES)("逆順ではくらべる回数も ずらす回数も n(n-1)/2（n=%i）", (n) => {
     expect(counts("insertion", descending(n))).toEqual({ compares: pairs(n), swaps: pairs(n) })
+  })
+
+  // ── 共通テスト方式（取り出す → ずらす → さしこむ）の手順そのものを固定する ──
+
+  test.each(SIZES)("取り出しとさしこみは n-1 回ずつ、必ず対になる（n=%i）", (n) => {
+    for (const input of [ascending(n), descending(n), allSame(n)]) {
+      const steps = generateSteps("insertion", input)
+      const takes = steps.filter((s) => s.kind === "take").length
+      const places = steps.filter((s) => s.kind === "place").length
+      expect({ takes, places }).toEqual({
+        takes: Math.max(0, n - 1),
+        places: Math.max(0, n - 1),
+      })
+    }
+  })
+
+  test("取り出したあと、さしこむまでは ずっと手に持っている", () => {
+    const steps = generateSteps("insertion", [5, 3, 8, 1, 9, 2])
+    let holding = false
+    for (const s of steps) {
+      // さしこんだステップでは、もう手は空になっている
+      if (s.kind === "take") holding = true
+      if (s.kind === "place") holding = false
+      expect({ kind: s.kind, holding, has: s.held !== undefined }).toEqual({
+        kind: s.kind,
+        holding,
+        has: holding,
+      })
+    }
+    expect(holding).toBe(false)
+  })
+
+  // 穴は取り出した場所から始まり、ずらしたときだけ1つ左へ動く。
+  // ここが崩れると、画面の点線わくが値とずれて見える。
+  test("穴が動くのは ずらしたときだけ。1回に1マスずつ左へ", () => {
+    const steps = generateSteps("insertion", [5, 3, 8, 1, 9, 2])
+    let prev: number | undefined
+    for (const s of steps) {
+      if (s.gap === undefined) {
+        prev = undefined
+        continue
+      }
+      if (s.kind === "take") expect(s.gap).toBe(s.pointers.i)
+      else if (prev !== undefined) expect(s.gap).toBe(s.kind === "shift" ? prev - 1 : prev)
+      prev = s.gap
+    }
+  })
+
+  // ずらした先には、必ず「穴の右どなり」だった値が入る
+  test("ずらすのは 穴の左どなりの値を 穴へ、の1マスだけ", () => {
+    for (const input of [descending(12), [5, 3, 8, 1, 9, 2]]) {
+      const steps = generateSteps("insertion", input)
+      for (const [k, s] of steps.entries()) {
+        if (s.kind !== "shift") continue
+        const before = steps[k - 1]
+        expect(s.wrote).toBe(before.gap)
+        expect(s.array[s.wrote!]).toBe(before.array[s.wrote! - 1])
+      }
+    }
   })
 
   // 「ほぼ順番」が得意、という説明の裏づけ。
