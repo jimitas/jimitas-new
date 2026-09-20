@@ -19,7 +19,12 @@
 //   再生は setInterval ではなく requestAnimationFrame ＋ 経過時間の
 //   積算。速度を変えても effect を貼り直さずに済む（speedRef を読むだけ）。
 //
-// 現状: 段階1a（選択ソートのみ）。
+// 収録しているアルゴリズム:
+//   ソート … 選択・交換・バブル・挿入・クイック・マージ
+//   探索  … 線形・二分
+//
+// 音は「終わった瞬間」だけ鳴らす（finishCue を参照）。
+// 1ステップごとに鳴らすと n=50 で数千回になって破綻する。
 // ======================================================
 
 "use client";
@@ -38,7 +43,8 @@ import {
   SPEED_MIN,
 } from "./_components/PlayerControls";
 import { StatsPanel } from "./_components/StatsPanel";
-import { ALGOS, ALGO_ORDER, generateSteps } from "./_lib/algorithms";
+import * as se from "@/lib/se";
+import { ALGOS, ALGO_ORDER, finishCue, generateSteps } from "./_lib/algorithms";
 import { makeData, pickTarget, sortedCopy } from "./_lib/random";
 import type { AlgoId, DataKind, LangId } from "./_lib/types";
 
@@ -111,6 +117,23 @@ export default function AlgorithmPage() {
   // steps が入れかわった直後の1レンダーだけ、添字が範囲外になりうる
   const safeIndex = Math.min(stepIndex, steps.length - 1);
   const step = steps[safeIndex];
+
+  // ── 終わりの合図（音） ───────────────────────────
+  // 再生中は1ステップごとに鳴らさない。n=50 で数千ステップあり、
+  // 全部鳴らすと音が重なって意味をなさない。**終わった瞬間だけ1回**。
+  //
+  // 鳴らす位置は finishCue が1か所に決めている。
+  // 探索は「見つかった／見つからなかった」瞬間、ソートは最後。
+  const cue = useMemo(() => finishCue(steps), [steps]);
+  useEffect(() => {
+    if (!cue || cue.index === 0) return;
+    if (safeIndex !== cue.index) return;
+    // コマ送りで行ったり来たりして もう一度その瞬間に来たら、また鳴らす。
+    // 「ここが山場」を確かめている操作なので、鳴るほうが自然。
+    if (cue.kind === "found") se.playSe(se.seikai1);
+    else if (cue.kind === "notfound") se.playSe(se.cancel);
+    else se.playSe(se.seikai2);
+  }, [cue, safeIndex]);
   const maxValue = useMemo(() => Math.max(1, ...input), [input]);
   const algo = ALGOS[algoId];
 

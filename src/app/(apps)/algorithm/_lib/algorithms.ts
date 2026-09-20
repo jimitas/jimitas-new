@@ -333,3 +333,33 @@ export function countOperations(
   ALGOS[algoId].run(rec, options)
   return rec.counts
 }
+
+/** 終わりの合図の種類。画面側がどの音を鳴らすかを決めるのに使う */
+export type FinishCue = {
+  /** 何ステップ目で鳴らすか */
+  index: number
+  kind: "found" | "notfound" | "done"
+}
+
+/**
+ * ステップ列の「終わりの合図」を1か所だけ返す。
+ *
+ * なぜ1か所に絞るか:
+ *   探索は `found`（または `notfound`）のすぐ後ろに `done` を置いている。
+ *   kind を見て素直に鳴らすと、見つけた瞬間と終了で**2回続けて鳴る**。
+ *   探索は見つかった／見つからなかった瞬間が山場なのでそちらを採り、
+ *   ソートは `done` しか無いのでそれを採る。
+ *
+ * 音そのものはここでは鳴らさない。`_lib/` は React・DOM・`@/lib/se` に
+ * 触らない約束（jest が直接読むため）。どの音にするかは画面側の仕事。
+ */
+export function finishCue(steps: readonly Step[]): FinishCue | null {
+  for (let i = 0; i < steps.length; i++) {
+    const kind = steps[i].kind
+    if (kind === "found" || kind === "notfound") return { index: i, kind }
+  }
+  for (let i = steps.length - 1; i >= 0; i--) {
+    if (steps[i].kind === "done") return { index: i, kind: "done" }
+  }
+  return null
+}
