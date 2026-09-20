@@ -12,6 +12,7 @@
 
 import { useState, useCallback, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
+import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnConfirm } from "@/components/parts/buttons/BtnConfirm"
 
 const NUM_CARDS = 10  // 5種類 × 2枚
@@ -108,17 +109,9 @@ export default function EawasePage() {
         />
 
         {/* ひんと: OFF時は brand（緑、開始系）、ON時は warm（オレンジ、補助系） */}
-        <button
-          onClick={toggleHint}
-          className={`px-3 py-2 font-bold text-sm rounded-lg shadow-sm
-                      active:translate-y-0.5 transition-colors text-white border-2 ${
-            hintOn
-              ? "bg-warm-400 hover:bg-warm-500 active:bg-warm-600 border-warm-400"
-              : "bg-brand-400 hover:bg-brand-500 active:bg-brand-600 border-brand-400"
-          }`}
-        >
+        <Btn color={hintOn ? "warm" : "brand"} onClick={toggleHint} className="px-3 py-2">
           ひんと
-        </button>
+        </Btn>
       </div>
 
       {/* ===== ひだり / みぎ ラベル ===== */}

@@ -11,6 +11,7 @@
 // 旧 jimitas.com のわり算考え方①を React + Pointer Events で移植。
 // ======================================================
 
+import { Btn } from "@/components/parts/buttons/Btn"
 import { useState, useRef, useEffect } from "react"
 import { useSound } from "@/hooks/useSound"
 
@@ -225,12 +226,9 @@ export default function WarizanPage() {
         <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100">
           わり算の考え方①（○人にわける）
         </h1>
-        <button
-          onClick={handleErase}
-          className="px-3 py-1 rounded-lg bg-danger-400 hover:bg-danger-500 active:bg-danger-600 text-white text-sm"
-        >
+        <Btn color="danger" onClick={handleErase} className="px-3 py-1">
           やりなおし
-        </button>
+        </Btn>
       </header>
 
       {/* めあて */}
@@ -264,12 +262,9 @@ export default function WarizanPage() {
             className="w-20 px-2 py-1 rounded border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-center"
           />
           <span>人でわける</span>
-          <button
-            onClick={handleSet}
-            className="ml-2 px-4 py-1 rounded-lg bg-brand-400 hover:bg-brand-500 active:bg-brand-600 text-white font-bold"
-          >
+          <Btn color="brand" onClick={handleSet} className="ml-2 px-4 py-1">
             セット
-          </button>
+          </Btn>
         </div>
         <p className="text-xs text-warm-600 dark:text-warm-400 mt-2">ヒント… {hint}</p>
         {errorMsg && (
@@ -288,12 +283,9 @@ export default function WarizanPage() {
             <span className="text-warm-600 dark:text-warm-400">{showAnswer ? quotient : "?"}</span>
             <span className="text-gray-500 text-base">あまり</span>
             <span className="text-warm-600 dark:text-warm-400">{showAnswer ? remainder : "?"}</span>
-            <button
-              onClick={handleAnswer}
-              className="ml-2 px-3 py-1 rounded-lg bg-warm-400 hover:bg-warm-500 active:bg-warm-600 text-white text-sm font-bold"
-            >
+            <Btn color="warm" onClick={handleAnswer} className="ml-2 px-3 py-1">
               こたえ
-            </button>
+            </Btn>
           </div>
           {showAnswer && (
             <p className="mt-2 text-sm text-gray-700 dark:text-gray-300">
