@@ -38,8 +38,26 @@ const POINTER_HELP: Record<PointerName, string> = {
   key: "取り出して 手に持っている値",
 }
 
-/** 値のラベルを出す上限。これより多いと文字がつぶれる */
+/**
+ * 値を全部出せる上限。これより多いと文字がつぶれる。
+ *
+ * ただし n がこれを超えても「いま動いている場所」の値だけは出す。
+ * 全部消してしまうと、説明文の「A[23] (=71) と A[24] (=39) をくらべています」が
+ * どのバーのことなのか分からなくなる。
+ */
 const LABEL_LIMIT = 20
+
+/** そのステップで動いている場所（値を出す価値がある場所） */
+function activeIndices(step: Step): Set<number> {
+  const set = new Set<number>()
+  step.compared?.forEach((i) => set.add(i))
+  step.swapped?.forEach((i) => set.add(i))
+  if (step.wrote !== undefined) set.add(step.wrote)
+  if (step.gap !== undefined) set.add(step.gap)
+  for (const v of Object.values(step.pointers)) if (v !== undefined) set.add(v)
+  step.aux?.reading?.forEach((i) => set.add(i))
+  return set
+}
 
 type Props = {
   step: Step
@@ -99,6 +117,9 @@ export function ArrayView({
   // ステップごとに切りかわることはない
   const isSearch = step.target !== undefined
 
+  // いま動いている場所。n が多くて値を全部出せないときは、ここだけ出す
+  const activeAt = activeIndices(step)
+
   return (
     <div className="bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-3 sm:p-4">
       {/* さがす値。探索のときだけ、配列のすぐ上に大きく出す */}
@@ -155,25 +176,34 @@ export function ArrayView({
         )}
       </div>
 
-      {/* 値 */}
-      {showLabels && (
-        <div className="flex gap-[2px] mt-1" aria-hidden="true">
-          {step.array.map((value, index) => {
-            // あいている場所は空欄にする。
-            // ここに残っているのは まだ上書きされていない古い値なので、
-            // そのまま出すと同じ数字が2つ並んで見えてしまう。
-            const isGap = step.gap === index && step.held !== undefined
-            return (
-              <div
-                key={index}
-                className="flex-1 min-w-0 text-center text-[11px] text-gray-600 dark:text-gray-300 tabular-nums"
-              >
-                {isGap ? "" : value}
-              </div>
-            )
-          })}
-        </div>
-      )}
+      {/*
+        値。n が多いときは全部は出せないので、いま動いている場所だけ出す。
+        行そのものは常に確保して、レイアウトが跳ねないようにする。
+      */}
+      <div className="flex gap-[2px] mt-1 min-h-[1rem]" aria-hidden="true">
+        {step.array.map((value, index) => {
+          // あいている場所は空欄にする。
+          // ここに残っているのは まだ上書きされていない古い値なので、
+          // そのまま出すと同じ数字が2つ並んで見えてしまう。
+          const isGap = step.gap === index && step.held !== undefined
+          const active = activeAt.has(index)
+          if (isGap || (!showLabels && !active)) {
+            return <div key={index} className="flex-1 min-w-0" />
+          }
+          return (
+            <div
+              key={index}
+              className={`flex-1 min-w-0 text-center text-[11px] tabular-nums ${
+                active
+                  ? "font-bold text-gray-900 dark:text-gray-50"
+                  : "text-gray-600 dark:text-gray-300"
+              }`}
+            >
+              {value}
+            </div>
+          )
+        })}
+      </div>
 
       {/* 矢印 */}
       <div className="flex gap-[2px] mt-1 min-h-[2.25rem]" aria-hidden="true">
@@ -234,18 +264,26 @@ export function ArrayView({
               )
             })}
           </div>
-          {showLabels && (
-            <div className="flex gap-[2px] mt-1" aria-hidden="true">
-              {step.aux.values.map((v, index) => (
+          <div className="flex gap-[2px] mt-1 min-h-[1rem]" aria-hidden="true">
+            {step.aux.values.map((v, index) => {
+              const active = step.aux?.reading?.includes(index) ?? false
+              if (v === null || (!showLabels && !active)) {
+                return <div key={index} className="flex-1 min-w-0" />
+              }
+              return (
                 <div
                   key={index}
-                  className="flex-1 min-w-0 text-center text-[11px] text-gray-500 dark:text-gray-400 tabular-nums"
+                  className={`flex-1 min-w-0 text-center text-[11px] tabular-nums ${
+                    active
+                      ? "font-bold text-gray-900 dark:text-gray-50"
+                      : "text-gray-500 dark:text-gray-400"
+                  }`}
                 >
-                  {v === null ? "" : v}
+                  {v}
                 </div>
-              ))}
-            </div>
-          )}
+              )
+            })}
+          </div>
         </div>
       )}
 
