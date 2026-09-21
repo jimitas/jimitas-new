@@ -10,6 +10,7 @@
 
 "use client"
 
+import { POINTER_HELP } from "../_lib/describe"
 import type { PointerName, Step } from "../_lib/types"
 
 /** 矢印の短い表示名。n=50 のとき1列は十数pxしかないので1文字にする */
@@ -25,24 +26,11 @@ const POINTER_LABEL: Record<PointerName, string> = {
   key: "K",
 }
 
-/** 凡例に出す説明。使われている矢印だけ表示する */
-const POINTER_HELP: Record<PointerName, string> = {
-  i: "いま決める場所",
-  j: "しらべている場所",
-  k: "書きもどす場所",
-  min: "いまのところ いちばん小さい場所",
-  left: "範囲の左はし（合体のときは 左がわの読み位置）",
-  right: "範囲の右はし（合体のときは 右がわの読み位置）",
-  mid: "範囲の まん中",
-  pivot: "基準にえらんだ場所",
-  key: "取り出して 手に持っている値",
-}
-
 /**
  * 値を全部出せる上限。これより多いと文字がつぶれる。
  *
  * ただし n がこれを超えても「いま動いている場所」の値だけは出す。
- * 全部消してしまうと、説明文の「A[23] (=71) と A[24] (=39) をくらべています」が
+ * 全部消してしまうと、説明文の「Data[23] (=71) と Data[24] (=39) をくらべています」が
  * どのバーのことなのか分からなくなる。
  */
 const LABEL_LIMIT = 20
@@ -68,6 +56,8 @@ type Props = {
    * 「m」が saisho のことだと気づけないと、動きとコードがつながらない。
    */
   pointerVars: Partial<Record<PointerName, string>>
+  /** 凡例の説明の差しかえ。書いた矢印だけ POINTER_HELP より優先する */
+  pointerHelp?: Partial<Record<PointerName, string>>
   /** 値を取り出して手に持つアルゴリズムか（挿入ソート） */
   usesHand?: boolean
   /** あとで並べかえる範囲を控えるアルゴリズムか（クイックソート） */
@@ -94,6 +84,7 @@ export function ArrayView({
   step,
   maxValue,
   pointerVars,
+  pointerHelp,
   usesHand = false,
   usesPending = false,
 }: Props) {
@@ -336,7 +327,7 @@ export function ArrayView({
           <span key={name}>
             <strong className="text-gray-700 dark:text-gray-200">{POINTER_LABEL[name]}</strong>
             {" … "}
-            {POINTER_HELP[name]}
+            {pointerHelp?.[name] ?? POINTER_HELP[name]}
             {/* コード例での変数名。動きとコードを結びつけるための手がかり */}
             {pointerVars[name] && (
               <code className="ml-1 font-mono text-gray-600 dark:text-gray-300">

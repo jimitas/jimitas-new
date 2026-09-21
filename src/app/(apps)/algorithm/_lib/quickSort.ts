@@ -24,7 +24,7 @@ export function quickSort(rec: Recorder): void {
     if (lo > hi) return
 
     if (lo === hi) {
-      rec.mark(lo, "partition", { i: lo }, `A[${lo}] は 1個だけなので ここで決まりです`)
+      rec.mark(lo, "partition", { i: lo }, `Data[${lo}] は 1個だけなので ここで決まりです`)
       return
     }
 
@@ -33,7 +33,7 @@ export function quickSort(rec: Recorder): void {
       codeTag: "pivotSelect",
       range: { lo, hi },
       pointers: { left: lo, right: hi, pivot: hi },
-      message: `${lo} 番目から ${hi} 番目を 並べかえます。右はしの A[${hi}] (=${rec.array[hi]}) を 基準にします`,
+      message: `${lo} 番目から ${hi} 番目を 並べかえます。右はしの Data[${hi}] (=${rec.array[hi]}) を 基準にします`,
     })
 
     // ── 仕分け ──
@@ -47,7 +47,7 @@ export function quickSort(rec: Recorder): void {
     }
     const p = i + 1
     rec.swap(p, hi, "swap", { left: lo, right: hi, pivot: hi, i: p })
-    rec.mark(p, "partition", { i: p }, `基準は A[${p}] が 正しい場所でした。ここは もう動きません`)
+    rec.mark(p, "partition", { i: p }, `基準は Data[${p}] が 正しい場所でした。ここは もう動きません`)
 
     // ── 左右に分けて、同じことをくり返す ──
     const left: Range = { lo, hi: p - 1 }

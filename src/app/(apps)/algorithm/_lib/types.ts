@@ -82,7 +82,7 @@ export type Step = {
   array: readonly number[]
   /**
    * くらべている場所（kind が "compare" のとき）。
-   * ソートは2か所、探索は「A[i] と さがす値」なので1か所になる。
+   * ソートは2か所、探索は「Data[i] と さがす値」なので1か所になる。
    */
   compared?: readonly number[]
   /** 探索でさがしている値。探索アルゴリズムだけが設定する */

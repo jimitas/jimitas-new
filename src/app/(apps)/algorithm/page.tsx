@@ -400,6 +400,7 @@ export default function AlgorithmPage() {
         step={step}
         maxValue={maxValue}
         pointerVars={algo.pointerVars}
+        pointerHelp={algo.pointerHelp}
         usesHand={algo.usesHand}
         usesPending={algoId === "quick"}
       />

@@ -43,17 +43,17 @@ export type Recorder = {
   readonly length: number
   /** 1ステップ記録する */
   push(input: StepInput): void
-  /** A[i] < A[j] か。比較の記録とカウントも同時に行う */
+  /** Data[i] < Data[j] か。比較の記録とカウントも同時に行う */
   lessThan(i: number, j: number, codeTag: CodeTag, pointers?: Pointers): boolean
   /**
-   * A[i] と さがす値をくらべる（探索用）。
+   * Data[i] と さがす値をくらべる（探索用）。
    * 小さければ -1、同じなら 0、大きければ 1 を返す。
    *
    * 「同じか」「小さいか」をコード上は2行に分けて書くが、
    * 人が数える「くらべた回数」は1回なので、ここでも1回として数える。
    */
   compareWith(i: number, value: number, codeTag: CodeTag, pointers?: Pointers): number
-  /** A[i] と A[j] を入れかえる。交換の記録とカウントも同時に行う */
+  /** Data[i] と Data[j] を入れかえる。交換の記録とカウントも同時に行う */
   swap(i: number, j: number, codeTag: CodeTag, pointers?: Pointers): void
   /** その位置が確定したことにする。message を省くと定型文になる */
   mark(index: number, codeTag: CodeTag, pointers?: Pointers, message?: string): void
@@ -63,11 +63,11 @@ export type Recorder = {
   // Recorder 側で組にして扱う。手の状態は push のたびに自動で全ステップへ
   // 付くので、生成器が付け忘れることがない。
 
-  /** A[i] を取り出して手に持つ（tmp = Data[i]）。その場所が穴になる */
+  /** Data[i] を取り出して手に持つ（tmp = Data[i]）。その場所が穴になる */
   takeOut(index: number, codeTag: CodeTag, pointers?: Pointers): void
-  /** A[j] が 手に持っている値より大きいか（Data[j] > tmp）。比較として数える */
+  /** Data[j] が 手に持っている値より大きいか（Data[j] > tmp）。比較として数える */
   greaterThanHeld(j: number, codeTag: CodeTag, pointers?: Pointers): boolean
-  /** A[j] を1つ右へずらす（Data[j+1] = Data[j]）。穴が j へ移る。移動として数える */
+  /** Data[j] を1つ右へずらす（Data[j+1] = Data[j]）。穴が j へ移る。移動として数える */
   shiftRight(j: number, codeTag: CodeTag, pointers?: Pointers): void
   /** 手に持っている値を穴に置く（Data[j+1] = tmp）。数えない */
   putDown(codeTag: CodeTag, pointers?: Pointers): void
@@ -75,11 +75,11 @@ export type Recorder = {
   // ── マージソートの作業用配列 ─────────────────────
   // 添字は元の配列とそろえる。写していない場所は null のまま。
 
-  /** A[lo..hi] を作業用の入れものに写す。数えない */
+  /** Data[lo..hi] を作業用の入れものに写す。数えない */
   copyToAux(lo: number, hi: number, codeTag: CodeTag, pointers?: Pointers): void
   /** 作業用の p と q をくらべる（小さいほうを先に書きもどす）。比較として数える */
   auxLessThan(p: number, q: number, codeTag: CodeTag, pointers?: Pointers): boolean
-  /** 作業用の p 番目を A[k] に書きもどす。移動として数える */
+  /** 作業用の p 番目を Data[k] に書きもどす。移動として数える */
   writeBack(k: number, p: number, codeTag: CodeTag, pointers?: Pointers, message?: string): void
   /** 作業用の入れものを片づける */
   clearAux(): void

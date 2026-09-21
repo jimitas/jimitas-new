@@ -12,6 +12,7 @@
 
 import { memo } from "react"
 import { Btn } from "@/components/parts/buttons/Btn"
+import { howTitle } from "../_lib/describe"
 import type { AlgoDef } from "../_lib/algorithms"
 
 type Props = {
@@ -37,7 +38,9 @@ function AlgoExplainInner({ algo, open, onToggle }: Props) {
         hidden={!open}
         className="mt-2 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 px-4 py-3 text-sm text-gray-700 dark:text-gray-200"
       >
-        <h2 className="font-bold text-gray-800 dark:text-gray-100 mb-1">どうやって並べる？</h2>
+        <h2 className="font-bold text-gray-800 dark:text-gray-100 mb-1">
+          {howTitle(algo.category)}
+        </h2>
         <ol className="list-decimal list-outside pl-5 space-y-1 mb-3">
           {algo.explanation.how.map((line) => (
             <li key={line}>{line}</li>

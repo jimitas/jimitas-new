@@ -33,13 +33,13 @@ export function selectionSort(rec: Recorder): void {
       kind: "focus",
       codeTag: "outerLoop",
       pointers: { i, min: saisho },
-      message: `A[${i}] より うしろで いちばん 小さい 値を さがします`,
+      message: `Data[${i}] より うしろで いちばん 小さい 値を さがします`,
     })
     rec.push({
       kind: "focus",
       codeTag: "innerLoop",
       pointers: { i, j: i + 1, min: saisho },
-      message: `A[${i + 1}] から じゅんに くらべていきます`,
+      message: `Data[${i + 1}] から じゅんに くらべていきます`,
     })
 
     for (let j = i + 1; j < n; j++) {
@@ -49,7 +49,7 @@ export function selectionSort(rec: Recorder): void {
           kind: "focus",
           codeTag: "updateMin",
           pointers: { i, j, min: saisho },
-          message: `いまのところ いちばん 小さいのは A[${saisho}] です`,
+          message: `いまのところ いちばん 小さいのは Data[${saisho}] です`,
         })
       }
     }
@@ -137,7 +137,7 @@ export function insertionSort(rec: Recorder): void {
 
   // 先頭の1個は、それだけで「並んでいる」とみなせる
   if (n > 0) {
-    rec.mark(0, "init", { i: 0 }, "A[0] は 1個だけなので、もう ならんでいます")
+    rec.mark(0, "init", { i: 0 }, "Data[0] は 1個だけなので、もう ならんでいます")
   }
 
   for (let i = 1; i < n; i++) {
@@ -145,7 +145,7 @@ export function insertionSort(rec: Recorder): void {
       kind: "focus",
       codeTag: "outerLoop",
       pointers: { i },
-      message: `A[${i}] (=${rec.array[i]}) を ならんでいる範囲に さしこみます`,
+      message: `Data[${i}] (=${rec.array[i]}) を ならんでいる範囲に さしこみます`,
     })
 
     rec.takeOut(i, "takeOut", { i })
@@ -157,7 +157,7 @@ export function insertionSort(rec: Recorder): void {
     }
 
     rec.putDown("insert", { i, j: j + 1 })
-    rec.mark(i, "outerLoop", { i }, `A[0] から A[${i}] までが ならびました`)
+    rec.mark(i, "outerLoop", { i }, `Data[0] から Data[${i}] までが ならびました`)
   }
 
   rec.push({ kind: "done", codeTag: "finish" })
@@ -168,7 +168,7 @@ export function insertionSort(rec: Recorder): void {
  *
  * バブルソートと混同されやすいが、くらべる相手がちがう。
  *   バブル : となりどうしだけをくらべる
- *   交換   : A[i] を、そのうしろ全部と1つずつくらべる
+ *   交換   : Data[i] を、そのうしろ全部と1つずつくらべる
  * 見つけるたびに入れかえるので、選択ソートより入れかえの回数が多くなる。
  */
 export function exchangeSort(rec: Recorder): void {
@@ -180,13 +180,13 @@ export function exchangeSort(rec: Recorder): void {
       kind: "focus",
       codeTag: "outerLoop",
       pointers: { i, j: i + 1 },
-      message: `A[${i}] を、そのうしろ全部と くらべていきます`,
+      message: `Data[${i}] を、そのうしろ全部と くらべていきます`,
     })
     rec.push({
       kind: "focus",
       codeTag: "innerLoop",
       pointers: { i, j: i + 1 },
-      message: `A[${i + 1}] から じゅんに くらべます`,
+      message: `Data[${i + 1}] から じゅんに くらべます`,
     })
 
     for (let j = i + 1; j < n; j++) {

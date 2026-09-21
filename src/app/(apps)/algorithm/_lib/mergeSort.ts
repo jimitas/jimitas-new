@@ -18,7 +18,7 @@
 import type { Recorder } from "./recorder"
 import type { Pointers } from "./types"
 
-/** A[lo..mid] と A[mid+1..hi] を合体する */
+/** Data[lo..mid] と Data[mid+1..hi] を合体する */
 function merge(rec: Recorder, lo: number, mid: number, hi: number): void {
   rec.copyToAux(lo, hi, "mergeCopy", { left: lo, mid, right: hi })
 
