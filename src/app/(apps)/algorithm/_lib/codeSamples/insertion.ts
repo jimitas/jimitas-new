@@ -47,7 +47,7 @@ const kyotsu: CodeSample = [
   { text: "kazu = 要素数(Data)", tag: "init" },
   { text: "i を 1 から kazu-1 まで 1 ずつ増やしながら繰り返す:", tag: "outerLoop" },
   { text: "｜ tmp = Data[i]", tag: "takeOut" },
-  { text: "｜ j = i-1", tag: "takeOut" },
+  { text: "｜ j = i - 1", tag: "takeOut" },
   { text: "｜ j >= 0 and Data[j] > tmp の間繰り返す:", tag: "compare" },
   { text: "｜ ｜ Data[j+1] = Data[j]", tag: "shift" },
   { text: "｜ ⎿ j = j - 1", tag: "shift" },
