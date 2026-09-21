@@ -20,7 +20,11 @@ import type { Pointers } from "./types"
 
 /** Data[lo..mid] と Data[mid+1..hi] を合体する */
 function merge(rec: Recorder, lo: number, mid: number, hi: number): void {
-  rec.copyToAux(lo, hi, "mergeCopy", { left: lo, mid, right: hi })
+  // 写した直後の矢印は、コード例の p / q の初期値をそのまま指す。
+  // ここで right に hi（範囲の右はし）を渡すと、凡例の「R … コードの q」が
+  // このステップだけ嘘になる。写した範囲は下の作業用の行で見えるので、
+  // 右はしを矢印で示す必要はない。
+  rec.copyToAux(lo, hi, "mergeCopy", { left: lo, mid, right: mid + 1 })
 
   let p = lo // 左がわの読み位置
   let q = mid + 1 // 右がわの読み位置

@@ -20,18 +20,17 @@ import {
   countOperations,
   generateSteps,
 } from "@/app/(apps)/algorithm/_lib/algorithms"
+import { CODE_BOOK } from "@/app/(apps)/algorithm/_lib/codeSamples"
 import { POINTER_HELP, howTitle } from "@/app/(apps)/algorithm/_lib/describe"
-import type { AlgoId } from "@/app/(apps)/algorithm/_lib/types"
+import type { AlgoId, Step } from "@/app/(apps)/algorithm/_lib/types"
 import { searchCases, sortCases } from "./helpers"
 
-/** そのアルゴリズムが出しうる実況文を全部集める */
-function allMessages(algoId: AlgoId): string[] {
-  const out: string[] = []
+/** そのアルゴリズムが出しうるステップを全部集める */
+function stepsOf(algoId: AlgoId): Step[] {
+  const out: Step[] = []
 
   if (ALGOS[algoId].category !== "search") {
-    for (const { input } of sortCases()) {
-      for (const s of generateSteps(algoId, input)) out.push(s.message)
-    }
+    for (const { input } of sortCases()) out.push(...generateSteps(algoId, input))
     return out
   }
 
@@ -39,11 +38,14 @@ function allMessages(algoId: AlgoId): string[] {
   for (const input of searchCases()) {
     const targets =
       input.length > 0 ? [input[0], input[input.length - 1], 1000] : [1000]
-    for (const target of targets) {
-      for (const s of generateSteps(algoId, input, { target })) out.push(s.message)
-    }
+    for (const target of targets) out.push(...generateSteps(algoId, input, { target }))
   }
   return out
+}
+
+/** そのアルゴリズムが出しうる実況文を全部集める */
+function allMessages(algoId: AlgoId): string[] {
+  return stepsOf(algoId).map((s) => s.message)
 }
 
 // =======================================================
@@ -154,6 +156,62 @@ describe("矢印の凡例", () => {
   test("マージソートの L / R は「読んでいる場所」に差しかえてある", () => {
     expect(ALGOS.merge.pointerHelp?.left).toContain("読んでいる")
     expect(ALGOS.merge.pointerHelp?.right).toContain("読んでいる")
+  })
+
+  // 画面に出た矢印は、全部 凡例で説明されていないといけない。
+  //
+  // 凡例は pointerVars のキーで決まる（ArrayView の legendPointers）。
+  // 生成器が pointerVars に無い矢印を出すと、**説明の無い文字が画面に立つ**。
+  // 実際、マージの M（写すときの境目）と二分探索の i（見つかった場所）が
+  // 説明されないまま出ていた。どちらも実機で気づいた。
+  //
+  // 壊し方: ALGOS のどれかの pointerVars からキーを1つ消す
+  test.each(ALGO_ORDER)("%s は 出した矢印をすべて凡例で説明している", (algoId) => {
+    const emitted = new Set<string>()
+    for (const s of stepsOf(algoId)) {
+      for (const [name, index] of Object.entries(s.pointers)) {
+        if (index !== undefined) emitted.add(name)
+      }
+    }
+    expect(emitted.size).toBeGreaterThan(0)
+
+    const listed = new Set(Object.keys(ALGOS[algoId].pointerVars))
+    const missing = [...emitted].filter((name) => !listed.has(name))
+    expect(missing).toEqual([])
+  })
+
+  // 凡例は「L … コードの p」と言い切っている。
+  // 画面の L 矢印は本体配列の位置を指すので、コードの p も本体と同じ添字で
+  // 動かさないと hidari ぶんずれる（数のずれは目で見ても気づきにくい）。
+  //
+  // 壊し方: マージのコード例を p = 0 から始める形（作業用の中だけの添字）に戻す
+  // 「p / q を本体の添字にする」は、コード例だけ直しても片手落ち。
+  // 写したステップの矢印が p / q の初期値を指していないと、
+  // そのステップだけ凡例が嘘になる（R が q ではなく範囲の右はしを指していた）。
+  //
+  // 壊し方: mergeSort.ts の copyToAux に right: hi を渡す
+  test("マージの写すステップの L / R は p / q の初期値を指す", () => {
+    let checked = 0
+    for (const { input } of sortCases()) {
+      const steps = generateSteps("merge", input)
+      for (const [k, s] of steps.entries()) {
+        // 合体のはじまり＝作業用を使い始めた最初のステップ
+        if (s.aux === undefined || steps[k - 1]?.aux !== undefined) continue
+        expect(s.pointers.left).toBe(s.aux.source.lo)
+        expect(s.pointers.right).toBe((s.pointers.mid ?? -99) + 1)
+        checked++
+      }
+    }
+    // 早期リターンで1回も届かないまま緑になるのを防ぐ
+    expect(checked).toBeGreaterThan(20)
+  })
+
+  test("マージのコード例の p / q は本体と同じ添字で動く", () => {
+    for (const lang of ["python", "javascript", "kyotsu"] as const) {
+      const text = CODE_BOOK.merge[lang].map((l) => l.text).join("\n")
+      expect({ lang, absolute: /p = hidari/.test(text) }).toEqual({ lang, absolute: true })
+      expect({ lang, relative: /p = 0\b/.test(text) }).toEqual({ lang, relative: false })
+    }
   })
 })
 

@@ -240,7 +240,10 @@ export const ALGOS: Record<AlgoId, AlgoDef> = {
         "線形探索と同じ n で「ありません」をさがしてみると、くらべる回数の差がいちばんはっきりする",
       ],
     },
-    pointerVars: { left: "hidari", right: "migi", mid: "aida" },
+    // 見つかった瞬間だけ i の矢印も出る（緑のバーと同じ場所）。
+    // 凡例に無い矢印が画面に出ないよう、ここにも書いておく
+    pointerVars: { left: "hidari", right: "migi", mid: "aida", i: "aida" },
+    pointerHelp: { i: "見つかった場所" },
   },
 
   quick: {
@@ -302,11 +305,13 @@ export const ALGOS: Record<AlgoId, AlgoDef> = {
       ],
     },
     moveLabel: "書きもどした回数",
-    pointerVars: { left: "p", right: "q", k: "k" },
+    // 写すときに M（左がわのかたまりの終わり）の矢印も出る
+    pointerVars: { left: "p", mid: "naka", right: "q", k: "k" },
     // マージソートの L / R は範囲の端ではなく「いま読んでいる場所」
     pointerHelp: {
       left: "合体するとき 左がわを 読んでいる場所",
       right: "合体するとき 右がわを 読んでいる場所",
+      mid: "左がわの かたまりの おわり",
     },
   },
 }
