@@ -722,6 +722,17 @@ export const apps: AppItem[] = [
     type: "tool",
     path: "/algorithm",
   },
+  {
+    id: "gacha-kakuritu",
+    title: "ガチャ確率シミュレーター",
+    description: "ガチャは 本当に 当たる？ 何千回も 回して 確かめよう",
+    seoDescription: "当たり確率と回数を決めてガチャを何千回もシミュレーション。1/100 を100回引いても当たるのは約63%。1回以上当たる確率・二項分布・幾何分布（初当たり）を理論値と並べて比較できる。高校数学の確率・統計の教材に",
+    grades: ["中学", "高校"],
+    subjects: ["その他"],
+    tags: ["確率", "統計", "シミュレーション", "ガチャ", "余事象", "二項分布", "幾何分布", "大数の法則", "高校数学", "数学A"],
+    type: "tool",
+    path: "/gacha-kakuritu",
+  },
 
   {
     id: "monty-hall",
