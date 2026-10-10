@@ -2,16 +2,8 @@
 import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import * as se from "@/lib/se"
-import { type Base, toBase, fromBase, isValidForBase } from "./_lib/converter"
-
-const BASE_LABELS: Record<Base, string> = {
-  2: "2進数",
-  8: "8進数",
-  10: "10進数",
-  16: "16進数",
-}
-
-const BASES: Base[] = [2, 8, 10, 16]
+import { type Base, toBase, fromBase, isValidForBase, BASE_LABELS, BASES } from "./_lib/converter"
+import { ExplainTabs } from "./_components/ExplainTabs"
 
 // 2進数のビット表示
 function BitDisplay({ decimal }: { decimal: number }) {
@@ -147,6 +139,11 @@ export default function BinaryPage() {
             </div>
           ))}
         </div>
+      )}
+
+      {/* 変換のしかた（タブで変換先を切り替える） */}
+      {!isNaN(decimal) && decimal >= 0 && (
+        <ExplainTabs decimal={decimal} inputBase={inputBase} />
       )}
 
       {/* ビット表示（2進数ビジュアル） */}

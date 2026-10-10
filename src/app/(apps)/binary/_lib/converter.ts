@@ -22,3 +22,14 @@ export function isValidForBase(char: string, base: Base): boolean {
   const validChars = "0123456789ABCDEF".slice(0, base > 10 ? 16 : base)
   return [...char].every(c => validChars.includes(c.toUpperCase()))
 }
+
+/** 画面に出す進数の名前 */
+export const BASE_LABELS: Record<Base, string> = {
+  2: "2進数",
+  8: "8進数",
+  10: "10進数",
+  16: "16進数",
+}
+
+/** 並べる順番 */
+export const BASES: Base[] = [2, 8, 10, 16]
