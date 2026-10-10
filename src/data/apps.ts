@@ -733,6 +733,17 @@ export const apps: AppItem[] = [
     type: "tool",
     path: "/gacha-kakuritu",
   },
+  {
+    id: "chokin-toushi",
+    title: "貯蓄と投資の積み立てシミュレーター",
+    description: "毎月 積み立てると 何年後に いくら？ 貯金と投資を くらべよう",
+    seoDescription: "毎月の積立額・年数・利率（0〜15%）を変えて、貯蓄と投資の複利の差を折れ線グラフと公式の代入過程で確認できる。値動きや元本割れの注意つき。高校家庭科の資産形成・数学の等比数列の教材に",
+    grades: ["中学", "高校"],
+    subjects: ["その他"],
+    tags: ["複利", "積立", "積み立て", "資産形成", "貯蓄", "投資", "利回り", "家庭科", "金融教育", "等比数列", "シミュレーション", "高校"],
+    type: "tool",
+    path: "/chokin-toushi",
+  },
 
   {
     id: "monty-hall",
