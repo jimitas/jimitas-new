@@ -93,7 +93,7 @@ export default function BinaryPage() {
           <button
             onClick={() => step(-1)}
             disabled={isNaN(decimal) || decimal <= 0}
-            className="px-3 rounded-lg text-2xl font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white disabled:opacity-30 transition-colors select-none"
+            className="shrink-0 px-3 rounded-lg text-2xl font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white disabled:opacity-30 transition-colors select-none"
             aria-label="1減らす"
           >
             ▼
@@ -103,12 +103,12 @@ export default function BinaryPage() {
             value={inputValue}
             onChange={e => handleInput(e.target.value)}
             placeholder={`${BASE_LABELS[inputBase]}の数を入力`}
-            className={`flex-1 text-2xl font-bold font-mono px-3 py-2 rounded-lg border-2 bg-gray-50 dark:bg-gray-900
+            className={`flex-1 min-w-0 text-2xl font-bold font-mono px-3 py-2 rounded-lg border-2 bg-gray-50 dark:bg-gray-900
               ${isValid ? "border-brand-300 dark:border-brand-700" : "border-danger-400"}`}
           />
           <button
             onClick={() => step(1)}
-            className="px-3 rounded-lg text-2xl font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white transition-colors select-none"
+            className="shrink-0 px-3 rounded-lg text-2xl font-bold bg-accent-400 hover:bg-accent-500 active:bg-accent-600 text-white transition-colors select-none"
             aria-label="1増やす"
           >
             ▲
