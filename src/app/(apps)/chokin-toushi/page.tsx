@@ -10,7 +10,8 @@
 //   - はじめはグラフを伏せておき、「グラフを見る」で 0年から線が伸びていく（約4秒）
 //     最初から結果が見えていると驚きが半減するため（2026-10-10 オーナー要望）
 //   - 描き終えたら、まとめと公式の代入過程を出す。そのあと条件を変えるとすぐ描き直す
-//     （毎回アニメだと、何度もくらべるときに待たされる）。「もう一度再生」で再びアニメ
+//     （毎回アニメだと、何度もくらべるときに待たされる）。「もう一度再生」で再びアニメ、
+//     「グラフをかくす」で伏せた状態にもどせる（条件は残る）
 //   - 推移グラフ（タップした年の金額を表示）・まとめ・公式の代入過程
 //
 // 移植元との違い:
@@ -106,6 +107,19 @@ export default function ChokinToushiPage() {
     }
     raf.current = requestAnimationFrame(frame)
   }
+
+  /**
+   * 最初の伏せた状態にもどす。条件（金額・年数・利率）はそのまま残す。
+   * 条件を変えてから、もう一度アニメで見せたいとき用（2026-10-10 オーナー要望）。
+   * 「リセット」にしなかったのは、条件まで初期値にもどると受け取られやすいため。
+   */
+  const hide = () => {
+    cancelAnimationFrame(raf.current)
+    se.playSe(se.reset)
+    setPhase("hidden")
+    setProgress(0)
+    setPicked(null)
+  }
   const drawMonth = phase === "shown" ? years * 12 : drawnMonth(progress, years * 12)
 
   return (
@@ -196,9 +210,14 @@ export default function ChokinToushiPage() {
               selectedYear={selectedYear}
               onSelectYear={(y) => setPicked(y === years ? null : y)}
               actions={
-                <Btn color="neutral" onClick={play} disabled={phase === "playing"} className="self-start px-4 py-2">
-                  ▶ もう一度再生
-                </Btn>
+                <div className="flex flex-wrap gap-2">
+                  <Btn color="neutral" onClick={play} disabled={phase === "playing"} className="px-4 py-2">
+                    ▶ もう一度再生
+                  </Btn>
+                  <Btn color="neutral" onClick={hide} sound="none" className="px-4 py-2">
+                    グラフをかくす
+                  </Btn>
+                </div>
               }
             />
           )}
