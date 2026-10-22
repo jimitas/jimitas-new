@@ -25,10 +25,24 @@ jimitas は PHP を使っておらず、Node.js 本体は Vercel が管理して
 ### 確認したこと
 lint 0件・tsc・jest 1149件・`npm run build`・e2e 362件 すべて通過
 
+### 同日の追加対応（jimitas-new 以外）
+- 開発PC（自宅）の Node.js を 22.23.4 に更新（オーナー作業）。**職場PCは未更新**
+- custom-portal：Next.js 16.2.12 → 16.4.2（custom-portal リポジトリ `34115dc`）
+- Vercel の全58プロジェクトを棚卸しし、古い Next.js・サーバー処理ありの16件を一時停止
+  （tech-blog、shincode-course-platform、nextjs14-practice、my-next-project、sns-clone-client、
+  sport-ai-emotion〈Claude API を叩く公開エンドポイント〉、claude-code-course-practice、stydy-react、
+  next-app、cat、kenban、suuzu-block、jimitas-r5summer、kazu-block、tashizan1、tashizan1-kmsh）。
+  全件が 503 DEPLOYMENT_PAUSED を返すことを、各プロジェクトに実際に割り当てられたドメインで確認した
+- 残りは静的サイト（影響なし）か、すでに公開URLがないもの
+- 旧さくらの WordPress は解約済みのため PHP の件は対象外
+
+### 落とし穴（次回のために）
+- `○○.vercel.app` は他人のプロジェクトのことがある。確認は list_project_domains で実ドメインを引いてから
+- Vercel MCP は読み取りのみ（pause は 403）。ブラウザでの確定操作も自動モードで止まるので、一時停止はオーナーが手で押す
+- jimitas-r5summer はドメインが `new_main` ブランチに紐づき、本番デプロイがない。Pause Project が「存在しない」になる
+
 ### 持ち越し
-- 開発PCの Node.js を v22.16.0 → 22.23.4 へ（オーナー作業）
-- Vercel に公開中の練習アプリ（custom-portal 16.2.12、shincode-course-platform 15.5.27、tech-blog 15.5.3）の更新か停止
-- 旧さくらサーバーで WordPress（PHP）がまだ動いていないかの確認
+- 職場PCの Node.js を 22.23.4 へ（オーナー作業）
 - eslint-config-next の更新と、新ルールの指摘19件の対応
 
 ---
