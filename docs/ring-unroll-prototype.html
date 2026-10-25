@@ -1,0 +1,142 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>輪がほどける試作</title>
+<style>
+  :root { --bg:#fff; --fg:#222; --sub:#666; --a:#0072B2; --b:#56B4E9; --cut:#D55E00; --tri:#009E73; }
+  body { margin:0; background:var(--bg); color:var(--fg); font-family: system-ui, "Hiragino Sans", "Yu Gothic", sans-serif; }
+  main { max-width: 980px; margin: 0 auto; padding: 16px; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  p.lead { margin: 0 0 12px; color: var(--sub); font-size: 14px; }
+  svg { width: 100%; height: auto; display: block; border: 1px solid #ddd; border-radius: 8px; }
+  .controls { display:flex; flex-wrap:wrap; gap:12px 20px; align-items:center; margin-top:12px; font-size:15px; }
+  button { font-size:15px; padding:8px 16px; border-radius:6px; border:1px solid #888; background:#f4f4f4; cursor:pointer; }
+  button.primary { background:var(--a); color:#fff; border-color:var(--a); }
+  input[type=range] { width: 220px; }
+  .seg button { padding:6px 10px; }
+  .seg button.on { background:var(--fg); color:#fff; }
+  #info { margin-top:10px; font-size:16px; min-height: 1.6em; }
+</style>
+</head>
+<body>
+<main>
+  <h1>円を輪に分けて、ほどくと直角三角形になる（試作）</h1>
+  <p class="lead">半径方向（真下）に切れ目を入れ、輪を1本ずつまっすぐにのばします。輪の数を増やすと、階段がなめらかな三角形に近づきます。</p>
+
+  <svg id="svg" viewBox="0 0 660 390"></svg>
+
+  <div class="controls">
+    <button id="play" class="primary">▶ ほどく</button>
+    <button id="back">◀ まき戻す</button>
+    <label>進み具合 <input id="t" type="range" min="0" max="1" step="0.001" value="0"></label>
+    <span class="seg">輪の数：
+      <button data-n="4">4</button><button data-n="8" class="on">8</button><button data-n="16">16</button><button data-n="32">32</button><button data-n="64">64</button>
+    </span>
+  </div>
+  <div id="info"></div>
+</main>
+
+<script>
+const svg = document.getElementById('svg');
+const NS = 'http://www.w3.org/2000/svg';
+const R = 80;            // 円の半径(px)
+const X0 = 110;           // 切れ目（真下の半径）のx座標
+const CY = 270;           // 円の中心のy
+const BASE = CY + R;      // 三角形の底辺のy
+let n = 8, t = 0, anim = null;
+
+function el(name, attrs) {
+  const e = document.createElementNS(NS, name);
+  for (const k in attrs) e.setAttribute(k, attrs[k]);
+  return e;
+}
+
+// 輪（中心線の半径 rm）を、真下の点を固定して右へほどく。
+// 曲率 k = (1 - t) / rm。長さ 2π rm は変えない。
+function ringPoints(rm, tt) {
+  const L = 2 * Math.PI * rm;
+  const k = (1 - tt) / rm;
+  const yb = CY + rm;
+  const steps = Math.max(60, Math.ceil(L / 3));
+  const pts = [];
+  for (let i = 0; i <= steps; i++) {
+    const s = L * i / steps;
+    let x, y;
+    if (k < 1e-6) { x = X0 + s; y = yb; }
+    else { x = X0 + Math.sin(s * k) / k; y = yb - (1 - Math.cos(s * k)) / k; }
+    pts.push(x.toFixed(2) + ',' + y.toFixed(2));
+  }
+  return pts.join(' ');
+}
+
+function draw() {
+  svg.innerHTML = '';
+  const dr = R / n;
+
+  // 完成形の三角形（ガイド）
+  svg.appendChild(el('polygon', {
+    points: `${X0},${BASE} ${X0 + 2*Math.PI*R},${BASE} ${X0},${BASE - R}`,
+    fill: 'none', stroke: 'var(--tri)', 'stroke-width': 1.5, 'stroke-dasharray': '6 5',
+    opacity: Math.min(1, t * 1.5)
+  }));
+
+  // 輪（外側から描くと内側が上に見える）
+  for (let i = n; i >= 1; i--) {
+    const rm = (i - 0.5) * dr;
+    svg.appendChild(el('polyline', {
+      points: ringPoints(rm, t), fill: 'none',
+      stroke: i % 2 ? 'var(--a)' : 'var(--b)',
+      'stroke-width': dr, 'stroke-linecap': 'butt', 'stroke-linejoin': 'round'
+    }));
+  }
+
+  // 切れ目（真下の半径）
+  if (t < 0.15) {
+    svg.appendChild(el('line', { x1: X0, y1: CY, x2: X0, y2: BASE,
+      stroke: 'var(--cut)', 'stroke-width': 3, 'stroke-dasharray': '5 4', opacity: 1 - t / 0.15 }));
+    svg.appendChild(el('circle', { cx: X0, cy: CY, r: 3, fill: 'var(--fg)' }));
+  }
+
+  // 完成時のラベル
+  if (t > 0.98) {
+    const lab = (x, y, s, anchor='middle') => {
+      const e = el('text', { x, y, 'font-size': 16, fill: 'var(--fg)', 'text-anchor': anchor });
+      e.textContent = s; svg.appendChild(e);
+    };
+    lab(X0 + Math.PI * R, BASE + 26, '底辺 ＝ いちばん外側の輪の長さ ＝ 円周 2πr');
+    lab(X0 - 10, BASE - R / 2 + 6, '高さ ＝ r', 'end');
+  }
+
+  const info = document.getElementById('info');
+  if (t < 0.02) info.textContent = '真下に切れ目を入れます。';
+  else if (t < 0.98) info.textContent = '輪が1本ずつ、まっすぐな帯にのびていきます。帯の長さはそれぞれの輪の円周です。';
+  else info.textContent = '三角形の面積 ＝ ½ × 2πr × r ＝ πr²　→　円の面積にもどった';
+  document.getElementById('t').value = t;
+}
+
+function animateTo(target) {
+  cancelAnimationFrame(anim);
+  const from = t, start = performance.now(), dur = 3000 * Math.abs(target - from) + 1;
+  const ease = u => u < 0.5 ? 2*u*u : 1 - Math.pow(-2*u + 2, 2) / 2;
+  const step = now => {
+    const u = Math.min(1, (now - start) / dur);
+    t = from + (target - from) * ease(u);
+    draw();
+    if (u < 1) anim = requestAnimationFrame(step);
+  };
+  anim = requestAnimationFrame(step);
+}
+
+document.getElementById('play').onclick = () => animateTo(1);
+document.getElementById('back').onclick = () => animateTo(0);
+document.getElementById('t').oninput = e => { cancelAnimationFrame(anim); t = +e.target.value; draw(); };
+document.querySelectorAll('.seg button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.seg button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on'); n = +b.dataset.n; draw();
+});
+draw();
+</script>
+</body>
+</html>
