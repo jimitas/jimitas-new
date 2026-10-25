@@ -1,29 +1,23 @@
 // ======================================================
-// 表示の設定（大きく表示・文脈ラベル）と、ページ全体のキー操作のフック
+// 表示の設定（大きく表示）と、ページ全体のキー操作のフック
 //
-// 大きく表示・文脈ラベルはページで1つの設定なので、props で配らず context で渡す。
+// 大きく表示はページで1つの設定なので、props で配らず context で渡す。
 // 座標平面の部品（線・点・文字）とステップの数値表示が useBig() で読む。
+// Provider を置かなければ倍率 1 のまま（大きく表示を持たないアプリで使っても影響しない）。
+//
+// 微分の意味がわかる（bibun）から移した（2026-10-25、積分アプリと共有するため）。
+// 文脈ラベル（時間・距離で表す）は微分専用なので bibun/_components/Motion.tsx に残した。
 // ======================================================
 
 "use client"
 
 import { createContext, useContext, useEffect, useLayoutEffect, useRef } from "react"
-import { BIG_FONT, BIG_LINE, isPressable, keyAction } from "../_lib/keys"
-import type { KeyAction } from "../_lib/keys"
+import { BIG_FONT, BIG_LINE, isPressable, keyAction } from "@/lib/graph/keys"
+import type { KeyAction } from "@/lib/graph/keys"
 
 const BigContext = createContext(false)
 
 export const BigProvider = BigContext.Provider
-
-const MotionContext = createContext(false)
-
-/** 文脈ラベル（「x, y」ではなく「時間（秒）, 距離（m）」で表す）。軸と主要な値の名前を言いかえる */
-export const MotionProvider = MotionContext.Provider
-
-/** 時間・距離で表すか */
-export function useMotion(): boolean {
-  return useContext(MotionContext)
-}
 
 /** 大きく表示か */
 export function useBig(): boolean {
@@ -83,7 +77,7 @@ export function usePageKeys(handlers: Partial<Record<Exclude<KeyAction, null>, (
 /**
  * マウス・タッチで触り終えたら選択（フォーカス）を外す。点・スライダーの onPointerUp に付ける。
  * 選択が残ると、そのあとのスペース・→・PageDown（リモコン）が点やスライダーに取られるため
- * （→ で点A が動いて記録表が消える、PageDown でスライダーが大きく動く）。Tab で選んだときは残る。
+ * （微分の意味がわかるでは、→ で点A が動いて記録表が消える、PageDown でスライダーが大きく動く）。Tab で選んだときは残る。
  */
 export function blurAfterPointer(e: { currentTarget: Element }) {
   const el = e.currentTarget as HTMLElement | SVGElement
@@ -93,7 +87,7 @@ export function blurAfterPointer(e: { currentTarget: Element }) {
 /**
  * 大きく表示のときの文字の大きさ（HTML 側）。Tailwind は文字列のまま書く必要があるので、ここに並べる。
  *   legend   グラフ上のラベル（凡例）
- *   readout  投影で読ませる数値（h = 0.1　平均変化率 = 4.1 など）
+ *   readout  投影で読ませる数値（微分の意味がわかるの「h = 0.1　平均変化率 = 4.1」など）
  *   table    記録表
  */
 export const TEXT = {

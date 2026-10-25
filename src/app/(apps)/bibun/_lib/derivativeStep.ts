@@ -9,8 +9,8 @@
 import { A_MAX, A_MIN } from "./approach"
 import { derivative, evaluate } from "./polynomial"
 import type { Poly } from "./polynomial"
-import { fitView } from "./viewport"
-import type { View } from "./viewport"
+import { fitView } from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
 
 /** ③ の横の範囲（上下のグラフで共通）。x³ でも縦がつぶれすぎない広さ */
 export const X3_MIN = -2

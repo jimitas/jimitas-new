@@ -1,9 +1,11 @@
 // 微分の意味がわかる — _lib/approach.ts のテスト
 import * as A from "@/app/(apps)/bibun/_lib/approach"
-import { deltaY, diffQuotient, evaluate, formatNumber } from "@/app/(apps)/bibun/_lib/polynomial"
+import * as S from "@/lib/graph/steps"
+import { deltaY, diffQuotient, evaluate } from "@/app/(apps)/bibun/_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import type { Poly } from "@/app/(apps)/bibun/_lib/polynomial"
-import { snap } from "@/app/(apps)/bibun/_lib/viewport"
-import type { View } from "@/app/(apps)/bibun/_lib/viewport"
+import { snap } from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
 
 describe("hAt / timeOf（▶ 近づけてみる の h）", () => {
   test("はじめは 1、おわりは 0.001", () => {
@@ -14,7 +16,7 @@ describe("hAt / timeOf（▶ 近づけてみる の h）", () => {
     expect(A.hAt(-0.5)).toBe(1)
     expect(A.hAt(2)).toBeCloseTo(0.001, 12)
   })
-  test.each(A.H_STEPS)("段 %p を通る時刻で h はその値", (s) => expect(A.hAt(A.timeOf(s))).toBeCloseTo(s, 12))
+  test.each(S.H_STEPS)("段 %p を通る時刻で h はその値", (s) => expect(A.hAt(A.timeOf(s))).toBeCloseTo(s, 12))
   test("1→0.1、0.1→0.01、0.01→0.001 は同じ時間", () => {
     expect(A.timeOf(0.1) - A.timeOf(1)).toBeCloseTo(A.timeOf(0.01) - A.timeOf(0.1), 12)
     expect(A.timeOf(0.001) - A.timeOf(0.01)).toBeCloseTo(1 / 3, 12)
@@ -35,21 +37,6 @@ describe("stepsPassed（記録表に書く行数）", () => {
       const n = A.stepsPassed(t)
       expect(n).toBeGreaterThanOrEqual(prev)
       prev = n
-    }
-  })
-})
-
-describe("stepH（1段ずつ）", () => {
-  test("はじめと終わりは段の値ちょうど", () => {
-    expect(A.stepH(1, 0.5, 0)).toBeCloseTo(1, 12)
-    expect(A.stepH(1, 0.5, 1)).toBeCloseTo(0.5, 12)
-    expect(A.stepH(-0.01, -0.001, 1)).toBeCloseTo(-0.001, 12)
-  })
-  test("途中も from と to のあいだ", () => {
-    for (let u = 0; u <= 1; u += 0.1) {
-      const h = A.stepH(0.1, 0.01, u)
-      expect(h).toBeLessThanOrEqual(0.1 + 1e-12)
-      expect(h).toBeGreaterThanOrEqual(0.01 - 1e-12)
     }
   })
 })
@@ -169,7 +156,7 @@ describe("nextStep（1段ずつ）", () => {
     let h: number = side
     const rows: number[] = []
     for (let i = 0; i < n; i++) {
-      const st = A.nextStep(count, side, h)
+      const st = S.nextStep(count, side, h)
       if (!st) break
       h = st.target
       count = st.nextCount
@@ -184,7 +171,7 @@ describe("nextStep（1段ずつ）", () => {
   })
   test("5回目で 0.001（4.001）、6回目は押せない", () => {
     expect(press(1, 5).rows[4]).toBe(0.001)
-    expect(A.nextStep(5, 1, 0.001)).toBeNull()
+    expect(S.nextStep(5, 1, 0.001)).toBeNull()
   })
   test("左から：−1, −0.5, −0.1, −0.01, −0.001（3 → 3.5 → 3.9 → 3.99 → 3.999）", () => {
     const { rows } = press(-1, 5)
@@ -192,9 +179,9 @@ describe("nextStep（1段ずつ）", () => {
     expect(rows.map((h) => formatNumber(diffQuotient([0, 0, 1, 0], 2, h)))).toEqual(["3", "3.5", "3.9", "3.99", "3.999"])
   })
   test("1回目は h = 1 にいるので動かさない。2回目からは動かす", () => {
-    expect(A.nextStep(0, 1, 1)).toEqual({ target: 1, nextCount: 1, animate: false })
-    expect(A.nextStep(1, 1, 1)).toEqual({ target: 0.5, nextCount: 2, animate: true })
+    expect(S.nextStep(0, 1, 1)).toEqual({ target: 1, nextCount: 1, animate: false })
+    expect(S.nextStep(1, 1, 1)).toEqual({ target: 0.5, nextCount: 2, animate: true })
   })
   test("スライダーで反対向きにしていたら、動かさずにその段へ", () =>
-    expect(A.nextStep(2, -1, 0.3)).toEqual({ target: -0.1, nextCount: 3, animate: false }))
+    expect(S.nextStep(2, -1, 0.3)).toEqual({ target: -0.1, nextCount: 3, animate: false }))
 })

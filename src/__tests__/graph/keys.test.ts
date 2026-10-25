@@ -1,6 +1,6 @@
-// 微分の意味がわかる — _lib/keys.ts（ページ全体のキー操作・大きく表示の倍率）のテスト
-import * as K from "@/app/(apps)/bibun/_lib/keys"
-import { TICK_FONT } from "@/app/(apps)/bibun/_lib/viewport"
+// ページ全体のキー操作・大きく表示の倍率（@/lib/graph/keys）のテスト。bibun から移した（2026-10-25）
+import * as K from "@/lib/graph/keys"
+import { TICK_FONT } from "@/lib/graph/viewport"
 
 /** テスト用の要素（本物の DOM の代わり） */
 const el = (tagName: string, role?: string, type?: string): K.KeyTarget => ({

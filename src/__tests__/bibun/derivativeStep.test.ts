@@ -2,7 +2,8 @@
 import * as fs from "fs"
 import * as path from "path"
 import * as D from "@/app/(apps)/bibun/_lib/derivativeStep"
-import { PRESETS, derivative, evaluate, formatNumber, formatPoly } from "@/app/(apps)/bibun/_lib/polynomial"
+import { PRESETS, derivative, evaluate, formatPoly } from "@/app/(apps)/bibun/_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import type { Poly } from "@/app/(apps)/bibun/_lib/polynomial"
 import { derivativeExample } from "@/app/(apps)/bibun/_lib/text"
 

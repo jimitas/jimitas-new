@@ -2,25 +2,36 @@
 //
 // 「割線」は生徒になじみがないので画面に出さない。例外は「記号で」表示の補足 SECANT_NOTE の1か所だけ。
 // 文言を text.ts の外（コンポーネントの JSX）に直接書いても見つけられるよう、bibun の全ファイルを読む。
+// bibun の画面に出る共通部品（座標平面・大きく表示など。2026-10-25 に共通の場所へ移した）も読む。
 // コメントに書いても落ちる（書くなら「教科書の用語」などと言いかえる）。
 import * as fs from "fs"
 import * as path from "path"
 import * as T from "@/app/(apps)/bibun/_lib/text"
 
-const ROOT = path.join(__dirname, "../../app/(apps)/bibun")
+const SRC = path.join(__dirname, "../..")
+const ROOT = path.join(SRC, "app/(apps)/bibun")
+/** 読むフォルダと、空回りしていないことを確かめる最低の本数 */
+const DIRS: [string, number][] = [
+  [ROOT, 10],
+  [path.join(SRC, "components/parts/graph"), 4],
+  [path.join(SRC, "lib/graph"), 4],
+]
+const TEXT_TS = path.join(ROOT, "_lib/text.ts")
 const files = (dir: string): string[] =>
   fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
     e.isDirectory() ? files(path.join(dir, e.name)) : /\.tsx?$/.test(e.name) ? [path.join(dir, e.name)] : [])
 
 describe("「割線」は SECANT_NOTE の1か所だけ", () => {
-  test("bibun のファイルを10本以上読んでいる（検査が空回りしていない）", () =>
-    expect(files(ROOT).length).toBeGreaterThanOrEqual(10))
+  test.each(DIRS.map(([d, n]) => [path.relative(SRC, d), d, n] as const))(
+    "%s のファイルを読んでいる（検査が空回りしていない）",
+    (_, dir, n) => expect(files(dir).length).toBeGreaterThanOrEqual(n),
+  )
 
   test("text.ts 以外のファイルには「割線」がない", () => {
-    const hits = files(ROOT)
-      .filter((f) => path.basename(f) !== "text.ts")
+    const hits = DIRS.flatMap(([d]) => files(d))
+      .filter((f) => f !== TEXT_TS)
       .filter((f) => fs.readFileSync(f, "utf8").includes("割線"))
-      .map((f) => path.relative(ROOT, f))
+      .map((f) => path.relative(SRC, f))
     expect(hits).toEqual([])
   })
 

@@ -22,19 +22,21 @@ import { Btn } from "@/components/parts/buttons/Btn"
 import { A_MAX, A_MIN } from "../_lib/approach"
 import { average, averageExpr, eqRate, formatRate, movePoint, stepPoint, twoPointView } from "../_lib/average"
 import type { Which } from "../_lib/average"
-import { evaluate, formatNumber, formatPoly } from "../_lib/polynomial"
+import { evaluate, formatPoly } from "../_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import type { Poly } from "../_lib/polynomial"
 import {
   DELTA_X, DELTA_Y, NEGATIVE_NOTE, SAME_POINT_MESSAGE, needsNegativeNote, SECANT_NAME, STEP1_GUIDE, STEP1_NOTICE, TO_STEP2, avgRateName, axisLabels,
   secantSlopeLabel,
 } from "../_lib/text"
 import type { Level } from "../_lib/text"
-import { contains } from "../_lib/viewport"
-import type { View } from "../_lib/viewport"
-import { CoordinatePlane, usePlane } from "./CoordinatePlane"
-import { blurAfterPointer, useMotion, useText } from "./Display"
-import { Frac } from "./MathParts"
-import { Curve, DragPoint, InfiniteLine, PlaneText, Segment } from "./PlaneShapes"
+import { contains } from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
+import { CoordinatePlane, usePlane } from "@/components/parts/graph/CoordinatePlane"
+import { blurAfterPointer, useText } from "@/components/parts/graph/Display"
+import { useMotion } from "./Motion"
+import { Frac } from "@/components/parts/graph/MathParts"
+import { Curve, DragPoint, InfiniteLine, PlaneText, Segment } from "@/components/parts/graph/PlaneShapes"
 
 interface Props {
   p: Poly

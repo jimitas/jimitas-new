@@ -6,10 +6,11 @@
 // ======================================================
 
 import { A_MAX, A_MIN } from "./approach"
-import { MINUS, deltaY, diffQuotient, evaluate, formatFixed, formatNumber } from "./polynomial"
+import { MINUS, formatFixed, formatNumber } from "@/lib/graph/format"
+import { deltaY, diffQuotient, evaluate } from "./polynomial"
 import type { Poly } from "./polynomial"
-import { fitView, snap } from "./viewport"
-import type { View } from "./viewport"
+import { fitView, snap } from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
 
 export interface Average {
   fa: number

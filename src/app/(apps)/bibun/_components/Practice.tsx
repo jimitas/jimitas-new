@@ -24,10 +24,11 @@ import { initialView } from "../_lib/approach"
 import { derivativeTermSteps } from "../_lib/expand"
 import { INITIAL_SCORE, answerDegrees, gradeCoefficient, gradeDerivative, newProblem, scoreReducer } from "../_lib/practice"
 import type { Grade, MaxDegree, Problem } from "../_lib/practice"
-import { derivative, evaluate, formatNumber, formatPoly } from "../_lib/polynomial"
+import { derivative, evaluate, formatPoly } from "../_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import { TANGENT_NAME, tangentSlopeLabel } from "../_lib/text"
-import { CoordinatePlane } from "./CoordinatePlane"
-import { Curve, Dot, InfiniteLine } from "./PlaneShapes"
+import { CoordinatePlane } from "@/components/parts/graph/CoordinatePlane"
+import { Curve, Dot, InfiniteLine } from "@/components/parts/graph/PlaneShapes"
 
 type Kind = Problem["kind"]
 

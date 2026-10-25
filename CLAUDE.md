@@ -41,11 +41,13 @@
 ```
 src/
 ├── app/apps/[app-name]/page.tsx   ← アプリのページ
+├── lib/graph/                     ← グラフの計算（座標変換・目盛り・数値の書式・1段ずつの段。純TS・jest でテスト）
 └── components/
     ├── common/                    ← サイト全体共通（Header, Footer など）
     └── parts/                     ← 再利用パーツ
         ├── buttons/               ← ボタン系
         ├── displays/              ← 表示系
+        ├── graph/                 ← 座標平面・グラフの部品・大きく表示（bibun と積分アプリで共有）
         └── block/                 ← ブロック系
 ```
 

@@ -2,9 +2,10 @@
 // 受け入れ基準（要件 §8）の 1, 2, 6, 8 の数値をここで固定する。
 import * as P from "@/app/(apps)/bibun/_lib/polynomial"
 import type { Poly } from "@/app/(apps)/bibun/_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 
 const X2: Poly = [0, 0, 1, 0]
-const show = (p: Poly, a: number, h: number) => P.formatNumber(P.diffQuotient(p, a, h))
+const show = (p: Poly, a: number, h: number) => formatNumber(P.diffQuotient(p, a, h))
 
 describe("diffQuotient（平均変化率）— スライド10–11 と同じ値", () => {
   test.each([
@@ -42,8 +43,8 @@ describe("diffQuotient（平均変化率）— スライド10–11 と同じ値"
 describe("deltaY（f(a + h) − f(a) の欄）", () => {
   test.each([
     [1, "5"], [0.5, "2.25"], [0.1, "0.41"], [0.01, "0.0401"], [0.001, "0.004001"],
-  ])("x², a = 2, h = %p → %s", (h, want) => expect(P.formatNumber(P.deltaY(X2, 2, h))).toBe(want))
-  test("左からは負", () => expect(P.formatNumber(P.deltaY(X2, 2, -0.1))).toBe("−0.39"))
+  ])("x², a = 2, h = %p → %s", (h, want) => expect(formatNumber(P.deltaY(X2, 2, h))).toBe(want))
+  test("左からは負", () => expect(formatNumber(P.deltaY(X2, 2, -0.1))).toBe("−0.39"))
 })
 
 describe("derivative", () => {
@@ -76,25 +77,6 @@ describe("formatPoly（式の書式 §5）", () => {
   test("変数を (a + h) にできる", () =>
     expect(P.formatPoly([1, -3, 2, 0], "(a + h)")).toBe("2(a + h)² − 3(a + h) + 1"))
   test("プリセットの先頭（初期値）は x²", () => expect(P.formatPoly(P.PRESETS[0].poly)).toBe("x²"))
-})
-
-describe("formatNumber", () => {
-  test.each([
-    [4.01, "4.01"],
-    [4.1000000000000005, "4.1"],
-    [3.9999999999999996, "4"],
-    [-0.5, "−0.5"],
-    [-0, "0"],
-    [1e-7, "0.0000001"],
-    [2.1, "2.1"],
-    [12.006001, "12.006001"],
-  ])("%p → %s", (v, want) => expect(P.formatNumber(v)).toBe(want))
-})
-
-describe("formatFixed（アニメ中の値）", () => {
-  test.each([
-    [4.00123456, 3, "4.001"], [0.0234567, 4, "0.0235"], [1, 4, "1"], [-0.00104, 4, "−0.001"], [0.00004, 4, "0"],
-  ])("formatFixed(%p, %p) → %s", (v, d, want) => expect(P.formatFixed(v, d)).toBe(want))
 })
 
 describe("parseCoefs（自分で作る関数）", () => {

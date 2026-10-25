@@ -11,7 +11,8 @@
 //   h で割ると h の次数が1つずつ下がり、h → 0 で h を含む項が消えて f'(a) が残る。
 // ======================================================
 
-import { MINUS, derivative, formatNumber, formatPoly, termCount } from "./polynomial"
+import { MINUS, formatNumber } from "@/lib/graph/format"
+import { derivative, formatPoly, termCount } from "./polynomial"
 import type { Poly } from "./polynomial"
 
 /** a^i h^j の係数を [i][j] に持つ表（i, j = 0〜3） */

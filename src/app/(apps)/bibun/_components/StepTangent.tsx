@@ -35,24 +35,27 @@ import * as se from "@/lib/se"
 import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import {
-  A_MAX, A_MIN, APPROACH_MS, H_LIMIT, H_SLIDER_STEP, H_STEPS, STEP_MS,
-  chaseView, hAt, hDragStep, initialView, nextStep, stepH, stepsPassed,
+  A_MAX, A_MIN, APPROACH_MS, H_LIMIT, H_SLIDER_STEP,
+  chaseView, hAt, hDragStep, initialView, stepsPassed,
 } from "../_lib/approach"
-import type { Side } from "../_lib/approach"
-import { deltaY, derivative, diffQuotient, evaluate, formatFixed, formatNumber, formatPoly } from "../_lib/polynomial"
+import { H_STEPS, STEP_MS, nextStep, stepH } from "@/lib/graph/steps"
+import type { Side } from "@/lib/graph/steps"
+import { deltaY, derivative, diffQuotient, evaluate, formatPoly } from "../_lib/polynomial"
+import { formatFixed, formatNumber } from "@/lib/graph/format"
 import type { Poly } from "../_lib/polynomial"
 import {
   PREDICT_PROMPT, SECANT_NAME, SECANT_NOTE, SIDE_LABEL, STEP2_GUIDE, TANGENT_NAME, ZERO_H_MESSAGE,
   NEGATIVE_NOTE, avgRateName, axisLabels, conclusionWords, needsNegativeNote, secantSlopeLabel, tangentSlopeLabel,
 } from "../_lib/text"
 import type { Level } from "../_lib/text"
-import { contains, loupeView, snap } from "../_lib/viewport"
-import type { View } from "../_lib/viewport"
-import { CoordinatePlane } from "./CoordinatePlane"
-import { blurAfterPointer, useMotion, usePageKeys, useText } from "./Display"
+import { contains, loupeView, snap } from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
+import { CoordinatePlane } from "@/components/parts/graph/CoordinatePlane"
+import { blurAfterPointer, usePageKeys, useText } from "@/components/parts/graph/Display"
+import { useMotion } from "./Motion"
 import { ExpandSteps } from "./ExpandSteps"
-import { Frac, Lim } from "./MathParts"
-import { Curve, Dot, DragPoint, InfiniteLine, PlaneText } from "./PlaneShapes"
+import { Frac, Lim } from "@/components/parts/graph/MathParts"
+import { Curve, Dot, DragPoint, InfiniteLine, PlaneText } from "@/components/parts/graph/PlaneShapes"
 import { RecordTable } from "./RecordTable"
 
 type Mode = "idle" | "playing" | "paused" | "stepping"
@@ -152,7 +155,7 @@ export function StepTangent({ p, level, a, onA }: Props) {
 
   // ---- 1段ずつ ----------------------------------------------------------------------
   const onStep = () => {
-    // 押した回数と段の対応は _lib/approach.ts の nextStep（jest で固定。受け入れ基準1・2）
+    // 押した回数と段の対応は @/lib/graph/steps の nextStep（jest で固定。受け入れ基準1・2）
     const st = nextStep(count, side, h)
     if (!st) return
     cancelAnimationFrame(anim.current.raf)

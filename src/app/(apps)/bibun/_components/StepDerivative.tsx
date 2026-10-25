@@ -26,19 +26,21 @@ import { A_MAX, A_MIN } from "../_lib/approach"
 import {
   EXAMPLE_XS, SWEEP_MS, addTracePoint, stepThreeViews, sweepRange, sweepX, tracePoint, viewsWithPoint, withXRange,
 } from "../_lib/derivativeStep"
-import { derivative, evaluate, formatNumber, formatPoly } from "../_lib/polynomial"
+import { derivative, evaluate, formatPoly } from "../_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import type { Poly } from "../_lib/polynomial"
 import {
   DERIVATIVE_DEFINITION, NEGATIVE_NOTE, SLOPE_AT_A, SLOPE_AXIS, STEP3_GUIDE, SWEEP_PROMPT, TANGENT_NAME, axisLabels,
   derivativeExample, needsNegativeNote, tangentSlopeLabel,
 } from "../_lib/text"
 import type { Level } from "../_lib/text"
-import { contains, snap } from "../_lib/viewport"
-import type { View } from "../_lib/viewport"
-import { CoordinatePlane } from "./CoordinatePlane"
-import { blurAfterPointer, useMotion, useText } from "./Display"
+import { contains, snap } from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
+import { CoordinatePlane } from "@/components/parts/graph/CoordinatePlane"
+import { blurAfterPointer, useText } from "@/components/parts/graph/Display"
+import { useMotion } from "./Motion"
 import { DerivativeRules } from "./DerivativeRules"
-import { Curve, Dot, DragPoint, InfiniteLine, PlaneText } from "./PlaneShapes"
+import { Curve, Dot, DragPoint, InfiniteLine, PlaneText } from "@/components/parts/graph/PlaneShapes"
 
 interface Props {
   p: Poly

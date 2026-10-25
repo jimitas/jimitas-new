@@ -1,6 +1,6 @@
-// 微分の意味がわかる — _lib/viewport.ts のテスト（座標変換・目盛り・スナップ）
-import * as V from "@/app/(apps)/bibun/_lib/viewport"
-import type { View } from "@/app/(apps)/bibun/_lib/viewport"
+// 座標平面の表示範囲・座標変換・目盛り・スナップ（@/lib/graph/viewport）のテスト。bibun から移した（2026-10-25）
+import * as V from "@/lib/graph/viewport"
+import type { View } from "@/lib/graph/viewport"
 
 const view: View = { xMin: -2, xMax: 6, yMin: -1, yMax: 11 }
 const t = V.makeTransform(view, 800, 600)

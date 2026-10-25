@@ -5,7 +5,7 @@
 // 色は className（stroke-* / fill-*）で渡す。色だけに頼らないよう、線種は dashed で変えられる。
 //
 // ■ DragPoint（ドラッグで動かせる点）
-//   当たり判定は半径 20px 以上（要件：タッチ操作。HIT_RADIUS は viewport.ts でテスト固定）。
+//   当たり判定は半径 20px 以上（微分の意味がわかるの要件：タッチ操作。HIT_RADIUS は @/lib/graph/viewport でテスト固定）。
 //   見える点より大きい透明な円を重ねる。キーボードで選んだときは点線の枠を出す。
 //   押した点で setPointerCapture し、指が点から外れても追いかける。押しただけでは動かさない。
 //   stopPropagation して、点を動かしているあいだ座標平面がパンしないようにする。
@@ -15,7 +15,7 @@
 
 import type { KeyboardEvent, PointerEvent, ReactNode } from "react"
 import { useRef } from "react"
-import { HIT_RADIUS, curvePoints, lineEnds } from "../_lib/viewport"
+import { HIT_RADIUS, curvePoints, lineEnds } from "@/lib/graph/viewport"
 import { usePlane } from "./CoordinatePlane"
 import { blurAfterPointer, useScale } from "./Display"
 
@@ -132,7 +132,7 @@ export function DragPoint({ x, y, className, onDrag, onDragEnd, onKeyStep, label
 
   // 押しただけでは動かさない。DRAG_THRESHOLD 以上動かしたらドラッグとみなし、
   // 「押したときの点の位置 ＋ 指が動いた分」へ動かす（指の位置へ飛ばさない）。
-  // 投影中に点を指し示すつもりでクリックしただけで値が変わり、記録表が消えるのを防ぐ（2026-10-25 レビュー指摘）。
+  // 投影中に点を指し示すつもりでクリックしただけで値が変わり、記録表が消えるのを防ぐ（微分の意味がわかる。2026-10-25 レビュー指摘）。
   const onPointerDown = (e: PointerEvent<SVGGElement>) => {
     if (disabled) return
     e.stopPropagation()

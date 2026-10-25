@@ -24,12 +24,10 @@
 import { createContext, useContext, useEffect, useId, useLayoutEffect, useRef, useState } from "react"
 import type { PointerEvent, ReactNode } from "react"
 import { Btn } from "@/components/parts/buttons/Btn"
-import { formatNumber } from "../_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import { useScale } from "./Display"
-import {
-  TICK_FONT, centerOf, makeTransform, panView, pinchView, textWidth, ticks, yLabelPlacement, zoomLimited,
-} from "../_lib/viewport"
-import type { Pt, Transform, View } from "../_lib/viewport"
+import { TICK_FONT, centerOf, makeTransform, panView, pinchView, textWidth, ticks, yLabelPlacement, zoomLimited } from "@/lib/graph/viewport"
+import type { Pt, Transform, View } from "@/lib/graph/viewport"
 
 const PlaneContext = createContext<Transform | null>(null)
 

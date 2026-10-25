@@ -11,9 +11,10 @@
 import { useState } from "react"
 import { Btn } from "@/components/parts/buttons/Btn"
 import { expandSteps, limitExpr } from "../_lib/expand"
-import { derivative, evaluate, formatNumber } from "../_lib/polynomial"
+import { derivative, evaluate } from "../_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import type { Poly } from "../_lib/polynomial"
-import { Frac, Lim } from "./MathParts"
+import { Frac, Lim } from "@/components/parts/graph/MathParts"
 
 export function ExpandSteps({ p, a }: { p: Poly; a: number }) {
   const steps = expandSteps(p)

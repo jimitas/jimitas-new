@@ -7,12 +7,14 @@
 // まだ埋まっていない行も空欄で出しておき、書き込まれても表の高さが変わらないようにする。
 // ======================================================
 
-import { H_STEPS } from "../_lib/approach"
-import type { Side } from "../_lib/approach"
-import { deltaY, diffQuotient, formatNumber } from "../_lib/polynomial"
+import { H_STEPS } from "@/lib/graph/steps"
+import type { Side } from "@/lib/graph/steps"
+import { deltaY, diffQuotient } from "../_lib/polynomial"
+import { formatNumber } from "@/lib/graph/format"
 import type { Poly } from "../_lib/polynomial"
 import { SIDE_LABEL, tableHeaders } from "../_lib/text"
-import { useMotion, useText } from "./Display"
+import { useMotion } from "./Motion"
+import { useText } from "@/components/parts/graph/Display"
 
 interface Props {
   p: Poly
