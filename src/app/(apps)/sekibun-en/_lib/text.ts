@@ -9,6 +9,8 @@
 
 import type { Direction } from "./playback"
 import { unrollPhase } from "./scene"
+import { firstRingProgress, lastRingProgress } from "./unroll"
+import type { UnrollMode } from "./unroll"
 
 /** 表示レベル：ことばで（初期値）／記号で */
 export type Level = "words" | "symbols"
@@ -43,13 +45,16 @@ export const HEIGHT_LABEL = "高さ ＝ r"
 
 /**
  * 図の下の一言。進み具合 t と、動いている向き moving（1：ほどく、−1：巻き戻す、null：止まっている）で出し分ける。
- * 全部の輪が同時にほどけるので「1本ずつ」とは言わない（F3-8 の「1本ずつほどく」と取り違えないように）。
+ * 全部いっしょのときは「1本ずつ」とは言わない（F3-8 の「1本ずつほどく」と取り違えないように）。
+ * n は輪の数（1本ずつのとき、はじめ・完成を最初の輪・最後の輪で決めるため）。
  */
-export function unrollMessage(t: number, moving: Direction): string {
+export function unrollMessage(t: number, moving: Direction, mode: UnrollMode = "all", n = 1): string {
   // 動いている向きを先に見る（巻き戻し始めの t > 0.98 で「積み上がりました」と出さない）
+  if (moving === 1 && mode === "outer") return "外側の輪から1本ずつ、まっすぐな帯にのびて積み上がっていきます。ロープを外から1周ずつほどくのと同じです。"
+  if (moving === 1 && mode === "inner") return "内側の輪から1本ずつ、まっすぐな帯にのびて積み上がっていきます。"
   if (moving === 1) return "輪がほどけて、まっすぐな帯にのびていきます。帯の長さは、それぞれの輪の円周です。"
   if (moving === -1) return "帯が曲がって、もとの輪にもどっていきます。"
-  const phase = unrollPhase(t)
+  const phase = unrollPhase(firstRingProgress(n, t, mode), lastRingProgress(n, t, mode))
   if (phase === "done") return "外側の輪ほど長い帯になって、直角三角形に積み上がりました。"
   if (phase === "start") return "真下に切れ目を入れました。"
   return "途中で止めています。どの途中でも、帯の長さはそれぞれの輪の円周のままです。"
@@ -61,6 +66,13 @@ export const STEP3_CONCLUSION = "三角形の面積 ＝ ½ × 2πr × r ＝ πr�
 /** 結論をまだ見せていないときの問いかけ */
 // ボタンの名前は入れない（ボタンは「▶ 続ける」などに変わるため）
 export const STEP3_PREDICT = "輪を全部ほどいて積み上げてみよう。積み上げた形の面積は、もとの円の面積と同じはず。"
+
+/** ほどき方（F3-8） */
+export const UNROLL_MODE_LABEL: Record<UnrollMode, string> = {
+  all: "全部いっしょ",
+  outer: "外側から1本ずつ",
+  inner: "内側から1本ずつ",
+}
 
 /** 輪の数を増やすと（F3-7） */
 export const RING_COUNT_NOTE = "輪の数を増やすと、階段のでこぼこが小さくなって、なめらかな三角形に近づきます。"

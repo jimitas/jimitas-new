@@ -19,7 +19,7 @@
 // 描画（SVG）は _components/RingDisk.tsx。ここは React・DOM に触らない（jest が直接読む）。
 // ======================================================
 
-import { clamp01 } from "@/lib/graph/steps"
+import { clamp01, easeInOut } from "@/lib/graph/steps"
 import type { Pt } from "@/lib/graph/viewport"
 import type { Scene } from "./scene"
 
@@ -96,7 +96,7 @@ export function unrollBounds(n: number, t: number, s: Scene, mode: UnrollMode = 
   const half = ringWidth(n, s.r) / 2
   const box: Box = { xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity }
   for (let i = 1; i <= n; i++) {
-    for (const p of ringPoints(ringMidRadius(i, n, s.r), ringProgress(i, n, t, mode), s)) {
+    for (const p of ringPoints(ringMidRadius(i, n, s.r), ringShapeProgress(i, n, t, mode), s)) {
       box.xMin = Math.min(box.xMin, p.x - half)
       box.xMax = Math.max(box.xMax, p.x + half)
       box.yMin = Math.min(box.yMin, p.y - half)
@@ -114,6 +114,9 @@ export function unrollBounds(n: number, t: number, s: Scene, mode: UnrollMode = 
  */
 export type UnrollMode = "all" | "outer" | "inner"
 
+/** ほどき方の選択肢（ボタンの並び順） */
+export const UNROLL_MODES: readonly UnrollMode[] = ["all", "outer", "inner"]
+
 /**
  * 全体の進み具合 t のときの、輪 i（1..n）の進み具合（0〜1）。
  * 1本ずつのときは、t の 0〜1 を n 等分して、順番の来た輪だけがほどける。
@@ -123,6 +126,38 @@ export function ringProgress(i: number, n: number, t: number, mode: UnrollMode):
   if (mode === "all") return tt
   const order = mode === "outer" ? n - i : i - 1 // 何番目にほどけるか（0 始まり）
   return clamp01(tt * n - order)
+}
+
+/**
+ * 描くときの輪 i の進み具合。1本ずつのときは、輪ごとにもなめらかに動き出して止まる（F3-8）。
+ * 描画（RingDisk.tsx）とはみ出し検査（unrollBounds）の両方がこれを使う（形の計算を2か所に書かない）。
+ * 1本ずつのとき全体の t は一定の速さで進める（playback.ts）ので、どの輪も同じ時間でほどける。
+ */
+export function ringShapeProgress(i: number, n: number, t: number, mode: UnrollMode): number {
+  const p = ringProgress(i, n, t, mode)
+  return mode === "all" ? p : easeInOut(p)
+}
+
+/** 最初にほどけ始める輪・最後にほどけ終わる輪の番号（全部いっしょなら、どの輪も同じ） */
+export function firstRing(n: number, mode: UnrollMode): number {
+  return mode === "inner" ? 1 : n
+}
+export function lastRing(n: number, mode: UnrollMode): number {
+  return mode === "outer" ? 1 : n
+}
+
+/**
+ * 最初の輪・最後の輪の進み具合。
+ *   図の下の一言の「はじめ」は「最初の輪」がまだ動いていないとき
+ *   切れ目は「最後の輪」がほどけ始めたら消す（まだ切れ目の入っていない輪が残っているうちに消さない）
+ *   完成は「最後の輪」がほどけ終わったかで決める（1本ずつのとき、最後の輪がまだ円なのに完成扱いにしないため。
+ *   全体の t > 0.98 で決めると、内側から1本ずつ・64 本で、底辺になる外側の輪がまだ円のうちに完成のラベルが出た。2026-10-27 レビュー指摘）
+ */
+export function firstRingProgress(n: number, t: number, mode: UnrollMode): number {
+  return ringProgress(firstRing(n, mode), n, t, mode)
+}
+export function lastRingProgress(n: number, t: number, mode: UnrollMode): number {
+  return ringProgress(lastRing(n, mode), n, t, mode)
 }
 
 /**

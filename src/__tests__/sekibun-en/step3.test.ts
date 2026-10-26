@@ -3,6 +3,7 @@
 import * as P from "@/app/(apps)/sekibun-en/_lib/playback"
 import * as S from "@/app/(apps)/sekibun-en/_lib/scene"
 import * as T from "@/app/(apps)/sekibun-en/_lib/text"
+import * as U from "@/app/(apps)/sekibun-en/_lib/unroll"
 import { BIG_FONT } from "@/lib/graph/keys"
 
 describe("durationFor（▶ ほどく の長さ。F3-2：約3秒）", () => {
@@ -154,6 +155,74 @@ describe("記号で（表示レベル。F1-5・F3-9）", () => {
   test("∫ にはことばの読み方を添える（円周を 0 から r まで積み上げる）", () => {
     expect(T.INTEGRAL_MEANING).toContain("積み上げる")
     expect(T.INTEGRAL_MEANING).toContain("0 から r まで")
+  })
+})
+
+describe("1本ずつほどく（F3-8）", () => {
+  test("長さ：全部いっしょは 3 秒、1本ずつは 6 秒（1本ずつの動きを追えるように）", () => {
+    expect(P.unrollMs("all")).toBe(3000)
+    expect(P.unrollMs("outer")).toBe(6000)
+    expect(P.unrollMs("inner")).toBe(6000)
+  })
+  test("ほどき方の選択肢は 全部いっしょ・外側から・内側から の順（初期は全部いっしょ。要件 F3-2）", () => {
+    expect(U.UNROLL_MODES).toEqual(["all", "outer", "inner"])
+    expect(U.UNROLL_MODES.map((m) => T.UNROLL_MODE_LABEL[m])).toEqual(["全部いっしょ", "外側から1本ずつ", "内側から1本ずつ"])
+  })
+  test("ほどいているあいだの一言は、ほどき方で言い分ける", () => {
+    expect(T.unrollMessage(0.5, 1, "outer")).toContain("外側の輪から1本ずつ")
+    expect(T.unrollMessage(0.5, 1, "inner")).toContain("内側の輪から1本ずつ")
+    expect(T.unrollMessage(0.5, 1, "all")).not.toContain("1本ずつ")
+  })
+  test("巻き戻し・止まっているときは、ほどき方によらず同じ", () => {
+    for (const m of U.UNROLL_MODES) {
+      expect(T.unrollMessage(0.5, -1, m)).toContain("もどっていきます")
+      expect(T.unrollMessage(1, null, m)).toContain("直角三角形に積み上がりました")
+    }
+  })
+})
+
+// 2026-10-27 レビュー指摘：1本ずつのときの「完成」「時間の配り方」「切れ目」
+describe("1本ずつほどく：完成・時間・切れ目（F3-8）", () => {
+  test("1本ずつのとき全体は一定の速さ（linear）、全部いっしょはイーズインアウト", () => {
+    expect(P.isLinear("all")).toBe(false)
+    expect(P.isLinear("outer")).toBe(true)
+    expect(P.tweenT(0, 1, 0.25, true)).toBeCloseTo(0.25, 12)
+    expect(P.tweenT(0, 1, 0.25, false)).toBeLessThan(0.25)
+  })
+  test("一定の速さで進めると、どの輪も同じ時間（全体の 1/n）でほどける", () => {
+    const n = 8
+    for (let i = 1; i <= n; i++) {
+      // 輪 i（外側から）が 0 → 1 になる t の幅
+      const order = n - i
+      expect(U.ringProgress(i, n, order / n, "outer")).toBeCloseTo(0, 12)
+      expect(U.ringProgress(i, n, (order + 1) / n, "outer")).toBeCloseTo(1, 12)
+    }
+  })
+  test("描くときの輪の進み具合：1本ずつは輪ごとにイーズインアウト、全部いっしょはそのまま", () => {
+    expect(U.ringShapeProgress(8, 8, 0.25 / 8, "outer")).toBeCloseTo(4 * 0.25 ** 3, 12)
+    expect(U.ringShapeProgress(3, 8, 0.4, "all")).toBe(0.4)
+  })
+  test("最初・最後にほどける輪：外側からは 8 → 1、内側からは 1 → 8", () => {
+    expect([U.firstRing(8, "outer"), U.lastRing(8, "outer")]).toEqual([8, 1])
+    expect([U.firstRing(8, "inner"), U.lastRing(8, "inner")]).toEqual([1, 8])
+  })
+  test.each([8, 32, 64])("内側から1本ずつ・%p 本：t = 0.981 では最後の輪（底辺になる外側の輪）がまだなので完成しない", (n) => {
+    expect(S.isDone(U.lastRingProgress(n, 0.981, "inner"))).toBe(false)
+    expect(T.unrollMessage(0.981, null, "inner", n)).not.toContain("積み上がりました")
+    expect(S.isDone(U.lastRingProgress(n, 1, "inner"))).toBe(true)
+    expect(T.unrollMessage(1, null, "inner", n)).toContain("積み上がりました")
+  })
+  test("全部いっしょなら、いままでどおり t > 0.98 で完成", () => {
+    expect(S.isDone(U.lastRingProgress(8, 0.99, "all"))).toBe(true)
+    expect(T.unrollMessage(0.99, null, "all", 8)).toContain("積み上がりました")
+  })
+  test("切れ目は最後にほどける輪で消す（内側から・8 本・t = 0.15 では外側の輪がまだなので、切れ目はくっきり残る）", () => {
+    expect(U.lastRingProgress(8, 0.15, "inner")).toBe(0)
+    expect(S.cutOpacity(U.lastRingProgress(8, 0.15, "inner"))).toBe(1)
+    // 全体の t で決めると、ここで消えてしまう（指摘のあった動き）
+    expect(S.cutOpacity(0.15)).toBe(0)
+    // 最後の輪がほどけ始めたら消える
+    expect(S.cutOpacity(U.lastRingProgress(8, 7.5 / 8, "inner"))).toBe(0)
   })
 })
 

@@ -99,6 +99,83 @@ test.describe("ステップ③ 輪をほどいて積み上げる", () => {
     await expect(playButton(page)).toHaveText("▶ 続ける")
   })
 
+  /** 図の輪の線の形（描く順：外側の輪から）。straight：まっすぐな帯、closed：円のまま */
+  async function ringLines(page: Page) {
+    return page.locator("svg[role='img'] polyline").evaluateAll((els) =>
+      els.map((el) => {
+        const pts = (el.getAttribute("points") ?? "").trim().split(" ").map((p) => p.split(",").map(Number))
+        const ys = pts.map((p) => p[1])
+        const [first, last] = [pts[0], pts[pts.length - 1]]
+        return {
+          straight: Math.max(...ys) - Math.min(...ys) < 0.01,
+          closed: Math.hypot(first[0] - last[0], first[1] - last[1]) < 0.5,
+        }
+      }))
+  }
+
+  test("F3-8：外側から1本ずつ。進み具合 1/8 で、いちばん外側の輪だけが帯になる", async ({ page }) => {
+    await page.getByRole("button", { name: "外側から1本ずつ" }).click()
+    await slider(page).fill("0.125")
+    const lines = await ringLines(page)
+    expect(lines).toHaveLength(8)
+    expect(lines[0].straight).toBe(true) // いちばん外側（最初に描く）
+    for (const l of lines.slice(1)) expect(l.closed).toBe(true)
+  })
+
+  test("F3-8：内側から1本ずつ。進み具合 1/8 で、いちばん内側の輪だけが帯になる", async ({ page }) => {
+    await page.getByRole("button", { name: "内側から1本ずつ" }).click()
+    await slider(page).fill("0.125")
+    const lines = await ringLines(page)
+    expect(lines[lines.length - 1].straight).toBe(true) // いちばん内側（最後に描く）
+    for (const l of lines.slice(0, -1)) expect(l.closed).toBe(true)
+  })
+
+  test("F3-8：ほどき方を切りかえると、止まって円にもどる（途中で図が跳ばない）", async ({ page }) => {
+    await slider(page).fill("0.6")
+    await page.getByRole("button", { name: "外側から1本ずつ" }).click()
+    expect(await progress(page)).toBe(0)
+    await expect(playButton(page)).toHaveText("▶ ほどく")
+    const lines = await ringLines(page)
+    for (const l of lines) expect(l.closed).toBe(true)
+  })
+
+  // 輪ごとのイーズインアウト：外側から・8本・t = 0.156 で、2本目の輪（rm = 65px）の進み具合は約 0.25 → イーズインで約 0.06。
+  // ほどけ始めたばかりなので、線の両はしの間は 0.42 × rm 程度（イーズインがないと 1.89 × rm まで開く）
+  test("F3-8：1本ずつのとき、輪ごとになめらかにほどけ始める", async ({ page }) => {
+    await page.getByRole("button", { name: "外側から1本ずつ" }).click()
+    await slider(page).fill("0.156") // 0.001 刻みのスライダーなので 1.25/8 = 0.15625 は入らない
+    const gap = await page.locator("svg[role='img'] polyline").nth(1).evaluate((el) => {
+      const pts = (el.getAttribute("points") ?? "").trim().split(" ").map((p) => p.split(",").map(Number))
+      const [a, b] = [pts[0], pts[pts.length - 1]]
+      return Math.hypot(a[0] - b[0], a[1] - b[1])
+    })
+    expect(gap).toBeGreaterThan(5)
+    expect(gap).toBeLessThan(0.6 * 65)
+  })
+
+  test("F3-8：内側から1本ずつのとき、外側の輪がまだほどけていないうちは切れ目が残る", async ({ page }) => {
+    await page.getByRole("button", { name: "内側から1本ずつ" }).click()
+    await slider(page).fill("0.15")
+    // 線があるだけでなく、くっきり見えている（包んでいる g の濃さが 1。透明でも要素は残るので濃さで見る）
+    const cut = page.locator("svg[role='img'] line.stroke-warm-600")
+    await expect(cut).toHaveCount(1)
+    expect(await cut.evaluate((el) => el.parentElement?.getAttribute("opacity"))).toBe("1")
+    await slider(page).fill("0.95") // 最後の輪（いちばん外側）がほどけ始めたら消える
+    await expect(page.locator("svg[role='img'] line.stroke-warm-600")).toHaveCount(0)
+    // 最後の輪がまだほどけ終わっていないので、完成のラベルは出ない
+    await expect(page.getByText("底辺 ＝ いちばん外側の輪の長さ ＝ 円周 2πr")).toHaveCount(0)
+  })
+
+  test("F3-8：1本ずつは約6秒で全部ほどける（全部いっしょの3秒より長い）", async ({ page }) => {
+    await page.getByRole("button", { name: "外側から1本ずつ" }).click()
+    const start = Date.now()
+    await playButton(page).click()
+    await page.waitForTimeout(3500)
+    expect(await progress(page)).toBeLessThan(1)
+    await expect(playButton(page)).toHaveText("▶ もう一度ほどく", { timeout: 5000 })
+    expect(Date.now() - start).toBeGreaterThan(5000)
+  })
+
   test("F3-7：動いている途中で輪の数を変えても、アニメは止まらない", async ({ page }) => {
     await playButton(page).click()
     await page.waitForTimeout(800)

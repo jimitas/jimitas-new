@@ -5,7 +5,7 @@
 // 教員がロープ実験のあとに投影して見せることを最優先にしている（要件 §2）。
 //
 // ■ 動き方
-//   ▶ ほどく    t を 1 へ（約3秒・イーズインアウト）。動いているあいだは ⏸ 止める になる（一時停止）
+//   ▶ ほどく    t を 1 へ（全部いっしょは約3秒・イーズインアウト。1本ずつは6秒・一定の速さで、輪ごとにイーズインアウト）。動いているあいだは ⏸ 止める になる（一時停止）
 //   ◀ 巻き戻す  t を 0 へ（三角形から円にもどる逆再生）
 //   進み具合     スライダーで t を直接決める（動いていたら止める）
 //   輪の数       4〜64。動いている途中でも切りかえられる（F3-7）
@@ -20,25 +20,36 @@ import { useState } from "react"
 import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { blurAfterPointer, useBig, usePageKeys } from "@/components/parts/graph/Display"
-import { UNROLL_MS, playLabel } from "../_lib/playback"
+import { isLinear, playLabel, unrollMs } from "../_lib/playback"
 import { isDone } from "../_lib/scene"
 import {
-  INTEGRAL_MEANING, REWIND_LABEL, RING_COUNT_NOTE, STEP3_CONCLUSION, STEP3_GUIDE, STEP3_PREDICT, SYMBOL_INTEGRAL, unrollMessage,
+  INTEGRAL_MEANING, REWIND_LABEL, RING_COUNT_NOTE, STEP3_CONCLUSION, STEP3_GUIDE, STEP3_PREDICT, SYMBOL_INTEGRAL,
+  UNROLL_MODE_LABEL, unrollMessage,
 } from "../_lib/text"
 import type { Level } from "../_lib/text"
-import { DEFAULT_RINGS, RING_COUNTS } from "../_lib/unroll"
+import { DEFAULT_RINGS, RING_COUNTS, UNROLL_MODES, lastRingProgress } from "../_lib/unroll"
+import type { UnrollMode } from "../_lib/unroll"
 import { RingDisk } from "./RingDisk"
 import { useProgressPlayer } from "./useProgressPlayer"
 
 export function StepUnroll({ level }: { level: Level }) {
   const [n, setN] = useState<number>(DEFAULT_RINGS)
-  // ▶ ほどく／⏸ 止める／◀ 巻き戻す（約3秒。② と同じ仕組み）
-  const { t, moving, play: onPlay, rewind: onRewind, setTo: onSlider } = useProgressPlayer(UNROLL_MS)
+  // ▶ ほどく／⏸ 止める／◀ 巻き戻す（全部いっしょは約3秒・1本ずつは6秒。② と同じ仕組み）
+  /** ほどき方（F3-8）。初期は全部いっしょ（要件 F3-2） */
+  const [mode, setMode] = useState<UnrollMode>("all")
+  const { t, moving, play: onPlay, rewind: onRewind, setTo: onSlider } = useProgressPlayer(unrollMs(mode), isLinear(mode))
+  /** ほどき方を切りかえたら、止めて円にもどす（新しいほどき方で最初から。途中で切りかえると図が跳ぶため） */
+  const changeMode = (m: UnrollMode) => {
+    if (m === mode) return
+    onSlider(0)
+    setMode(m)
+  }
 
   // 結論は文章なので、投影用の数値（useText("readout")）より一段小さく。大きく表示では一段上げる
   const big = useBig()
   const conclusionText = big ? "text-xl md:text-2xl" : "text-lg md:text-xl"
-  const done = isDone(t)
+  // 完成は最後にほどける輪で決める（1本ずつのとき、最後の輪がまだ円なのに結論を出さない）
+  const done = isDone(lastRingProgress(n, t, mode))
 
   usePageKeys({ play: onPlay })
 
@@ -47,11 +58,11 @@ export function StepUnroll({ level }: { level: Level }) {
       {/* ---- 図 ---- */}
       <section className="flex flex-col gap-2">
         <RingDisk
-          n={n} t={t}
+          n={n} t={t} mode={mode}
           ariaLabel={`半径 r の円を ${n} 本の輪に分けた図。進み具合 ${Math.round(t * 100)}%。ほどき終わると底辺 2πr、高さ r の直角三角形になる`}
         />
         <p className="text-base text-gray-700 dark:text-gray-200 min-h-[3em]" aria-live="polite">
-          {unrollMessage(t, moving)}
+          {unrollMessage(t, moving, mode, n)}
         </p>
       </section>
 
@@ -79,6 +90,17 @@ export function StepUnroll({ level }: { level: Level }) {
             onPointerUp={blurAfterPointer} onChange={(e) => onSlider(Number(e.target.value))}
             className="w-full accent-brand-500"
           />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <p className="text-base font-bold text-gray-800 dark:text-gray-100">ほどき方</p>
+          <div className="flex flex-wrap gap-2" role="group" aria-label="ほどき方">
+            {UNROLL_MODES.map((m) => (
+              <BtnMode key={m} value={m} current={mode} onChange={changeMode} className="shrink-0 px-3">
+                {UNROLL_MODE_LABEL[m]}
+              </BtnMode>
+            ))}
+          </div>
         </div>
 
         <div className="flex flex-col gap-1">

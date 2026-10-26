@@ -66,10 +66,13 @@ export function isDone(t: number): boolean {
   return t > DONE_T
 }
 
-/** 進み具合の段階（グラフの下の一言） */
-export function unrollPhase(t: number): "start" | "moving" | "done" {
-  if (t < 0.02) return "start"
-  return isDone(t) ? "done" : "moving"
+/**
+ * 進み具合の段階（グラフの下の一言）。first・last は最初にほどける輪・最後にほどける輪の進み具合
+ * （全部いっしょなら t そのもの。unroll.ts の firstRingProgress・lastRingProgress）
+ */
+export function unrollPhase(first: number, last: number = first): "start" | "moving" | "done" {
+  if (first < 0.02) return "start"
+  return isDone(last) ? "done" : "moving"
 }
 
 // ---- 完成時のラベルの位置 -----------------------------------------------------------------

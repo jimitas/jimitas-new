@@ -31,7 +31,9 @@ import {
   cutOpacity, guideOpacity, isDone, labelLayout, triangleGuide,
 } from "../_lib/scene"
 import { BASE_LABEL, HEIGHT_LABEL } from "../_lib/text"
-import { ringAtPoint, ringMidRadius, ringPoints, ringProgress, ringWidth } from "../_lib/unroll"
+import {
+  lastRingProgress, ringAtPoint, ringMidRadius, ringPoints, ringShapeProgress, ringWidth,
+} from "../_lib/unroll"
 import type { UnrollMode } from "../_lib/unroll"
 
 /** 交互に塗る2色（濃い青・明るい青） */
@@ -70,7 +72,8 @@ export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuid
     const order = [...Array(n)].map((_, k) => n - k).filter((i) => i !== focus)
     if (focus !== undefined) order.push(focus)
     for (const i of order) {
-      const p = focus === undefined ? ringProgress(i, n, t, mode) : i === focus ? t : 0
+      // 1本ずつほどくときは、輪ごとにもなめらかに動き出して止まる（F3-8。はみ出し検査と同じ ringShapeProgress）
+      const p = focus === undefined ? ringShapeProgress(i, n, t, mode) : i === focus ? t : 0
       const pts = ringPoints(ringMidRadius(i, n, R_PX), p, SCENE)
       out.push({ i, points: pts.map((q) => `${q.x.toFixed(2)},${q.y.toFixed(2)}`).join(" ") })
     }
@@ -90,7 +93,11 @@ export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuid
 
   const guide = triangleGuide(SCENE)
   const guideAlpha = guideOpacity(t)
-  const cutAlpha = cutOpacity(t)
+  // 切れ目も完成のラベルも、最後にほどける輪で決める（1本ずつのとき、まだ切れ目の入っていない輪が
+  // 残っているうちに切れ目を消さない・最後の輪がまだ円なのに完成のラベルを出さない）
+  const lastT = focus === undefined ? lastRingProgress(n, t, mode) : t
+  const cutAlpha = cutOpacity(lastT)
+  const done = isDone(lastT)
   // ラベルの位置は scene.ts の labelLayout（「viewBox に収まる」テストと同じ式を使う）
   const label = labelLayout(font)
 
@@ -120,7 +127,7 @@ export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuid
         ))}
 
         {/* 切れ目（真下の半径）。ほどき始めると消える */}
-        {t < CUT_FADE_END && (
+        {lastT < CUT_FADE_END && (
           <g opacity={cutAlpha}>
             <line
               x1={SCENE.x0} y1={SCENE.cy} x2={SCENE.x0} y2={BASE_Y}
@@ -131,7 +138,7 @@ export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuid
         )}
 
         {/* 完成時のラベル（F3-6）。線の上でも読めるよう、背景色のふちどりを付ける */}
-        {showGuide && isDone(t) && (
+        {showGuide && done && (
           <g
             fontSize={label.font} fontWeight="bold" paintOrder="stroke" strokeWidth={4} strokeLinejoin="round"
             className="fill-gray-800 stroke-white dark:fill-gray-100 dark:stroke-gray-900"

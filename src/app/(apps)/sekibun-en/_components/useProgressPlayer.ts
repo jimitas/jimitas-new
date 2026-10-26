@@ -6,7 +6,7 @@
 //   setTo(v)    止めて t を v にする（スライダー・輪を選び直したとき）
 //   t・moving   いまの進み具合と、動いている向き（1：進む、−1：もどる、null：止まっている）
 //
-// 長さは full（0 → 1 全部にかける時間）。途中からなら残りの割合だけ。動きは playback.ts の tweenT。
+// 長さは full（0 → 1 全部にかける時間）。途中からなら残りの割合だけ。動きは playback.ts の tweenT（linear なら一定の速さ）。
 // 「動きを減らす」設定（prefers-reduced-motion）では短くする（押したときに読む）。
 // 1 まで行き終わった瞬間だけ piron を1回鳴らす（もどるときは鳴らさない）。
 // アニメの状態は毎フレーム書きかえるので state にせず ref に持つ。ページを離れたら止める。
@@ -23,7 +23,7 @@ import type { Direction } from "../_lib/playback"
 const prefersReducedMotion = () =>
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
 
-export function useProgressPlayer(full: number) {
+export function useProgressPlayer(full: number, linear = false) {
   const [t, setT] = useState(0)
   const [moving, setMoving] = useState<Direction>(null)
 
@@ -41,7 +41,7 @@ export function useProgressPlayer(full: number) {
     const frame = (now: number) => {
       if (!start) start = now
       const u = Math.min(1, (now - start) / dur)
-      const tt = tweenT(from, target, u)
+      const tt = tweenT(from, target, u, linear)
       anim.current.t = tt
       setT(tt)
       if (u < 1) {
