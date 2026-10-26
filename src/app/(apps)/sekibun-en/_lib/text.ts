@@ -112,3 +112,30 @@ export const STEP2_DONE =
 
 /** 図の帯の下のラベル（切り開いたあと） */
 export const stripWidthTag = (width: string) => `太さ ＝ ${width}`
+
+// ---- ステップ① 面積の増え方 ----------------------------------------------------------
+
+/** はじめの一言 */
+export const STEP1_GUIDE =
+  "半径 2 の円の半径を、h だけのばしてみよう。増えた面積は、まわりの細い輪1本。「1段ずつ」で h を小さくしていくと、増えた面積 ÷ h はどうなるかな？"
+
+export const STEP_BUTTON = "1段ずつ"
+export const RESET_BUTTON = "リセット"
+
+/** 記録表の列（F1-3） */
+export const GROWTH_HEADERS = ["のばした量 h", "増えた面積", "増えた面積 ÷ h"] as const
+
+/** 目標の値（F1-3）。例：「半径 2 の円周 2π × 2 ＝ 12.57」 */
+export const targetText = (r: string, c: string) => `半径 ${r} の円周 2π × ${r} ＝ ${c}`
+
+/** 結論（F1-5）。まだ 0.001 まで行っていないときは問いかけ */
+export const STEP1_PREDICT = "h を 0 に近づけると、増えた面積 ÷ h は、どんな値に近づくかな？ 「1段ずつ」で確かめよう。"
+export const step1Conclusion = (c: string, r: string) =>
+  `h を 0 に近づけると、増えた面積 ÷ h は ${c} に近づく。これは半径 ${r} の円周。面積の増え方 ＝ 円周`
+
+/** h を 0 にしようとしたとき（スライダーの左はしは 0.001） */
+export const H_MIN_NOTE = "h は 0 にはできません（0 だと輪がなくなって、÷ h もできない）。いちばん小さくて 0.001 です。"
+
+/** 図のラベル */
+export const radiusTag = (r: string) => `r = ${r}`
+export const LOUPE_TAG = "輪の一部を拡大"

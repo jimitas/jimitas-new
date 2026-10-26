@@ -5,6 +5,7 @@
 // 輪の座標・はみ出し・ラベルの位置などの計算は src/__tests__/sekibun-en/ の単体テストが担当する。
 // ここで守るのは「ボタン・スライダー・キーの操作と、アニメの状態（動く・止まる・もどる）のつながり」。
 //
+//   基準1   ① はじめは ①。1段ずつ ×5 → 増えた面積 ÷ h が 15.71 → 14.14 → 12.88 → 12.60 → 12.57（→ キーでも）
 //   基準2   ② 選んだ輪が帯になり、帯の長さの表示がその輪の円周（2π × まん中の半径）と一致する
 //           輪はボタンでも、図のタップでも選び直せる（F2-1）
 //   基準3   ▶ ほどく → 約3秒で完成し、底辺・高さのラベルと結論が出る
@@ -30,7 +31,10 @@ const progress = async (page: Page) => Number(await slider(page).inputValue())
 const playButton = (page: Page) => page.getByRole("button", { name: /^(▶|⏸)/ })
 
 test.describe("ステップ③ 輪をほどいて積み上げる", () => {
-  test.beforeEach(async ({ page }) => open(page))
+  test.beforeEach(async ({ page }) => {
+    await open(page)
+    await page.getByRole("button", { name: "③ 輪をほどいて積み上げる" }).click()
+  })
 
   test("基準3：▶ ほどく で約3秒かけて完成し、ラベルと結論が出る", async ({ page }) => {
     await expect(playButton(page)).toHaveText("▶ ほどく")
@@ -196,3 +200,73 @@ test.describe("ステップ② 輪を切り開く", () => {
     await expect(page.getByRole("button", { name: "外側の輪 ▶" })).toBeFocused()
   })
 })
+
+test.describe("ステップ① 面積の増え方", () => {
+  test.beforeEach(async ({ page }) => open(page))
+
+  /** 記録表の列 col（0：h、1：増えた面積、2：÷ h）の、書かれた値 */
+  const column = (page: Page, col: number) =>
+    page.locator("table tbody tr").evaluateAll((trs, c) =>
+      trs.map((tr) => tr.querySelectorAll("td")[c].textContent ?? "").filter(Boolean), col)
+
+  test("基準1：はじめは ①。1段ずつ ×5 で 15.71 → 14.14 → 12.88 → 12.60 → 12.57、6回目は押せない", async ({ page }) => {
+    await expect(page.getByRole("button", { name: "① 面積の増え方" })).toHaveClass(/bg-brand/)
+    const step = page.getByRole("button", { name: "1段ずつ" })
+    const want = ["15.71", "14.14", "12.88", "12.60", "12.57"]
+    for (let k = 0; k < 5; k++) {
+      await step.click()
+      await expect.poll(() => column(page, 2)).toEqual(want.slice(0, k + 1))
+      // 段のあいだの動き（0.5秒）が終わると、また押せるようになる（5回目のあとは押せない）
+      if (k < 4) await expect(step).toBeEnabled({ timeout: 2000 })
+    }
+    expect(await column(page, 0)).toEqual(["1", "0.5", "0.1", "0.01", "0.001"])
+    expect(await column(page, 1)).toEqual(["15.7", "7.07", "1.29", "0.126", "0.0126"])
+    await expect(step).toBeDisabled()
+    await expect(page.getByText("目標：半径 2 の円周 2π × 2 ＝ 12.57")).toBeVisible()
+    await expect(page.getByText(/面積の増え方 ＝ 円周/)).toBeVisible()
+  })
+
+  test("→ キー（リモコン）でも1段ずつ進む", async ({ page }) => {
+    for (let k = 0; k < 3; k++) {
+      await page.keyboard.press("ArrowRight")
+      await expect.poll(() => column(page, 2)).toHaveLength(k + 1)
+      await page.waitForTimeout(600) // 段のあいだの動き（0.5秒）が終わるのを待つ
+    }
+    expect(await column(page, 2)).toEqual(["15.71", "14.14", "12.88"])
+  })
+
+  test("h は 0 にできない（スライダーの右はしで 0.001 とメッセージ）。リセットで記録表が消える", async ({ page }) => {
+    await page.getByRole("button", { name: "1段ずつ" }).click()
+    await page.locator("#sekibun-h").fill("1")
+    await expect(page.getByText(/h は 0 にはできません/)).toBeVisible()
+    await expect(page.getByText("h = 0.001", { exact: true })).toBeVisible()
+    await page.getByRole("button", { name: "リセット" }).click()
+    expect(await column(page, 2)).toEqual([])
+    await expect(page.getByText("h = 1", { exact: true })).toBeVisible()
+  })
+
+  // 動いている途中のリセットで、取り残されたアニメが記録表に書き戻さないこと（2026-10-26 レビュー指摘）
+  test("1段ずつで動いている途中にリセットしても、記録表は空のまま", async ({ page }) => {
+    const step = page.getByRole("button", { name: "1段ずつ" })
+    await step.click() // 1行目（動かない）
+    await expect.poll(() => column(page, 2)).toHaveLength(1)
+    await step.click() // 2段目へ動き始める（0.5秒）
+    await page.getByRole("button", { name: "リセット" }).click()
+    await page.waitForTimeout(800) // 動きが終わるはずだった時刻を過ぎても
+    expect(await column(page, 2)).toEqual([])
+    await expect(page.getByText("h = 1", { exact: true })).toBeVisible()
+  })
+
+  test("キーボード：Enter で続けて押せる。5段目まで行ったら、選択はリセットへ移る", async ({ page }) => {
+    const step = page.getByRole("button", { name: "1段ずつ" })
+    await step.focus()
+    for (let k = 0; k < 5; k++) {
+      await page.keyboard.press("Enter")
+      await expect.poll(() => column(page, 2)).toHaveLength(k + 1)
+      await page.waitForTimeout(600)
+    }
+    await expect(step).toBeDisabled()
+    await expect(page.getByRole("button", { name: "リセット" })).toBeFocused()
+  })
+})
+

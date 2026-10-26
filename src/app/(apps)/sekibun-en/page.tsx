@@ -6,8 +6,7 @@
 // 要件: docs/requirements-integral-circle-app.md　計画: docs/plan-integral-circle-app.md
 //
 // 4つのステップ（タブ）：① 面積の増え方 ② 輪を切り開く ③ 輪をほどいて積み上げる ④ 速さと距離とくらべる
-//   要件では初期表示は ①。いまは ②③ だけ作ってあるので ③ を初期表示にし、ほかは「準備中」で押せない
-//   （① を作るフェーズ5で初期表示を ① にもどす）。
+//   初期表示は ①（要件 §3）。③ へは1クリックで行ける。まだ作っていない ④ は「準備中」で押せない。
 //   大きく表示はタブを切りかえても残す。
 //
 // 計算と文言は _lib/（jest でテスト済み）。ここは配線だけ。コインは付けない（高校向けツール。微分の意味がわかると同じ）。
@@ -19,19 +18,20 @@ import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { BigProvider } from "@/components/parts/graph/Display"
 import { StepCutRing } from "./_components/StepCutRing"
+import { StepGrowth } from "./_components/StepGrowth"
 import { StepUnroll } from "./_components/StepUnroll"
 
 type Tab = 1 | 2 | 3 | 4
 
 const TABS: { id: Tab; label: string; ready: boolean }[] = [
-  { id: 1, label: "① 面積の増え方", ready: false },
+  { id: 1, label: "① 面積の増え方", ready: true },
   { id: 2, label: "② 輪を切り開く", ready: true },
   { id: 3, label: "③ 輪をほどいて積み上げる", ready: true },
   { id: 4, label: "④ 速さと距離とくらべる", ready: false },
 ]
 
 export default function SekibunEnPage() {
-  const [tab, setTab] = useState<Tab>(3)
+  const [tab, setTab] = useState<Tab>(1)
   /** 大きく表示（投影用。線を太く、文字を大きく） */
   const [big, setBig] = useState(false)
 
@@ -59,6 +59,7 @@ export default function SekibunEnPage() {
 
       {/* 大きく表示は context で配る（図の線・文字と、結論の文字） */}
       <BigProvider value={big}>
+        {tab === 1 && <StepGrowth />}
         {tab === 2 && <StepCutRing />}
         {tab === 3 && <StepUnroll />}
       </BigProvider>

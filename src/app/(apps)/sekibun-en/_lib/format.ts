@@ -17,3 +17,16 @@ export function format2(v: number): string {
   const s = (cents / 100).toFixed(2)
   return s === "-0.00" ? "0.00" : s.replace("-", MINUS)
 }
+
+/**
+ * 有効数字3桁（末尾の 0 も残す）。① の「増えた面積」の列（2026-10-25 オーナー決定）。
+ * 小数第2位だと h = 0.001 で 0.01 と出て、輪が細くなる様子が数字で伝わらないため。
+ * 15.708 → "15.7"、0.012570 → "0.0126"、1.3 → "1.30"
+ */
+export function formatSig3(v: number): string {
+  if (!Number.isFinite(v)) return "—"
+  if (v === 0) return "0.00"
+  // 十進数の四捨五入どおりに寄せる（format2 と同じ理由）
+  const s = (v * (1 + 1e-12)).toPrecision(3)
+  return s.replace("-", MINUS)
+}
