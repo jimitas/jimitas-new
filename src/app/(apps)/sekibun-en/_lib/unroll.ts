@@ -135,3 +135,8 @@ export function ringIndexAt(dist: number, n: number, r: number): number | null {
   if (!(dist >= 0) || dist > r) return null
   return Math.min(n, Math.floor((dist / r) * n) + 1)
 }
+
+/** viewBox の座標 (x, y) にある輪の番号（1..n）。円の外なら null。ステップ②でタップした輪を選ぶ */
+export function ringAtPoint(x: number, y: number, n: number, s: Scene): number | null {
+  return ringIndexAt(Math.hypot(x - s.x0, y - s.cy), n, s.r)
+}

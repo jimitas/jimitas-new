@@ -19,13 +19,21 @@ export type Level = "words" | "symbols"
 export const STEP3_GUIDE =
   "円を細い輪に分けて、真下に切れ目を入れました。輪をほどいて積み上げると、どんな形になるかな？"
 
-/** 再生ボタンの文字 */
-export const PLAY_LABEL = {
+/** 再生ボタンの文字（はじめ・途中から・もう一度・動いているとき） */
+export interface PlayLabels {
+  start: string
+  resume: string
+  again: string
+  pause: string
+}
+
+/** 再生ボタンの文字（③） */
+export const PLAY_LABEL: PlayLabels = {
   start: "▶ ほどく",
   resume: "▶ 続ける",
   again: "▶ もう一度ほどく",
   pause: "⏸ 止める",
-} as const
+}
 
 export const REWIND_LABEL = "◀ 巻き戻す"
 
@@ -56,3 +64,51 @@ export const STEP3_PREDICT = "輪を全部ほどいて積み上げてみよう�
 
 /** 輪の数を増やすと（F3-7） */
 export const RING_COUNT_NOTE = "輪の数を増やすと、階段のでこぼこが小さくなって、なめらかな三角形に近づきます。"
+
+// ---- ステップ② 輪を切り開く ----------------------------------------------------------
+
+/**
+ * 式の中の空白は改行しない空白（U+00A0）にする。
+ * 「2π × 1.875 ≒ 11.78」の「≒」のあとで改行され、値だけが次の行に落ちるのを防ぐ（日本語の部分では折り返してよい）。
+ */
+const math = (s: string) => s.replace(/ /g, " ")
+
+/** はじめの一言 */
+export const STEP2_GUIDE =
+  "円の中から輪を1本選んで、真下の切れ目から切り開いてみよう。輪はタップ（クリック）しても選べます。"
+
+/** 再生ボタンの文字（②） */
+export const CUT_LABEL: PlayLabels = {
+  start: "▶ 切り開く",
+  resume: "▶ 続ける",
+  again: "▶ もう一度切り開く",
+  pause: "⏸ 止める",
+}
+
+/** 輪を選ぶボタン */
+export const PICK_INNER = "◀ 内側の輪"
+export const PICK_OUTER = "外側の輪 ▶"
+
+/** 選んでいる輪（例：「内側から 8 本目の輪（いちばん外側）」） */
+export const pickedRingLabel = (i: number, n: number) =>
+  `内側から ${i} 本目の輪${i === n ? "（いちばん外側）" : i === 1 ? "（いちばん内側）" : ""}`
+
+/** 帯の長さ（F2-3）。例：「長さ ＝ 輪のまん中の円周 2π × 1.875 ≒ 11.78」 */
+export const stripLengthText = (mid: string, length: string) => `長さ ＝ 輪のまん中の円周 ${math(`2π × ${mid} ≒ ${length}`)}`
+
+/** 帯の太さ（F2-3） */
+export const stripWidthText = (width: string) => `太さ ＝ ${width}（半径をのばした量）`
+
+/** 輪の面積（F2-3） */
+export const ringAreaText = (length: string, width: string, area: string) =>
+  `輪の面積 ≒ 円周 × 太さ ＝ ${math(`${length} × ${width} ≒ ${area}`)}`
+
+/** 図の上、帯のそばのラベル（切り開いたあと） */
+export const stripTag = (mid: string) => `長さ ＝ 2π × ${mid}`
+
+/** 切り開いたあとの一言 */
+export const STEP2_DONE =
+  "輪を切り開くと、長さが円周、太さがのばした量の、細長い帯になりました。帯はほとんど長方形なので、面積は 長さ × 太さ。"
+
+/** 図の帯の下のラベル（切り開いたあと） */
+export const stripWidthTag = (width: string) => `太さ ＝ ${width}`

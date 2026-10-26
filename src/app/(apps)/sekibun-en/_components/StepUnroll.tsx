@@ -11,97 +11,32 @@
 //   輪の数       4〜64。動いている途中でも切りかえられる（F3-7）
 //   スペースキー ▶ と同じ（微分の意味がわかると同じ。usePageKeys）
 //
-// ■ アニメの状態は毎フレーム書きかえるので state にせず ref に持つ（微分の意味がわかると同じ形）。
+// ■ 動かす仕組み（ref に持つアニメの状態・一時停止・やり直し）は useProgressPlayer.ts（② と共有）。
 // ======================================================
 
 "use client"
 
-import { useEffect, useRef, useState } from "react"
-import * as se from "@/lib/se"
+import { useState } from "react"
 import { Btn } from "@/components/parts/buttons/Btn"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { blurAfterPointer, useBig, usePageKeys } from "@/components/parts/graph/Display"
-import { durationFor, playLabel, tweenT } from "../_lib/playback"
-import type { Direction } from "../_lib/playback"
+import { UNROLL_MS, playLabel } from "../_lib/playback"
 import { isDone } from "../_lib/scene"
 import {
   REWIND_LABEL, RING_COUNT_NOTE, STEP3_CONCLUSION, STEP3_GUIDE, STEP3_PREDICT, unrollMessage,
 } from "../_lib/text"
 import { DEFAULT_RINGS, RING_COUNTS } from "../_lib/unroll"
 import { RingDisk } from "./RingDisk"
-
-/** 「動きを減らす」設定か（押したときに読む。SSR では読まない） */
-const prefersReducedMotion = () =>
-  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches
+import { useProgressPlayer } from "./useProgressPlayer"
 
 export function StepUnroll() {
   const [n, setN] = useState<number>(DEFAULT_RINGS)
-  const [t, setT] = useState(0)
-  /** 動いている向き（1：ほどく、−1：巻き戻す、null：止まっている） */
-  const [moving, setMoving] = useState<Direction>(null)
-
-  // アニメの状態（毎フレーム書きかえるので state にしない）
-  const anim = useRef({ raf: 0, t: 0 })
-  useEffect(() => () => cancelAnimationFrame(anim.current.raf), [])
+  // ▶ ほどく／⏸ 止める／◀ 巻き戻す（約3秒。② と同じ仕組み）
+  const { t, moving, play: onPlay, rewind: onRewind, setTo: onSlider } = useProgressPlayer(UNROLL_MS)
 
   // 結論は文章なので、投影用の数値（useText("readout")）より一段小さく。大きく表示では一段上げる
   const conclusionText = useBig() ? "text-xl md:text-2xl" : "text-lg md:text-xl"
   const done = isDone(t)
-
-  /** t を target へ動かす。いまの t から、残りの割合に応じた時間で */
-  const animateTo = (target: 0 | 1, from = anim.current.t) => {
-    cancelAnimationFrame(anim.current.raf)
-    const dur = durationFor(from, target, prefersReducedMotion())
-    if (dur <= 0) return
-    setMoving(target === 1 ? 1 : -1)
-    let start = 0
-    const frame = (now: number) => {
-      if (!start) start = now
-      const u = Math.min(1, (now - start) / dur)
-      const tt = tweenT(from, target, u)
-      anim.current.t = tt
-      setT(tt)
-      if (u < 1) {
-        anim.current.raf = requestAnimationFrame(frame)
-        return
-      }
-      setMoving(null)
-      // ほどき終わった瞬間だけ1回鳴らす（巻き戻しでは鳴らさない）
-      if (target === 1) se.playSe(se.piron)
-    }
-    anim.current.raf = requestAnimationFrame(frame)
-  }
-
-  const stop = () => {
-    cancelAnimationFrame(anim.current.raf)
-    setMoving(null)
-  }
-
-  /** ▶：動いていれば止める。ほどき終わっていれば 0 からやり直す。それ以外は 1 へ */
-  const onPlay = () => {
-    if (moving !== null) {
-      stop()
-      return
-    }
-    if (anim.current.t >= 1) {
-      anim.current.t = 0
-      setT(0)
-      animateTo(1, 0)
-      return
-    }
-    animateTo(1)
-  }
-
-  const onRewind = () => {
-    if (anim.current.t <= 0) return
-    animateTo(0)
-  }
-
-  const onSlider = (v: number) => {
-    stop()
-    anim.current.t = v
-    setT(v)
-  }
 
   usePageKeys({ play: onPlay })
 
