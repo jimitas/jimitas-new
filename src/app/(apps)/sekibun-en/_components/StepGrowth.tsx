@@ -1,7 +1,7 @@
 // ======================================================
 // ステップ① 面積の増え方（要件 §4.1）
 //
-// 半径 2 の円の半径を h だけのばすと、増える面積は細い輪1本。
+// 半径 r の円の半径を h だけのばすと、増える面積は細い輪1本（r は 1〜4 で変えられる。初期値 2。F1-6）。
 // 「1段ずつ」で h を 1 → 0.5 → 0.1 → 0.01 → 0.001 と小さくすると、
 // 増えた面積 ÷ h は 15.71 → 14.14 → 12.88 → 12.60 → 12.57（円周 2π × 2）に近づく（スライド18–19）。
 //
@@ -26,11 +26,12 @@ import { formatFixed, formatNumber } from "@/lib/graph/format"
 import { H_STEPS, STEP_MS, nextStep, stepH } from "@/lib/graph/steps"
 import { format2, formatSig3 } from "../_lib/format"
 import {
-  FIG_C, FIG_SIZE, H_MIN, R0, UNIT, addedArea, addedPerH, circumference, clipToFigure, hFromSlider, loupeWindow, sliderFromH,
+  FIG_C, FIG_SIZE, H_MIN, R0, R_MAX, R_MIN, R_STEP,
+  addedArea, addedPerH, circumference, clipToFigure, hFromSlider, loupeWindow, needsApproachNote, sliderFromH, unitFor,
 } from "../_lib/growth"
 import {
-  GROWTH_HEADERS, H_MIN_NOTE, LOUPE_TAG, RESET_BUTTON, STEP1_GUIDE, STEP1_PREDICT, STEP_BUTTON,
-  SYMBOL_DERIVATIVE, radiusTag, step1Conclusion, targetText,
+  GROWTH_HEADERS, H_MIN_NOTE, LOUPE_TAG, RESET_BUTTON, R_LABEL, STEP1_PREDICT, STEP_BUTTON,
+  SYMBOL_DERIVATIVE, approachNote, radiusTag, step1Conclusion, step1Guide, targetText,
 } from "../_lib/text"
 import type { Level } from "../_lib/text"
 
@@ -45,25 +46,26 @@ const MARK_MIN = 12
 const magText = (m: number) => `×${m < 10 ? m.toFixed(1) : Math.round(m).toLocaleString("ja-JP")}`
 
 /** 円と、のばした分の輪（図と小窓で同じものを描く。線の太さは画面上の px にそろえる） */
-function Shapes({ r, h, line }: { r: number; h: number; line: number }) {
+function Shapes({ r, h, line, unit }: { r: number; h: number; line: number; unit: number }) {
   return (
     <>
       {/* のばす前の円 */}
-      <circle cx={FIG_C} cy={FIG_C} r={r * UNIT} className="fill-accent-100 dark:fill-accent-900" />
+      <circle cx={FIG_C} cy={FIG_C} r={r * unit} className="fill-accent-100 dark:fill-accent-900" />
       {/* のばした分の輪（中心線を太さ h で描く。面積 ＝ 増えた面積） */}
       <circle
-        cx={FIG_C} cy={FIG_C} r={(r + h / 2) * UNIT} fill="none" strokeWidth={h * UNIT}
+        cx={FIG_C} cy={FIG_C} r={(r + h / 2) * unit} fill="none" strokeWidth={h * unit}
         className="stroke-warm-400 dark:stroke-warm-500"
       />
       {/* もとの円のふち・のばしたあとの円のふち */}
-      <circle cx={FIG_C} cy={FIG_C} r={r * UNIT} fill="none" strokeWidth={1.5 * line} vectorEffect="non-scaling-stroke" className="stroke-accent-600 dark:stroke-accent-300" />
-      <circle cx={FIG_C} cy={FIG_C} r={(r + h) * UNIT} fill="none" strokeWidth={1.5 * line} vectorEffect="non-scaling-stroke" className="stroke-warm-700 dark:stroke-warm-300" />
+      <circle cx={FIG_C} cy={FIG_C} r={r * unit} fill="none" strokeWidth={1.5 * line} vectorEffect="non-scaling-stroke" className="stroke-accent-600 dark:stroke-accent-300" />
+      <circle cx={FIG_C} cy={FIG_C} r={(r + h) * unit} fill="none" strokeWidth={1.5 * line} vectorEffect="non-scaling-stroke" className="stroke-warm-700 dark:stroke-warm-300" />
     </>
   )
 }
 
 export function StepGrowth({ level }: { level: Level }) {
-  const r = R0
+  /** 円の半径（F1-6：1〜4。初期値 2） */
+  const [r, setR] = useState(R0)
   const [h, setH] = useState(1)
   /** 記録表に書いた行数（0〜5） */
   const [count, setCount] = useState(0)
@@ -126,6 +128,16 @@ export function StepGrowth({ level }: { level: Level }) {
     setMinNote(false)
   }
 
+  /** 半径を変える（F1-6）。記録表の値は r で変わるので、記録を消して h = 1 からやり直す */
+  const changeR = (nr: number) => {
+    cancelAnimationFrame(anim.current.raf)
+    setStepping(false)
+    setR(nr)
+    setH(1)
+    setCount(0)
+    setMinNote(false)
+  }
+
   const onSlider = (p: number) => {
     cancelAnimationFrame(anim.current.raf)
     setStepping(false)
@@ -136,7 +148,10 @@ export function StepGrowth({ level }: { level: Level }) {
 
   usePageKeys({ step: onStep })
 
+  const u = unitFor(r)
   const lw = loupeWindow(r, h)
+  // h = 0.001 の行の値と目標が小数第2位で合わないとき（r = 4 など）は、結論にひとこと添える
+  const lastRow = format2(addedPerH(r, H_STEPS[H_STEPS.length - 1]))
   const c = format2(circumference(r))
   const reached = count >= H_STEPS.length
 
@@ -149,10 +164,10 @@ export function StepGrowth({ level }: { level: Level }) {
             <svg viewBox={`0 0 ${FIG_SIZE} ${FIG_SIZE}`} role="img" className="block w-full h-auto select-none"
               aria-label={`半径 ${formatNumber(r)} の円と、半径を ${formatFixed(h, 3)} のばした分の輪`}
             >
-              <Shapes r={r} h={h} line={line} />
+              <Shapes r={r} h={h} line={line} unit={u} />
               {/* 半径（左向きに描く。右は拡大しているところの四角と重なるため） */}
-              <line x1={FIG_C} y1={FIG_C} x2={FIG_C - r * UNIT} y2={FIG_C} strokeWidth={1.5 * line} strokeDasharray="4 3" className="stroke-gray-600 dark:stroke-gray-300" />
-              <text x={FIG_C - (r * UNIT) / 2} y={FIG_C - 6} textAnchor="middle" fontSize={14 * (big ? 1.3 : 1)} fontWeight="bold"
+              <line x1={FIG_C} y1={FIG_C} x2={FIG_C - r * u} y2={FIG_C} strokeWidth={1.5 * line} strokeDasharray="4 3" className="stroke-gray-600 dark:stroke-gray-300" />
+              <text x={FIG_C - (r * u) / 2} y={FIG_C - 6} textAnchor="middle" fontSize={14 * (big ? 1.3 : 1)} fontWeight="bold"
                 className="fill-gray-800 dark:fill-gray-100"
               >
                 {radiusTag(formatNumber(r))}
@@ -175,7 +190,7 @@ export function StepGrowth({ level }: { level: Level }) {
               <svg viewBox={`${lw.x} ${lw.y} ${lw.size} ${lw.size}`} role="img" className="block w-full h-auto select-none"
                 aria-label={`輪の一部を ${magText(lw.mag)} に拡大した図。輪の太さは h`}
               >
-                <Shapes r={r} h={h} line={line} />
+                <Shapes r={r} h={h} line={line} unit={u} />
               </svg>
             </div>
             {/* 小窓の説明は下に出す（上に重ねると、スマホで折り返して小窓を隠すため） */}
@@ -194,7 +209,7 @@ export function StepGrowth({ level }: { level: Level }) {
 
       {/* ---- 操作パネル ---- */}
       <section className="flex flex-col gap-3">
-        <p className="text-base text-gray-700 dark:text-gray-200">{STEP1_GUIDE}</p>
+        <p className="text-base text-gray-700 dark:text-gray-200">{step1Guide(formatNumber(r))}</p>
         <div ref={buttons} className="flex flex-wrap gap-2">
           <Btn color="accent" className="px-5 py-3 text-lg md:text-xl" disabled={reached} onClick={onStep}>
             {STEP_BUTTON}
@@ -202,6 +217,18 @@ export function StepGrowth({ level }: { level: Level }) {
           <Btn color="danger" className="px-4 py-3 text-base" sound="none" onClick={onReset}>
             {RESET_BUTTON}
           </Btn>
+        </div>
+
+        {/* 円の半径（F1-6）。変えると記録表は消える */}
+        <div className="flex flex-col gap-1">
+          <p className="text-base font-bold text-accent-700 dark:text-accent-300 tabular-nums">
+            <label htmlFor="sekibun-r">{R_LABEL}</label>
+            <span aria-hidden="true"> ＝ {formatNumber(r)}</span>
+          </p>
+          <input
+            id="sekibun-r" type="range" min={R_MIN} max={R_MAX} step={R_STEP} value={r} aria-valuetext={`r = ${formatNumber(r)}`}
+            onPointerUp={blurAfterPointer} onChange={(e) => changeR(Number(e.target.value))} className="w-full accent-accent-500"
+          />
         </div>
 
         <div className="flex flex-col gap-1">
@@ -248,6 +275,7 @@ export function StepGrowth({ level }: { level: Level }) {
         {/* 結論（F1-5） */}
         <div className="rounded-xl border-2 border-accent-300 dark:border-accent-700 bg-accent-50 dark:bg-gray-800 px-4 py-3 text-lg text-gray-800 dark:text-gray-100">
           <p className={reached ? "font-bold" : ""}>{reached ? step1Conclusion(c, formatNumber(r)) : STEP1_PREDICT}</p>
+          {reached && needsApproachNote(r, format2) && <p className="mt-1 text-base">{approachNote(lastRow, c)}</p>}
           {/* 記号で（F1-5）：面積を微分すると円周 */}
           {reached && level === "symbols" && (
             <p className={`mt-2 ${big ? "text-2xl md:text-3xl" : "text-xl md:text-2xl"} font-bold tabular-nums`} data-testid="symbol">{SYMBOL_DERIVATIVE}</p>

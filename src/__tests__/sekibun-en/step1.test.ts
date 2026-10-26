@@ -79,20 +79,25 @@ describe("h のスライダー（対数の目盛り。0 は選べない）", () 
 describe("拡大の小窓（F1-4：輪が細くなっても見える）", () => {
   test.each([1, 0.5, 0.1, 0.01, 0.001])("h = %p：輪の太さは、いつも小窓の幅の 1/5", (h) => {
     const w = G.loupeWindow(2, h)
-    expect((h * G.UNIT) / w.size).toBeCloseTo(1 / (2 * G.LOUPE_SPAN), 12)
+    expect((h * G.unitFor(2)) / w.size).toBeCloseTo(1 / (2 * G.LOUPE_SPAN), 12)
     expect(1 / (2 * G.LOUPE_SPAN)).toBeCloseTo(0.2, 12)
   })
   test.each([1, 0.01])("h = %p：小窓のまん中は輪の右はし（中心線）", (h) => {
     const w = G.loupeWindow(2, h)
-    expect(w.x + w.size / 2).toBeCloseTo(G.FIG_C + (2 + h / 2) * G.UNIT, 9)
+    expect(w.x + w.size / 2).toBeCloseTo(G.FIG_C + (2 + h / 2) * G.unitFor(2), 9)
     expect(w.y + w.size / 2).toBeCloseTo(G.FIG_C, 9)
   })
   test("h が小さいほど大きく拡大する（h = 0.001 で約 1400 倍）", () => {
     expect(G.loupeWindow(2, 0.001).mag).toBeCloseTo(1400, 6)
     expect(G.loupeWindow(2, 0.001).mag).toBeGreaterThan(G.loupeWindow(2, 0.01).mag)
   })
-  test("図の大きさ：のばしたあとのいちばん外側（r = 2、h = 1）も viewBox に収まる", () => {
-    expect(G.FIG_C + (G.R0 + G.H_MAX) * G.UNIT).toBeLessThanOrEqual(G.FIG_SIZE)
+  test.each([1, 1.5, 2, 3, 4])("図の大きさ：r = %p で h = 1 のばしても viewBox に収まる（F1-6）", (r) => {
+    expect(G.FIG_C + (r + G.H_MAX) * G.unitFor(r)).toBeLessThanOrEqual(G.FIG_SIZE)
+  })
+  test("r = 2 の縮尺は 1 あたり 40px（③ の円と同じ大きさ、半径 80px）", () => expect(G.unitFor(2)).toBe(40))
+  test.each([1, 4])("r = %p でも、小窓の輪の太さは小窓の幅の 1/5", (r) => {
+    const w = G.loupeWindow(r, 0.01)
+    expect((0.01 * G.unitFor(r)) / w.size).toBeCloseTo(0.2, 12)
   })
 })
 
@@ -127,6 +132,25 @@ describe("clipToFigure（拡大しているところの四角は図の中に描�
   test("はみ出していなければ、そのまま", () => {
     const w = G.loupeWindow(2, 0.1)
     expect(G.clipToFigure(w)).toEqual({ x: w.x, y: w.y, width: w.size, height: w.size })
+  })
+})
+
+describe("r を変える（F1-6）", () => {
+  test("範囲は 1〜4、初期値は 2", () => {
+    expect([G.R_MIN, G.R_MAX, G.R0]).toEqual([1, 4, 2])
+  })
+  test("r = 4 では h = 0.001 の行が 25.14、目標は 25.13（小数第2位で合わない）。そのときだけ一言を添える", () => {
+    expect(format2(G.addedPerH(4, 0.001))).toBe("25.14")
+    expect(format2(G.circumference(4))).toBe("25.13")
+    expect(T.approachNote("25.14", "25.13")).toBe("（h = 0.001 ではまだ 25.14。h をもっと小さくすると 25.13 に近づく）")
+  })
+  test.each([
+    [1, true], [1.5, true], [2, false], [2.5, false], [3, false], [3.5, false], [4, true],
+  ])("r = %p：h = 0.001 の行と目標が小数第2位で合わず、一言を出すか → %p", (r, want) => {
+    expect(G.needsApproachNote(r, format2)).toBe(want)
+  })
+  test("はじめの一言は r に合わせる", () => {
+    expect(T.step1Guide("3")).toContain("半径 3 の円")
   })
 })
 

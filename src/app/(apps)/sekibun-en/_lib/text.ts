@@ -128,8 +128,8 @@ export const stripWidthTag = (width: string) => `太さ ＝ ${width}`
 // ---- ステップ① 面積の増え方 ----------------------------------------------------------
 
 /** はじめの一言 */
-export const STEP1_GUIDE =
-  "半径 2 の円の半径を、h だけのばしてみよう。増えた面積は、まわりの細い輪1本。「1段ずつ」で h を小さくしていくと、増えた面積 ÷ h はどうなるかな？"
+export const step1Guide = (r: string) =>
+  `半径 ${r} の円の半径を、h だけのばしてみよう。増えた面積は、まわりの細い輪1本。「1段ずつ」で h を小さくしていくと、増えた面積 ÷ h はどうなるかな？`
 
 export const STEP_BUTTON = "1段ずつ"
 export const RESET_BUTTON = "リセット"
@@ -142,6 +142,16 @@ export const targetText = (r: string, c: string) => `半径 ${r} の円周 2π �
 
 /** 結論（F1-5）。まだ 0.001 まで行っていないときは問いかけ */
 export const STEP1_PREDICT = "h を 0 に近づけると、増えた面積 ÷ h は、どんな値に近づくかな？ 「1段ずつ」で確かめよう。"
+/**
+ * h = 0.001 の行の値が、目標（円周）と小数第2位で合わないとき（r = 4 では 25.14 と 25.13）に添える一言。
+ * 表には計算どおりの値を出したまま、食いちがいの理由をことばで補う（2026-10-27 推奨で決定）
+ */
+export const approachNote = (last: string, c: string) =>
+  `（h = 0.001 ではまだ ${last}。h をもっと小さくすると ${c} に近づく）`
+
+/** r を変えるスライダー（F1-6） */
+export const R_LABEL = "円の半径 r"
+
 export const step1Conclusion = (c: string, r: string) =>
   `h を 0 に近づけると、増えた面積 ÷ h は ${c} に近づく。これは半径 ${r} の円周。面積の増え方 ＝ 円周`
 

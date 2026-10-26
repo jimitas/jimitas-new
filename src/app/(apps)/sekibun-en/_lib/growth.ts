@@ -7,25 +7,35 @@
 // どちらも π(r + h)² − πr² の引き算をせずに式で直接出す（h が小さいと桁落ちするため。要件 §5.2、微分アプリ §5 と同じ方針）。
 //
 // ■ 図の大きさ（px）
-//   円の中心は (FIG_C, FIG_C)、1 あたり UNIT px。半径 2 で 80px（③の円と同じ大きさ）。
-//   のばした量は最大 1 なので、いちばん外側は 3 × 40 = 120px。viewBox FIG_SIZE の中に収まる。
+//   円の中心は (FIG_C, FIG_C)、1 あたり unitFor(r) px。のばしたあとの最大の半径 r + 1 が FIT_PX に収まる縮尺
+//   （r を 1〜4 で変えられる。F1-6）。r = 2 で 1 あたり 40px、半径 80px（③の円と同じ大きさ）。
 //
 // ■ 拡大の小窓（F1-4）
-//   輪の右はし（中心の右、半径 r + h/2 の点）を中心に、半辺 LOUPE_SPAN × h × UNIT の正方形を見せる。
+//   輪の右はし（中心の右、半径 r + h/2 の点）を中心に、半辺 LOUPE_SPAN × h × unitFor(r) の正方形を見せる。
 //   h がいくつでも、輪の太さは小窓の幅の 1/(2·LOUPE_SPAN) に見える（h が小さくなるほど拡大される＝追いかけズーム）。
 // ======================================================
 
-/** 円の半径（初期値。要件 F1-1：r = 2） */
+/** 円の半径（初期値。要件 F1-1：r = 2）と、変えられる範囲（F1-6：1〜4） */
 export const R0 = 2
+export const R_MIN = 1
+export const R_MAX = 4
+export const R_STEP = 0.5
 
 /** h の範囲。0 は選べない（要件 F1-1） */
 export const H_MIN = 0.001
 export const H_MAX = 1
 
-/** 図：viewBox の一辺・円の中心・1 あたりの px */
+/** 図：viewBox の一辺・円の中心 */
 export const FIG_SIZE = 280
 export const FIG_C = FIG_SIZE / 2
-export const UNIT = 40
+
+/** のばしたあとの最大の円（半径 r + H_MAX）の半径（px） */
+export const FIT_PX = 120
+
+/** 1 あたりの px。r + H_MAX がちょうど FIT_PX になる縮尺（r = 2 で 40） */
+export function unitFor(r: number): number {
+  return FIT_PX / (r + H_MAX)
+}
 
 /** 小窓の半辺は h の LOUPE_SPAN 倍（輪の太さが小窓の幅の 1/5 に見える） */
 export const LOUPE_SPAN = 2.5
@@ -66,8 +76,9 @@ export interface LoupeWindow {
 }
 
 export function loupeWindow(r: number, h: number): LoupeWindow {
-  const half = LOUPE_SPAN * h * UNIT
-  const cx = FIG_C + (r + h / 2) * UNIT
+  const unit = unitFor(r)
+  const half = LOUPE_SPAN * h * unit
+  const cx = FIG_C + (r + h / 2) * unit
   return { x: cx - half, y: FIG_C - half, size: 2 * half, mag: FIG_SIZE / (2 * half) }
 }
 
@@ -81,4 +92,13 @@ export function clipToFigure(w: LoupeWindow): { x: number; y: number; width: num
   const x1 = Math.min(FIG_SIZE, w.x + w.size)
   const y1 = Math.min(FIG_SIZE, w.y + w.size)
   return { x: x0, y: y0, width: Math.max(0, x1 - x0), height: Math.max(0, y1 - y0) }
+}
+
+/**
+ * h = 0.001 の行（記録表の最後）の値と目標の円周が、小数第2位で合わないか（F1-6）。
+ * 合わないときは結論に「h = 0.001 ではまだ …」と一言添える。r = 1・1.5・4 で合わず、r = 2〜3.5 は合う。
+ * format2 は表示と同じ丸め（十進数の四捨五入）を渡す（_lib/format.ts。growth.ts から表示の書式に依存しないため引数で受け取る）
+ */
+export function needsApproachNote(r: number, format: (v: number) => string): boolean {
+  return format(addedPerH(r, H_MIN)) !== format(circumference(r))
 }

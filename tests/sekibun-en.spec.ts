@@ -345,6 +345,41 @@ test.describe("ステップ① 面積の増え方", () => {
     await expect(step).toBeDisabled()
     await expect(page.getByRole("button", { name: "リセット" })).toBeFocused()
   })
+
+  test("F1-6：r = 4 にすると記録表が消え、1段ずつで 25.14 まで。目標 25.13 との食いちがいに一言を添える", async ({ page }) => {
+    await page.getByRole("button", { name: "1段ずつ" }).click()
+    await expect.poll(() => column(page, 2)).toHaveLength(1)
+    await page.locator("#sekibun-r").fill("4")
+    expect(await column(page, 2)).toEqual([])
+    await expect(page.getByText(/半径 4 の円の半径を/)).toBeVisible()
+    for (let k = 0; k < 5; k++) {
+      await page.getByRole("button", { name: "1段ずつ" }).click()
+      await expect.poll(() => column(page, 2)).toHaveLength(k + 1)
+    }
+    expect((await column(page, 2)).at(-1)).toBe("25.14")
+    await expect(page.getByText("目標：半径 4 の円周 2π × 4 ＝ 25.13")).toBeVisible()
+    await expect(page.getByText("（h = 0.001 ではまだ 25.14。h をもっと小さくすると 25.13 に近づく）")).toBeVisible()
+  })
+
+  // 動いている途中に r を変えたとき、取り残されたアニメが新しい r の記録表に書き込まないこと（2026-10-27 レビュー指摘）
+  test("F1-6：1段ずつで動いている途中に r を変えても、記録表は空のまま", async ({ page }) => {
+    const step = page.getByRole("button", { name: "1段ずつ" })
+    await step.click() // 1行目（動かない）
+    await expect.poll(() => column(page, 2)).toHaveLength(1)
+    await step.click() // 2段目へ動き始める（0.5秒）
+    await page.locator("#sekibun-r").fill("3")
+    await page.waitForTimeout(800) // 動きが終わるはずだった時刻を過ぎても
+    expect(await column(page, 2)).toEqual([])
+    await expect(page.getByText("h = 1", { exact: true })).toBeVisible()
+  })
+
+  test("F1-6：r = 2 では一言は出ない（12.57 で一致する）", async ({ page }) => {
+    for (let k = 0; k < 5; k++) {
+      await page.getByRole("button", { name: "1段ずつ" }).click()
+      await expect.poll(() => column(page, 2)).toHaveLength(k + 1)
+    }
+    await expect(page.getByText(/h をもっと小さくすると/)).toHaveCount(0)
+  })
 })
 
 test.describe("ステップ④ 速さと距離とくらべる", () => {
@@ -443,4 +478,3 @@ test.describe("ページ全体（表示レベル・リンク）", () => {
     await expect(page.getByRole("link", { name: /微分の意味へ/ })).toHaveAttribute("href", "/bibun")
   })
 })
-
