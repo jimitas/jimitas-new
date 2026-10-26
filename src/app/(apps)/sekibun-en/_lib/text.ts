@@ -139,3 +139,50 @@ export const H_MIN_NOTE = "h は 0 にはできません（0 だと輪がなく�
 /** 図のラベル */
 export const radiusTag = (r: string) => `r = ${r}`
 export const LOUPE_TAG = "輪の一部を拡大"
+
+// ---- ステップ④ 速さと距離とくらべる ------------------------------------------------------
+
+/** はじめの一言 */
+export const STEP4_GUIDE =
+  "左は「速さ 2x」のグラフ、右は「円周 2πr」のグラフ。スライダーで x（＝ r）を動かして、グラフの下の三角形の面積をくらべよう。"
+
+/** グラフの軸（F4-1） */
+export const SPEED_AXES = { x: "時間 x（秒）", y: "速さ 2x（m/秒）" } as const
+export const CIRCLE_AXES = { x: "半径 r", y: "円周 2πr" } as const
+
+/** グラフの見出し */
+export const SPEED_TITLE = "速さと距離"
+export const CIRCLE_TITLE = "円周と円の面積"
+
+/**
+ * 面積の式（F4-2）。2行に分ける（1行にすると「＝ x²」と「＝ 4」が別の行に割れて読みにくいため）。
+ *   1行目：距離 ＝ 三角形の面積 ＝ ½ × 2 × 4
+ *   2行目：x² ＝ 4（大きく）
+ */
+// 式には丸めた小数を出さず「½ × 3 × (2π × 3)」と書く（丸めた円周 18.85 を出すと、電卓で検算した 28.28 と
+// 答えの 28.27 が合わなくなるため。2026-10-26 レビュー指摘）。「円周 2πr を積み上げる」ことも式で見える
+export const distanceText = (x: string) => `距離 ＝ 三角形の面積 ＝ ${math(`½ × ${x} × (2 × ${x})`)}`
+export const distanceResult = (area: string) => `x² ＝ ${area}`
+export const circleAreaText = (r: string) => `円の面積 ＝ 三角形の面積 ＝ ${math(`½ × ${r} × (2π × ${r})`)}`
+export const circleAreaResult = (area: string) => `πr² ＝ ${area}`
+
+/** 細い長方形で塗る（F4-3） */
+export const RECTS_TOGGLE = "細い長方形を積み上げて塗る"
+export const RECTS_NOTE =
+  "右の細い長方形1本は、③ でほどいた帯1本と同じ（長さ ＝ 輪のまん中の円周、太さ ＝ 長方形の幅）。本数を増やすと、階段がなめらかな三角形に近づきます。"
+
+/** F4-4 の説明 */
+export const SAME_SHAPE_NOTE =
+  "軸の名前がちがうだけで、やっていることは同じ。速さを積み上げると距離、円周を積み上げると円の面積になります。"
+
+/**
+ * スライド24のまとめ表（F4-4）。行：微分・積分、列：運動・円。
+ * スライドそのものは手元にないため、要件の「微分：取り出す／積分：積み上げる × 運動／円」から組み立てた（オーナー確認待ち）。
+ */
+export const SUMMARY = {
+  cols: ["運動", "円"],
+  rows: [
+    { head: "微分（取り出す）", cells: ["距離 x² → 速さ 2x", "面積 πr² → 円周 2πr"] },
+    { head: "積分（積み上げる）", cells: ["速さ 2x → 距離 x²", "円周 2πr → 面積 πr²"] },
+  ],
+} as const

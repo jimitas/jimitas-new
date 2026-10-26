@@ -6,7 +6,7 @@
 // 要件: docs/requirements-integral-circle-app.md　計画: docs/plan-integral-circle-app.md
 //
 // 4つのステップ（タブ）：① 面積の増え方 ② 輪を切り開く ③ 輪をほどいて積み上げる ④ 速さと距離とくらべる
-//   初期表示は ①（要件 §3）。③ へは1クリックで行ける。まだ作っていない ④ は「準備中」で押せない。
+//   初期表示は ①（要件 §3）。③ へは1クリックで行ける。
 //   大きく表示はタブを切りかえても残す。
 //
 // 計算と文言は _lib/（jest でテスト済み）。ここは配線だけ。コインは付けない（高校向けツール。微分の意味がわかると同じ）。
@@ -17,17 +17,18 @@
 import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { BigProvider } from "@/components/parts/graph/Display"
+import { StepCompare } from "./_components/StepCompare"
 import { StepCutRing } from "./_components/StepCutRing"
 import { StepGrowth } from "./_components/StepGrowth"
 import { StepUnroll } from "./_components/StepUnroll"
 
 type Tab = 1 | 2 | 3 | 4
 
-const TABS: { id: Tab; label: string; ready: boolean }[] = [
-  { id: 1, label: "① 面積の増え方", ready: true },
-  { id: 2, label: "② 輪を切り開く", ready: true },
-  { id: 3, label: "③ 輪をほどいて積み上げる", ready: true },
-  { id: 4, label: "④ 速さと距離とくらべる", ready: false },
+const TABS: { id: Tab; label: string }[] = [
+  { id: 1, label: "① 面積の増え方" },
+  { id: 2, label: "② 輪を切り開く" },
+  { id: 3, label: "③ 輪をほどいて積み上げる" },
+  { id: 4, label: "④ 速さと距離とくらべる" },
 ]
 
 export default function SekibunEnPage() {
@@ -51,8 +52,8 @@ export default function SekibunEnPage() {
 
       <div className="flex flex-wrap gap-2 mb-4 border-b border-gray-200 dark:border-gray-700 pb-3" role="group" aria-label="ステップ">
         {TABS.map((t) => (
-          <BtnMode key={t.id} value={t.id} current={tab} onChange={setTab} disabled={!t.ready} className="shrink-0 text-base">
-            {t.ready ? t.label : `${t.label}（準備中）`}
+          <BtnMode key={t.id} value={t.id} current={tab} onChange={setTab} className="shrink-0 text-base">
+            {t.label}
           </BtnMode>
         ))}
       </div>
@@ -62,6 +63,7 @@ export default function SekibunEnPage() {
         {tab === 1 && <StepGrowth />}
         {tab === 2 && <StepCutRing />}
         {tab === 3 && <StepUnroll />}
+        {tab === 4 && <StepCompare />}
       </BigProvider>
     </div>
   )

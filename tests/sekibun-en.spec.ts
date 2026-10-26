@@ -8,6 +8,7 @@
 //   基準1   ① はじめは ①。1段ずつ ×5 → 増えた面積 ÷ h が 15.71 → 14.14 → 12.88 → 12.60 → 12.57（→ キーでも）
 //   基準2   ② 選んだ輪が帯になり、帯の長さの表示がその輪の円周（2π × まん中の半径）と一致する
 //           輪はボタンでも、図のタップでも選び直せる（F2-1）
+//   基準6   ④ x = r = 2 で左 4、右 12.57。スライダーで両方のグラフが同時に変わる。細い長方形で塗れる（F4-3）
 //   基準3   ▶ ほどく → 約3秒で完成し、底辺・高さのラベルと結論が出る
 //   基準4   ◀ 巻き戻す で円にもどる。進み具合スライダーで途中に止められる
 //   ほか    ⏸ 止める（一時停止）・スライダーを動かすとアニメが止まる・スペースで再生（ボタンに選択が残っていても）
@@ -267,6 +268,60 @@ test.describe("ステップ① 面積の増え方", () => {
     }
     await expect(step).toBeDisabled()
     await expect(page.getByRole("button", { name: "リセット" })).toBeFocused()
+  })
+})
+
+test.describe("ステップ④ 速さと距離とくらべる", () => {
+  test.beforeEach(async ({ page }) => {
+    await open(page)
+    await page.getByRole("button", { name: "④ 速さと距離とくらべる" }).click()
+  })
+
+  const speed = (page: Page) => page.getByTestId("area-speed")
+  const circle = (page: Page) => page.getByTestId("area-circle")
+  /** グラフ i（0：左、1：右）の塗りの多角形の数 */
+  const polygons = (page: Page, i: number) => page.locator("figure").nth(i).locator("polygon").count()
+
+  test("基準6：x = r = 2 で左 4、右 12.57", async ({ page }) => {
+    await expect(speed(page)).toHaveText(/x² ＝ 4$/)
+    await expect(circle(page)).toHaveText(/πr² ＝ 12\.57$/)
+  })
+
+  test("F4-2：スライダーで両方のグラフが同時に変わる（x = 3 で 9 と 28.27）", async ({ page }) => {
+    await page.locator("#sekibun-x").fill("3")
+    await expect(speed(page)).toHaveText(/x² ＝ 9$/)
+    await expect(circle(page)).toHaveText(/πr² ＝ 28\.27$/)
+  })
+
+  test("F4-3：細い長方形で塗ると、両方のグラフが同じ本数の長方形になる", async ({ page }) => {
+    expect(await polygons(page, 0)).toBe(1) // 三角形1つ
+    await page.getByLabel("細い長方形を積み上げて塗る").check()
+    await expect.poll(() => polygons(page, 0)).toBe(8)
+    expect(await polygons(page, 1)).toBe(8)
+    await page.getByRole("button", { name: "16", exact: true }).click()
+    await expect.poll(() => polygons(page, 1)).toBe(16)
+    await expect(page.getByText(/③ でほどいた帯1本と同じ/)).toBeVisible()
+    // 長方形にしても面積の値は変わらない（まん中の高さの長方形の合計は三角形と同じ）
+    await expect(circle(page)).toHaveText(/πr² ＝ 12\.57$/)
+  })
+
+  test("F4-4：説明とまとめ表", async ({ page }) => {
+    await expect(page.getByText(/軸の名前がちがうだけで、やっていることは同じ/)).toBeVisible()
+    await expect(page.getByRole("cell", { name: "円周 2πr → 面積 πr²" })).toBeVisible()
+  })
+
+  // iPad 縦・スマホでは、x = 4 の塗りが横軸の名前の位置まで届く。名前は塗りの上（DOM で後）に描く（2026-10-26 レビュー指摘）
+  test("横軸の名前「時間 x（秒）」は、細い長方形の塗りより上に描かれる", async ({ page }) => {
+    await page.locator("#sekibun-x").fill("4")
+    await page.getByLabel("細い長方形を積み上げて塗る").check()
+    const order = await page.locator("figure").first().locator("svg").evaluate((svg) => {
+      const label = [...svg.querySelectorAll("text")].find((t) => t.textContent === "時間 x（秒）")
+      const polys = svg.querySelectorAll("polygon")
+      const last = polys[polys.length - 1]
+      if (!label || !last) return "missing"
+      return last.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING ? "label-on-top" : "label-under"
+    })
+    expect(order).toBe("label-on-top")
   })
 })
 

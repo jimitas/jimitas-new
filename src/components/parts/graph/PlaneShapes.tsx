@@ -97,6 +97,20 @@ export function PlaneText({ x, y, dx = 0, dy = 0, anchor = "start", className, s
   )
 }
 
+/**
+ * 塗りつぶした多角形（三角形・長方形など）。points は世界座標の頂点。
+ * 円の面積と円周のひみつ（積分アプリ）の ④ で、グラフの下の三角形と細い長方形を塗るために足した（2026-10-26）。
+ */
+export function Polygon({ points, className, opacity }: {
+  points: [number, number][]
+  className: string
+  opacity?: number
+}) {
+  const t = usePlane()
+  const d = points.map(([x, y]) => `${t.toPx(x).toFixed(1)},${t.toPy(y).toFixed(1)}`).join(" ")
+  return <polygon points={d} className={className} opacity={opacity} />
+}
+
 /** 動かせない点 */
 export function Dot({ x, y, className, r = 7 }: { x: number; y: number; className: string; r?: number }) {
   const t = usePlane()
