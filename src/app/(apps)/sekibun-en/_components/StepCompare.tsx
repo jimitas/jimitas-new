@@ -23,8 +23,9 @@ import {
 } from "../_lib/compare"
 import {
   CIRCLE_AXES, CIRCLE_TITLE, RECTS_NOTE, RECTS_TOGGLE, SAME_SHAPE_NOTE, SPEED_AXES, SPEED_TITLE, STEP4_GUIDE, SUMMARY,
-  circleAreaResult, circleAreaText, distanceResult, distanceText,
+  SYMBOL_INTEGRAL, SYMBOL_INTEGRAL_SPEED, circleAreaResult, circleAreaText, distanceResult, distanceText,
 } from "../_lib/text"
+import type { Level } from "../_lib/text"
 
 /** 長方形の色（③ の輪と同じ2色を交互に。RingDisk.tsx の RING_CLASS と同じ濃さ） */
 const RECT_FILL = ["fill-accent-600 dark:fill-accent-500", "fill-accent-300 dark:fill-accent-200"]
@@ -72,7 +73,7 @@ function Graph({ k, x, rects, axes, title, ariaLabel }: GraphProps) {
   )
 }
 
-export function StepCompare() {
+export function StepCompare({ level }: { level: Level }) {
   const [x, setX] = useState(X_INIT)
   const [useRects, setUseRects] = useState(false)
   const [n, setN] = useState<number>(DEFAULT_RECTS)
@@ -96,6 +97,7 @@ export function StepCompare() {
           <p className={`${readoutText} font-bold tabular-nums text-gray-800 dark:text-gray-100`} data-testid="area-speed">
             {distanceResult(show(area(K_SPEED)))}
           </p>
+          {level === "symbols" && <p className={`${readoutText} font-bold tabular-nums text-gray-800 dark:text-gray-100`} data-testid="symbol">{SYMBOL_INTEGRAL_SPEED}</p>}
         </div>
         <div className="flex flex-col gap-2">
           <Graph k={K_CIRCLE} x={x} rects={rects} axes={CIRCLE_AXES} title={CIRCLE_TITLE}
@@ -105,6 +107,7 @@ export function StepCompare() {
           <p className={`${readoutText} font-bold tabular-nums text-gray-800 dark:text-gray-100`} data-testid="area-circle">
             {circleAreaResult(show(area(K_CIRCLE)))}
           </p>
+          {level === "symbols" && <p className={`${readoutText} font-bold tabular-nums text-gray-800 dark:text-gray-100`} data-testid="symbol">{SYMBOL_INTEGRAL}</p>}
         </div>
       </div>
 

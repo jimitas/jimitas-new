@@ -216,9 +216,8 @@ test.describe("ステップ① 面積の増え方", () => {
     const want = ["15.71", "14.14", "12.88", "12.60", "12.57"]
     for (let k = 0; k < 5; k++) {
       await step.click()
+      // 行が書かれるのは段の動き（0.5秒）が終わったとき。それを待ってから次を押す
       await expect.poll(() => column(page, 2)).toEqual(want.slice(0, k + 1))
-      // 段のあいだの動き（0.5秒）が終わると、また押せるようになる（5回目のあとは押せない）
-      if (k < 4) await expect(step).toBeEnabled({ timeout: 2000 })
     }
     expect(await column(page, 0)).toEqual(["1", "0.5", "0.1", "0.01", "0.001"])
     expect(await column(page, 1)).toEqual(["15.7", "7.07", "1.29", "0.126", "0.0126"])
@@ -322,6 +321,49 @@ test.describe("ステップ④ 速さと距離とくらべる", () => {
       return last.compareDocumentPosition(label) & Node.DOCUMENT_POSITION_FOLLOWING ? "label-on-top" : "label-under"
     })
     expect(order).toBe("label-on-top")
+  })
+})
+
+test.describe("ページ全体（表示レベル・リンク）", () => {
+  test.beforeEach(async ({ page }) => open(page))
+
+  test("はじめは「ことばで」。「記号で」にすると ① の結論に (πr²)' = 2πr が出る", async ({ page }) => {
+    // 「1段ずつ」は動いている途中も押せる（押しても何もしない）ので、行が増えるのを待ってから次を押す
+    for (let k = 0; k < 5; k++) {
+      await page.getByRole("button", { name: "1段ずつ" }).click()
+      await expect(page.locator("table tbody tr[data-filled='true']")).toHaveCount(k + 1, { timeout: 2000 })
+    }
+    await expect(page.getByText(/面積の増え方 ＝ 円周/)).toBeVisible()
+    await expect(page.getByTestId("symbol")).toHaveCount(0)
+    await page.getByRole("button", { name: "記号で" }).click()
+    await expect(page.getByTestId("symbol")).toHaveText("(πr²)' = 2πr")
+  })
+
+  test("「記号で」は ③ に切りかえても残り、完成すると ∫₀ʳ 2πt dt = πr² が出る", async ({ page }) => {
+    await page.getByRole("button", { name: "記号で" }).click()
+    await page.getByRole("button", { name: "③ 輪をほどいて積み上げる" }).click()
+    await page.locator("#sekibun-t").fill("1")
+    await expect(page.getByTestId("symbol")).toContainText("∫₀ʳ 2πt dt = πr²")
+  })
+
+  // 「ことばで」のときは記号を出さない（③ ④ も。2026-10-26 レビュー指摘）
+  test("③：ことばでのときは、完成しても ∫ を出さない", async ({ page }) => {
+    await page.getByRole("button", { name: "③ 輪をほどいて積み上げる" }).click()
+    await page.locator("#sekibun-t").fill("1")
+    await expect(page.getByText(/円の面積にもどった/)).toBeVisible()
+    await expect(page.getByTestId("symbol")).toHaveCount(0)
+  })
+
+  test("④：ことばでのときは ∫ を出さず、記号でにすると 2つのグラフの下に出る", async ({ page }) => {
+    await page.getByRole("button", { name: "④ 速さと距離とくらべる" }).click()
+    await expect(page.getByTestId("area-circle")).toBeVisible()
+    await expect(page.getByTestId("symbol")).toHaveCount(0)
+    await page.getByRole("button", { name: "記号で" }).click()
+    await expect(page.getByTestId("symbol")).toHaveText(["∫₀ˣ 2t dt = x²", "∫₀ʳ 2πt dt = πr²"])
+  })
+
+  test("微分の意味がわかる へのリンク", async ({ page }) => {
+    await expect(page.getByRole("link", { name: /微分の意味へ/ })).toHaveAttribute("href", "/bibun")
   })
 })
 

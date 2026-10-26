@@ -23,19 +23,21 @@ import { blurAfterPointer, useBig, usePageKeys } from "@/components/parts/graph/
 import { UNROLL_MS, playLabel } from "../_lib/playback"
 import { isDone } from "../_lib/scene"
 import {
-  REWIND_LABEL, RING_COUNT_NOTE, STEP3_CONCLUSION, STEP3_GUIDE, STEP3_PREDICT, unrollMessage,
+  INTEGRAL_MEANING, REWIND_LABEL, RING_COUNT_NOTE, STEP3_CONCLUSION, STEP3_GUIDE, STEP3_PREDICT, SYMBOL_INTEGRAL, unrollMessage,
 } from "../_lib/text"
+import type { Level } from "../_lib/text"
 import { DEFAULT_RINGS, RING_COUNTS } from "../_lib/unroll"
 import { RingDisk } from "./RingDisk"
 import { useProgressPlayer } from "./useProgressPlayer"
 
-export function StepUnroll() {
+export function StepUnroll({ level }: { level: Level }) {
   const [n, setN] = useState<number>(DEFAULT_RINGS)
   // ▶ ほどく／⏸ 止める／◀ 巻き戻す（約3秒。② と同じ仕組み）
   const { t, moving, play: onPlay, rewind: onRewind, setTo: onSlider } = useProgressPlayer(UNROLL_MS)
 
   // 結論は文章なので、投影用の数値（useText("readout")）より一段小さく。大きく表示では一段上げる
-  const conclusionText = useBig() ? "text-xl md:text-2xl" : "text-lg md:text-xl"
+  const big = useBig()
+  const conclusionText = big ? "text-xl md:text-2xl" : "text-lg md:text-xl"
   const done = isDone(t)
 
   usePageKeys({ play: onPlay })
@@ -94,6 +96,13 @@ export function StepUnroll() {
         {/* 結論（F3-6）。ほどき終わるまでは問いかけ */}
         <div className={`rounded-xl border-2 border-accent-300 dark:border-accent-700 bg-accent-50 dark:bg-gray-800 px-4 py-3 ${conclusionText} text-gray-800 dark:text-gray-100`}>
           <p className={done ? "font-bold" : ""}>{done ? STEP3_CONCLUSION : STEP3_PREDICT}</p>
+          {/* 記号で（F3-9）：円周を積分すると面積。ことばの読み方を添える */}
+          {done && level === "symbols" && (
+            <p className="mt-2 flex flex-wrap items-baseline gap-x-3" data-testid="symbol">
+              <span className={`${big ? "text-2xl md:text-3xl" : "text-xl md:text-2xl"} font-bold tabular-nums`}>{SYMBOL_INTEGRAL}</span>
+              <span className="text-base">（{INTEGRAL_MEANING}）</span>
+            </p>
+          )}
         </div>
       </section>
     </div>

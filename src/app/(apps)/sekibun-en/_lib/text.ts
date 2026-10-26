@@ -186,3 +186,17 @@ export const SUMMARY = {
     { head: "積分（積み上げる）", cells: ["速さ 2x → 距離 x²", "円周 2πr → 面積 πr²"] },
   ],
 } as const
+
+// ---- 記号で（表示レベル。要件 §1.2・Q3：初期は「ことばで」） ---------------------------------
+
+/** ① の結論（F1-5）：面積を微分すると円周 */
+export const SYMBOL_DERIVATIVE = "(πr²)' = 2πr"
+/** ③ の結論（F3-9）：円周を積分すると面積 */
+export const SYMBOL_INTEGRAL = "∫₀ʳ 2πt dt = πr²"
+/** F3-9：∫ のことばでの読み方 */
+export const INTEGRAL_MEANING = "円周 2πt を、半径 t = 0 から r まで積み上げる"
+/** ④：速さを積分すると距離 */
+export const SYMBOL_INTEGRAL_SPEED = "∫₀ˣ 2t dt = x²"
+
+/** 微分アプリへのリンク（要件 §7：相互リンク） */
+export const TO_BIBUN = "微分の意味へ（微分の意味がわかる）→"

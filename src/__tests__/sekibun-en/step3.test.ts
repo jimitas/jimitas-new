@@ -144,3 +144,16 @@ describe("unrollMessage（図の下の一言は、見えている動きと合う
     }
   })
 })
+
+describe("記号で（表示レベル。F1-5・F3-9）", () => {
+  test("① 面積を微分すると円周、③ 円周を積分すると面積", () => {
+    expect(T.SYMBOL_DERIVATIVE).toBe("(πr²)' = 2πr")
+    expect(T.SYMBOL_INTEGRAL).toBe("∫₀ʳ 2πt dt = πr²")
+    expect(T.SYMBOL_INTEGRAL_SPEED).toBe("∫₀ˣ 2t dt = x²")
+  })
+  test("∫ にはことばの読み方を添える（円周を 0 から r まで積み上げる）", () => {
+    expect(T.INTEGRAL_MEANING).toContain("積み上げる")
+    expect(T.INTEGRAL_MEANING).toContain("0 から r まで")
+  })
+})
+

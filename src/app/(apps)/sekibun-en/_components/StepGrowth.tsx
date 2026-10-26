@@ -30,8 +30,9 @@ import {
 } from "../_lib/growth"
 import {
   GROWTH_HEADERS, H_MIN_NOTE, LOUPE_TAG, RESET_BUTTON, STEP1_GUIDE, STEP1_PREDICT, STEP_BUTTON,
-  radiusTag, step1Conclusion, targetText,
+  SYMBOL_DERIVATIVE, radiusTag, step1Conclusion, targetText,
 } from "../_lib/text"
+import type { Level } from "../_lib/text"
 
 /** 「動きを減らす」設定か（押したときに読む） */
 const prefersReducedMotion = () =>
@@ -61,7 +62,7 @@ function Shapes({ r, h, line }: { r: number; h: number; line: number }) {
   )
 }
 
-export function StepGrowth() {
+export function StepGrowth({ level }: { level: Level }) {
   const r = R0
   const [h, setH] = useState(1)
   /** 記録表に書いた行数（0〜5） */
@@ -247,6 +248,10 @@ export function StepGrowth() {
         {/* 結論（F1-5） */}
         <div className="rounded-xl border-2 border-accent-300 dark:border-accent-700 bg-accent-50 dark:bg-gray-800 px-4 py-3 text-lg text-gray-800 dark:text-gray-100">
           <p className={reached ? "font-bold" : ""}>{reached ? step1Conclusion(c, formatNumber(r)) : STEP1_PREDICT}</p>
+          {/* 記号で（F1-5）：面積を微分すると円周 */}
+          {reached && level === "symbols" && (
+            <p className={`mt-2 ${big ? "text-2xl md:text-3xl" : "text-xl md:text-2xl"} font-bold tabular-nums`} data-testid="symbol">{SYMBOL_DERIVATIVE}</p>
+          )}
         </div>
       </section>
     </div>

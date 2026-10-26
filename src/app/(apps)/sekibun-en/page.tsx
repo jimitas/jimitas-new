@@ -7,13 +7,14 @@
 //
 // 4つのステップ（タブ）：① 面積の増え方 ② 輪を切り開く ③ 輪をほどいて積み上げる ④ 速さと距離とくらべる
 //   初期表示は ①（要件 §3）。③ へは1クリックで行ける。
-//   大きく表示はタブを切りかえても残す。
+//   大きく表示・表示レベル（ことばで／記号で）はタブを切りかえても残す。
 //
 // 計算と文言は _lib/（jest でテスト済み）。ここは配線だけ。コインは付けない（高校向けツール。微分の意味がわかると同じ）。
 // ======================================================
 
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { BigProvider } from "@/components/parts/graph/Display"
@@ -21,6 +22,8 @@ import { StepCompare } from "./_components/StepCompare"
 import { StepCutRing } from "./_components/StepCutRing"
 import { StepGrowth } from "./_components/StepGrowth"
 import { StepUnroll } from "./_components/StepUnroll"
+import { TO_BIBUN } from "./_lib/text"
+import type { Level } from "./_lib/text"
 
 type Tab = 1 | 2 | 3 | 4
 
@@ -35,6 +38,8 @@ export default function SekibunEnPage() {
   const [tab, setTab] = useState<Tab>(1)
   /** 大きく表示（投影用。線を太く、文字を大きく） */
   const [big, setBig] = useState(false)
+  /** 表示レベル：ことばで（初期値）／記号で（要件 §1.2・Q3） */
+  const [level, setLevel] = useState<Level>("words")
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-4">
@@ -43,7 +48,9 @@ export default function SekibunEnPage() {
         <span className="block md:inline md:ml-2 text-base font-normal text-gray-600 dark:text-gray-300">〜輪をほどくと三角形になる〜</span>
       </h1>
 
-      <div className="flex flex-wrap items-center justify-end gap-3 my-3">
+      <div className="flex flex-wrap items-center justify-end gap-3 my-3" role="group" aria-label="表示のしかた">
+        <BtnMode value="words" current={level} onChange={setLevel} className="shrink-0">ことばで</BtnMode>
+        <BtnMode value="symbols" current={level} onChange={setLevel} className="shrink-0">記号で</BtnMode>
         <label className="flex items-center gap-2 cursor-pointer font-bold text-gray-700 dark:text-gray-200">
           <input type="checkbox" className="w-5 h-5 accent-brand-500" checked={big} onChange={(e) => setBig(e.target.checked)} />
           大きく表示
@@ -60,11 +67,18 @@ export default function SekibunEnPage() {
 
       {/* 大きく表示は context で配る（図の線・文字と、結論の文字） */}
       <BigProvider value={big}>
-        {tab === 1 && <StepGrowth />}
+        {tab === 1 && <StepGrowth level={level} />}
         {tab === 2 && <StepCutRing />}
-        {tab === 3 && <StepUnroll />}
-        {tab === 4 && <StepCompare />}
+        {tab === 3 && <StepUnroll level={level} />}
+        {tab === 4 && <StepCompare level={level} />}
       </BigProvider>
+
+      {/* 姉妹アプリへのリンク（要件 §7）。微分の意味がわかる側からのリンクは、このアプリを公開するときに足す */}
+      <p className="mt-8 text-right">
+        <Link href="/bibun" prefetch={false} className="font-bold text-brand-700 dark:text-brand-300 underline underline-offset-4">
+          {TO_BIBUN}
+        </Link>
+      </p>
     </div>
   )
 }
