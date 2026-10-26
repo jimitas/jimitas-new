@@ -121,16 +121,37 @@ describe("chaseView（追いかけズーム）", () => {
 })
 
 describe("initialView（ステップ②の全体表示）", () => {
+  // 2026-10-26 オーナー依頼：a = 1 で 横 0〜2.4・縦 0〜4.8。すき間（h²/4）を大きく見せるため狭める
+  test("x²・a = 1・右から は 横 0〜2.4・縦 0〜4.8", () => {
+    const v = A.initialView([0, 0, 1, 0], 1, 1)
+    expect(v.xMin).toBeCloseTo(0, 12)
+    expect(v.xMax).toBeCloseTo(2.4, 12)
+    expect(v.yMin).toBe(0)
+    expect(v.yMax).toBeCloseTo(4.8, 9)
+  })
+  test("左からは左右を反転（横 −0.4〜2。点B が左端に貼りつかない）", () => {
+    const v = A.initialView([0, 0, 1, 0], 1, -1)
+    expect(v.xMin).toBeCloseTo(-0.4, 12)
+    expect(v.xMax).toBeCloseTo(2, 12)
+  })
+  test("a = 2 のときより約2倍に拡大される（縦の幅が半分ほど）", () => {
+    const v1 = A.initialView([0, 0, 1, 0], 1, 1)
+    const v2 = A.initialView([0, 0, 1, 0], 2, 1)
+    expect((v2.yMax - v2.yMin) / (v1.yMax - v1.yMin)).toBeGreaterThan(1.9)
+  })
+
   const presets = [[0, 0, 1, 0], [0, 0, 0, 1], [0, 4, -1, 0], [0, -3, 0, 1], [1, -3, 2, 0], [1, 2, 0, 0]] as Poly[]
-  test.each(presets.flatMap((p) => [-2, 0, 2, 4].map((a) => [p, a] as [Poly, number])))(
-    "%p・a = %p：点A と h = ±1 の点B が入る", (p, a) => {
-      const v = A.initialView(p, a)
-      for (const x of [a - 1, a, a + 1]) {
-        const y = evaluate(p, x)
-        expect(x).toBeGreaterThanOrEqual(v.xMin)
-        expect(x).toBeLessThanOrEqual(v.xMax)
-        expect(y).toBeGreaterThanOrEqual(v.yMin)
-        expect(y).toBeLessThanOrEqual(v.yMax)
+  test.each(presets.flatMap((p) => [-2, 0, 1, 2, 4].map((a) => [p, a] as [Poly, number])))(
+    "%p・a = %p：右から・左からとも、点A と h = ±1 の点B が入る", (p, a) => {
+      for (const side of [1, -1] as const) {
+        const v = A.initialView(p, a, side)
+        for (const x of [a - 1, a, a + 1]) {
+          const y = evaluate(p, x)
+          expect(x).toBeGreaterThanOrEqual(v.xMin)
+          expect(x).toBeLessThanOrEqual(v.xMax)
+          expect(y).toBeGreaterThanOrEqual(v.yMin)
+          expect(y).toBeLessThanOrEqual(v.yMax)
+        }
       }
     })
 })

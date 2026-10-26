@@ -41,11 +41,19 @@ describe("twoPointView", () => {
       for (const x of [a, b]) {
         expect(x).toBeGreaterThan(v.xMin)
         expect(x).toBeLessThan(v.xMax)
-        expect(evaluate(p, x)).toBeGreaterThan(v.yMin)
+        // y = 0 の点は下端（0）にちょうど乗る（曲線が 0 以上なら下端を 0 にそろえるため）。乗っていれば見える
+        expect(evaluate(p, x)).toBeGreaterThanOrEqual(v.yMin)
         expect(evaluate(p, x)).toBeLessThan(v.yMax)
       }
     })
-  test("横幅は 6 以上", () => expect(AV.twoPointView(X2, 2, 2.1).xMax - AV.twoPointView(X2, 2, 2.1).xMin).toBeGreaterThanOrEqual(6))
+  // 2026-10-26 オーナー依頼：a = 1・b = 2 で横 0〜2.4・縦 0〜4.8（② の最初の表示とそろう）
+  test("x²・a = 1・b = 2 は 横 0〜2.4・縦 0〜4.8", () => {
+    const v = AV.twoPointView(X2, 1, 2)
+    expect(v.xMin).toBeCloseTo(0, 12)
+    expect(v.xMax).toBeCloseTo(2.4, 12)
+    expect(v.yMin).toBe(0)
+    expect(v.yMax).toBeCloseTo(4.8, 9)
+  })
 })
 
 // ---- 2026-10-25 レビュー指摘への対応 ----------------------------------------------

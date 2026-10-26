@@ -9,7 +9,7 @@
 //   初期表示は ①。② は1クリックで行ける。
 //   関数の選択と表示レベル（ことばで／記号で）はタブを切りかえても残す。
 //   点A の x（a）も ① と ② で共有する（① で決めた点A に ② で B を近づける。2026-10-25 オーナー決定）。
-//   初期値 a = 2・b = 3 は授業スライドの数値例。
+//   初期値 a = 1・b = 2 は授業スライドの数値例（2026-10-26 に a = 2・b = 3 から変更）。
 //   関数を変えたら、各ステップは key を変えて初期状態にもどす。
 //
 // 計算と文言は _lib/（jest でテスト済み）。ここは配線だけ。
@@ -40,6 +40,15 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 3, label: "③ 導関数" },
 ]
 
+/**
+ * 点A・点B の初期値（授業スライドの数値例）。2026-10-26 にスライドの起点を a = 2 → a = 1 に変えたので合わせた。
+ * a = 1 なら h = 1 の点B が (2, 4) で済み、表示を狭めて（横 0〜2.4・縦 0〜4.8）大きく見せられる
+ * （2点を結ぶ直線と曲線のすき間は a によらず h²/4 なので、拡大しないと見え方は変わらない）。
+ * スライダーで 2 や 3 も選べる。
+ */
+const INITIAL_A = 1
+const INITIAL_B = 2
+
 /** 「自分で作る」を選んだときの初期値（直線 2x + 1：h によらず平均変化率が 2） */
 const INITIAL_COEF: CoefText = ["0", "0", "2", "1"]
 
@@ -50,8 +59,8 @@ export default function BibunPage() {
   const [big, setBig] = useState(false)
   /** 文脈ラベル：「x, y」⇔「時間（秒）, 距離（m）」（スライド9 の運動の例と結びつける） */
   const [motion, setMotion] = useState(false)
-  const [a, setA] = useState(2)
-  const [b, setB] = useState(3)
+  const [a, setA] = useState(INITIAL_A)
+  const [b, setB] = useState(INITIAL_B)
   /** ② で a を変えたとき、① の b と重なったら b をずらす（① では a ≠ b が前提） */
   const changeA = (na: number) => {
     setA(na)

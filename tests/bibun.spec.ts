@@ -5,8 +5,9 @@
 // 計算の値そのもの（5, 4.5, … など）は src/__tests__/bibun/ の単体テストが担当する。
 // ここで守るのは「ボタンを押した回数・操作と、画面に出る値・状態のつながり」。
 //
-//   基準1   ② 1段ずつ ×4 → 5, 4.5, 4.1, 4.01、5回目で 4.001、接線が実線で出る
-//   基準2   左から → 3, 3.5, 3.9, 3.99, 3.999
+//   基準1   ② 1段ずつ ×4 → 3, 2.5, 2.1, 2.01、5回目で 2.001、接線が実線で出る
+//           （2026-10-26 から初期値は a = 1。授業スライドの起点の変更に合わせた。a = 2 のときは 5, 4.5, 4.1, …）
+//   基準2   左から → 1, 1.5, 1.9, 1.99, 1.999
 //   基準3   ▶ 近づけてみる → 約5秒で記録表5行・h = 0.001・追いかけズームで拡大・接線が実線
 //   基準5   h を 0 にしようとしても 0 にならず、メッセージが出る
 //   基準8   自分で作る 2x + 1 → いつも 2
@@ -40,16 +41,16 @@ test.describe("ステップ② 微分係数", () => {
   test("基準1・2：1段ずつ（右から・左から）", async ({ page }) => {
     const step = page.getByRole("button", { name: "1段ずつ" })
     for (let i = 0; i < 4; i++) { await step.click(); await expect(step).toBeEnabled() }
-    await expect.poll(() => rateColumn(page, 0)).toEqual(["5", "4.5", "4.1", "4.01"])
+    await expect.poll(() => rateColumn(page, 0)).toEqual(["3", "2.5", "2.1", "2.01"])
     await expect(legend(page)).not.toContainText("接線")
     await step.click()
-    await expect.poll(() => rateColumn(page, 0)).toEqual(["5", "4.5", "4.1", "4.01", "4.001"])
-    await expect(legend(page)).toContainText("━ 接線：傾き＝微分係数 4")
+    await expect.poll(() => rateColumn(page, 0)).toEqual(["3", "2.5", "2.1", "2.01", "2.001"])
+    await expect(legend(page)).toContainText("━ 接線：傾き＝微分係数 2")
     await expect(step).toBeDisabled()
 
     await page.getByRole("button", { name: "左から（h < 0）" }).click()
     for (let i = 0; i < 5; i++) { await step.click(); await page.waitForTimeout(650) }
-    await expect.poll(() => rateColumn(page, 1)).toEqual(["3", "3.5", "3.9", "3.99", "3.999"])
+    await expect.poll(() => rateColumn(page, 1)).toEqual(["1", "1.5", "1.9", "1.99", "1.999"])
     expect(await rateColumn(page, 0)).toHaveLength(5) // 右からの表も残る（並べてくらべられる）
   })
 
@@ -62,9 +63,9 @@ test.describe("ステップ② 微分係数", () => {
     const sec = (Date.now() - t0) / 1000
     expect(sec).toBeGreaterThan(4.5)
     expect(sec).toBeLessThan(7)
-    expect(await rateColumn(page, 0)).toEqual(["5", "4.5", "4.1", "4.01", "4.001"])
+    expect(await rateColumn(page, 0)).toEqual(["3", "2.5", "2.1", "2.01", "2.001"])
     await expect(page.locator('label[for="bibun-h"]')).toContainText("h = 0.001")
-    await expect(legend(page)).toContainText("━ 接線：傾き＝微分係数 4")
+    await expect(legend(page)).toContainText("━ 接線：傾き＝微分係数 2")
     // 追いかけズーム：目盛りが細かく（1.998 のような小数第3位まで）なっている
     const after = await page.locator("svg[role=group] g[font-size] text").allTextContents()
     expect(after).not.toEqual(before)
@@ -82,7 +83,7 @@ test.describe("ステップ② 微分係数", () => {
     await page.keyboard.press("ArrowRight")
     await page.waitForTimeout(650)
     await page.keyboard.press("PageDown")
-    await expect.poll(() => rateColumn(page, 0)).toEqual(["5", "4.5", "4.1"])
+    await expect.poll(() => rateColumn(page, 0)).toEqual(["3", "2.5", "2.1"])
   })
 
   // ドラッグ中に表示を作り直すと、指の下で座標がずれて点が先へ走る（2026-10-25 に一度入った不具合）
@@ -243,8 +244,8 @@ test.describe("実演向け", () => {
     const dot = page.locator('g[aria-label="点A"] circle').last()
     await page.mouse.click(box.x + Number(await dot.getAttribute("cx")), box.y + Number(await dot.getAttribute("cy")))
     await page.keyboard.press("ArrowRight")
-    await expect.poll(() => rateColumn(page, 0)).toEqual(["5"])
-    await expect(page.locator('label[for="bibun-a"]')).toHaveText(/a = 2$/)
+    await expect.poll(() => rateColumn(page, 0)).toEqual(["3"])
+    await expect(page.locator('label[for="bibun-a"]')).toHaveText(/a = 1$/)
   })
 })
 
@@ -283,14 +284,14 @@ test.describe("拡大ルーペ・文脈ラベル", () => {
     const svg = page.locator("svg[role=group]").first()
     await expect(svg).toContainText("時間（秒）")
     await expect(svg).toContainText("距離（m）")
-    await expect(page.getByText("傾き＝平均の速さ（平均変化率） 5")).toBeVisible()
+    await expect(page.getByText("傾き＝平均の速さ（平均変化率） 3")).toBeVisible()
     await expect(svg).toContainText("かかった時間 = 1")
     // ② 記録表の見出し・結論
     await page.getByRole("button", { name: "② 微分係数（接線の傾き）" }).click()
     await expect(page.locator("table").first()).toContainText("平均の速さ（平均変化率）")
     const step = page.getByRole("button", { name: "1段ずつ" })
     for (let i = 0; i < 5; i++) { await step.click(); await page.waitForTimeout(650) }
-    await expect(page.getByText(/これが 2 秒における瞬間の速さ（微分係数・接線の傾き）/)).toBeVisible()
+    await expect(page.getByText(/これが 1 秒における瞬間の速さ（微分係数・接線の傾き）/)).toBeVisible()
     // ③ 下のグラフの縦軸
     await page.getByRole("button", { name: "③ 導関数" }).click()
     await expect(page.locator("svg[role=group]").nth(1)).toContainText("瞬間の速さ")
@@ -343,7 +344,7 @@ test.describe("キー操作（つづき）", () => {
     const box = (await slider.boundingBox())!
     await page.mouse.click(box.x + box.width * 0.75, box.y + box.height / 2)
     await page.keyboard.press("PageDown")
-    await expect.poll(() => rateColumn(page, 0)).toEqual(["5"])
+    await expect.poll(() => rateColumn(page, 0)).toEqual(["3"])
   })
 
   test("Tab で点B を選ぶと、← で h を動かせる", async ({ page }) => {

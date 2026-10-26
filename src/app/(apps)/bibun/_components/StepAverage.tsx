@@ -3,7 +3,7 @@
 //
 // 点A(a, f(a)) と 点B(b, f(b)) をどちらも動かせる（ドラッグ・スライダー・数値入力）。
 // Δx（横の変化）・Δy（縦の変化）を直角三角形の補助線で示し、平均変化率 = Δy ÷ Δx の途中式を出す。
-// 初期値 a = 2, b = 3 はスライド10（2秒→3秒で平均の速さ 5）と同じ。
+// 初期値 a = 1, b = 2 は授業スライドと同じ（1秒→2秒で平均の速さ 3。2026-10-26 に a = 2, b = 3 から変更）。
 // a・b はページ側で持つ。点A の位置は ② に引き継ぐ（① で決めた点A に B を近づけていく流れにするため。
 // 2026-10-25 オーナー決定）。
 //
@@ -33,7 +33,7 @@ import type { Level } from "../_lib/text"
 import { contains } from "@/lib/graph/viewport"
 import type { View } from "@/lib/graph/viewport"
 import { CoordinatePlane, usePlane } from "@/components/parts/graph/CoordinatePlane"
-import { blurAfterPointer, useText } from "@/components/parts/graph/Display"
+import { blurAfterPointer, useScale, useText } from "@/components/parts/graph/Display"
 import { useMotion } from "./Motion"
 import { Frac } from "@/components/parts/graph/MathParts"
 import { Curve, DragPoint, InfiniteLine, PlaneText, Segment } from "@/components/parts/graph/PlaneShapes"
@@ -182,16 +182,24 @@ function DeltaLabels({ a, b, fa, fb, dxText, dyText }: {
   a: number; b: number; fa: number; fb: number; dxText: string; dyText: string
 }) {
   const t = usePlane()
+  const { font } = useScale()
   const wide = Math.abs(t.toPx(b) - t.toPx(a)) >= MIN_LABEL_SIDE
   const tall = Math.abs(t.toPy(fb) - t.toPy(fa)) >= MIN_LABEL_SIDE
   const cls = "fill-warm-700 stroke-white dark:fill-warm-300 dark:stroke-gray-900"
+  // 縦の変化のラベルは、ふだんは点B の外側（A と反対側）に出す。外側に収まらないときは内側へ
+  // （a = 1・b = 2 の初期表示では点B が右端の近くにあり、外側だと「縦の変化 = 3」が切れるため。2026-10-26）
+  const labelW = [...dyText].length * 16 * font // 1文字およそ1文字分の幅（16px・大きく表示の倍率）
+  const bx = t.toPx(b)
+  const outward: 1 | -1 = b >= a ? 1 : -1
+  const fits = outward === 1 ? bx + 8 + labelW <= t.width : bx - 8 - labelW >= 0
+  const dir = fits ? outward : -outward
   return (
     <>
       {wide && (
         <PlaneText x={(a + b) / 2} y={fa} dy={fb >= fa ? 22 : -10} anchor="middle" className={cls}>{dxText}</PlaneText>
       )}
       {tall && (
-        <PlaneText x={b} y={(fa + fb) / 2} dx={b >= a ? 8 : -8} anchor={b >= a ? "start" : "end"} className={cls}>{dyText}</PlaneText>
+        <PlaneText x={b} y={(fa + fb) / 2} dx={8 * dir} anchor={dir === 1 ? "start" : "end"} className={cls}>{dyText}</PlaneText>
       )}
     </>
   )

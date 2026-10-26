@@ -88,7 +88,7 @@ export function StepTangent({ p, level, a, onA }: Props) {
   const [chase, setChase] = useState(true)
   /** 拡大ルーペ（F2-11）。はじめは出さない（画面をすっきりさせて、先にアニメを見せる） */
   const [loupe, setLoupe] = useState(false)
-  const [view, setView] = useState<View>(() => initialView(p, a))
+  const [view, setView] = useState<View>(() => initialView(p, a, 1))
   const [zeroMsg, setZeroMsg] = useState(false)
 
   // アニメの状態（毎フレーム書きかえるので state にしない）
@@ -97,7 +97,8 @@ export function StepTangent({ p, level, a, onA }: Props) {
 
   const f = (x: number) => evaluate(p, x)
   const fa = f(a)
-  const home = initialView(p, a)
+  // 全体表示は向き（右から・左から）で左右を反転する（点B が端に貼りつかないように）
+  const home = initialView(p, a, side)
   const busy = mode === "playing" || mode === "stepping"
   const count = counts[key(side)]
   const slopeAtA = evaluate(derivative(p), a)
@@ -189,13 +190,13 @@ export function StepTangent({ p, level, a, onA }: Props) {
   }
 
   // ---- リセット・向き・手で動かす ------------------------------------------------------
-  /** 止めて、h = ±1・表示を home にもどす（記録は呼ぶ側で） */
+  /** 止めて、h = ±1・表示を向き s の全体表示にもどす（記録は呼ぶ側で） */
   const stopAndReturn = (s: Side) => {
     cancelAnimationFrame(anim.current.raf)
     anim.current.t = 0
     setMode("idle")
     setH(s)
-    setView(home)
+    setView(initialView(p, a, s))
     setZeroMsg(false)
   }
 
@@ -217,7 +218,7 @@ export function StepTangent({ p, level, a, onA }: Props) {
   const refitIfNeeded = (na: number) => {
     const fna = evaluate(p, na)
     const shown = contains(view, na, fna) && contains(view, na + h, fna + deltaY(p, na, h))
-    if (!shown) setView(initialView(p, na))
+    if (!shown) setView(initialView(p, na, side))
   }
 
   /**

@@ -2,7 +2,7 @@
 // h を 0 に近づける動き（ステップ②）
 //
 // ■ 段：h = 1 → 0.5 → 0.1 → 0.01 → 0.001（左からは符号を逆に）
-//   スライド10–11（2→3, 2→2.5, 2→2.1, 2→2.01）と同じ値。
+//   授業スライドと同じ値（2026-10-26 から起点は a = 1：1→2, 1→1.5, 1→1.1, 1→1.01 で 3, 2.5, 2.1, 2.01）。
 //   段の値・「1段ずつ」の動き・イージングは積分アプリと共有するため @/lib/graph/steps に置いた。
 //
 // ■ 「▶ 近づけてみる」の h(t)
@@ -17,9 +17,10 @@
 // ======================================================
 
 import { H_STEPS, clamp01 } from "@/lib/graph/steps"
+import type { Side } from "@/lib/graph/steps"
 import { evaluate } from "./polynomial"
 import type { Poly } from "./polynomial"
-import { fitView, zoomAbout } from "@/lib/graph/viewport"
+import { zoomAbout } from "@/lib/graph/viewport"
 import type { View } from "@/lib/graph/viewport"
 
 /** 点A の範囲（スライダー・ドラッグ） */
@@ -40,13 +41,48 @@ export function hDragStep(viewWidth: number): number {
   return Math.min(0.1, Math.max(H_SLIDER_STEP, s))
 }
 
+/** 点B のむこう側に空ける余白（横） */
+const SNUG_MARGIN_X = 0.4
+/** 縦の余白（曲線の高さに対する割合） */
+const SNUG_MARGIN_Y = 0.2
+
 /**
- * ステップ②の全体表示。横は a の左右 3、縦は a の左右 1.5 の範囲の曲線が収まるように。
- * h = ±1 の点B が必ず入る。縦を広い範囲で合わせると、x³ などで点A のあたりがつぶれて見えるため。
+ * 横 xMin〜xMax、縦は curveLo〜curveHi の曲線がちょうど収まる表示。上に 20% の余白を足す。
+ * 曲線が 0 以上なら、下端は 0 を下回らせない（余白で負の側を見せない）。
+ *
+ * ■ なぜ狭く取るか（2026-10-26 オーナー依頼）
+ *   2点を結ぶ直線と曲線のすき間は、x² では最大 h²/4 で a によらない。すき間を大きく見せるには、
+ *   表示を狭めて拡大するしかない。a = 1 なら h = 1 の点B は (2, 4) なので縦 0〜4.8 で足り、
+ *   a = 2（点B が (3, 9)）のときの約2倍に拡大して見せられる。
  */
-export function initialView(p: Poly, a: number): View {
-  const v = fitView((x) => evaluate(p, x), a - 1.5, a + 1.5, 0.15)
-  return { ...v, xMin: a - 3, xMax: a + 3 }
+export function snugView(p: Poly, xMin: number, xMax: number, curveLo: number, curveHi: number): View {
+  let lo = Infinity
+  let hi = -Infinity
+  for (let i = 0; i <= 200; i++) {
+    const y = evaluate(p, curveLo + ((curveHi - curveLo) * i) / 200)
+    lo = Math.min(lo, y)
+    hi = Math.max(hi, y)
+  }
+  if (hi - lo < 1) {
+    // 平らな関数（定数など）でも縦がつぶれないように
+    const mid = (hi + lo) / 2
+    lo = mid - 0.5
+    hi = mid + 0.5
+  }
+  const m = (hi - lo) * SNUG_MARGIN_Y
+  return { xMin, xMax, yMin: lo >= 0 ? Math.max(0, lo - m) : lo - m, yMax: hi + m }
+}
+
+/**
+ * ステップ②の全体表示。点A（x = a）と h = ±1 の点B が入るぎりぎりまで狭める。
+ *   右から：横 a − 1 〜 a + 1.4（点B の右に余白）。左から：横 a − 1.4 〜 a + 1（左右を反転）
+ *   縦：a − 1 〜 a + 1 の曲線が収まるように（上に 20% の余白）
+ * x²・a = 1・右から で、横 0〜2.4・縦 0〜4.8（授業スライドと同じ見え方。2026-10-26 オーナー依頼）。
+ */
+export function initialView(p: Poly, a: number, side: Side = 1): View {
+  return side === 1
+    ? snugView(p, a - 1, a + 1 + SNUG_MARGIN_X, a - 1, a + 1)
+    : snugView(p, a - 1 - SNUG_MARGIN_X, a + 1, a - 1, a + 1)
 }
 
 /** アニメの最後の |h|（これ以下で接線を実線にする） */

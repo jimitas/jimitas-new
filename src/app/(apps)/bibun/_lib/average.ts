@@ -5,11 +5,11 @@
 // Δy は f(b) − f(a) を引き算せず、差分商（polynomial.ts）から出す（ステップ②と同じ計算にそろえる）。
 // ======================================================
 
-import { A_MAX, A_MIN } from "./approach"
+import { A_MAX, A_MIN, snugView } from "./approach"
 import { MINUS, formatFixed, formatNumber } from "@/lib/graph/format"
 import { deltaY, diffQuotient, evaluate } from "./polynomial"
 import type { Poly } from "./polynomial"
-import { fitView, snap } from "@/lib/graph/viewport"
+import { snap } from "@/lib/graph/viewport"
 import type { View } from "@/lib/graph/viewport"
 
 export interface Average {
@@ -109,15 +109,15 @@ export function separate(a: number, b: number): number {
 }
 
 /**
- * 2点が両方入る表示。横は2点の外側に 2 ずつ（最低でも幅 6）、縦は2点のまわりの曲線が収まるように。
+ * 2点が両方入る表示。② の全体表示（initialView）と同じ考え方で、2点が入るぎりぎりまで狭める
+ * （2点を結ぶ直線と曲線のすき間を大きく見せるため。2026-10-26 オーナー依頼）。
+ *   横：左の点の 1 左 〜 右の点の 0.4 右。縦：その範囲の曲線が収まるように（上に 20% の余白）
+ *   a = 1・b = 2（x²）で横 0〜2.4・縦 0〜4.8 になり、② の最初の表示とそろう。
  * 点が画面の外に出たときだけ作り直す（毎回作り直すと縮尺が変わり続け、傾きを見比べにくい。
  * ドラッグ中は作り直さず、指を離したときに確かめる。指の下で座標がずれて点が逃げるため）。
  */
 export function twoPointView(p: Poly, a: number, b: number): View {
   const lo = Math.min(a, b)
   const hi = Math.max(a, b)
-  const c = (lo + hi) / 2
-  const half = Math.max(3, (hi - lo) / 2 + 2)
-  const v = fitView((x) => evaluate(p, x), lo - 0.5, hi + 0.5, 0.2)
-  return { ...v, xMin: c - half, xMax: c + half }
+  return snugView(p, lo - 1, hi + 0.4, lo - 1, hi)
 }
