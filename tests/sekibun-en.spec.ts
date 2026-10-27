@@ -532,3 +532,9 @@ test.describe("ページ全体（表示レベル・リンク）", () => {
     await expect(page.getByRole("link", { name: /微分の意味へ/ })).toHaveAttribute("href", "/bibun")
   })
 })
+
+test("微分の意味がわかる（/bibun）から、このアプリへのリンクがある（相互リンク。要件 §7）", async ({ page }) => {
+  await page.goto("/bibun")
+  await page.locator("html[data-hydrated='1']").waitFor()
+  await expect(page.getByRole("link", { name: /円の面積と円周へ/ })).toHaveAttribute("href", "/sekibun-en")
+})
