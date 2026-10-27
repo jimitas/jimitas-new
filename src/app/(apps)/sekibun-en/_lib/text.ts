@@ -222,3 +222,13 @@ export const SYMBOL_INTEGRAL_SPEED = "∫₀ˣ 2t dt = x²"
 
 /** 微分アプリへのリンク（要件 §7：相互リンク） */
 export const TO_BIBUN = "微分の意味へ（微分の意味がわかる）→"
+
+/** ③ の帯を右のグラフへ重ねる（F4-5） */
+export const STRIPS_LABEL: PlayLabels = {
+  start: "▶ ③ の帯を重ねる",
+  resume: "▶ 続ける",
+  again: "▶ もう一度重ねる",
+  pause: "⏸ 止める",
+}
+export const STRIPS_NOTE =
+  "③ で積み上げた横向きの帯を、まとめて 90° 回すと、右のグラフの細い長方形にぴったり重なる。帯1本 ＝ 長方形1本。"

@@ -416,6 +416,40 @@ test.describe("ステップ④ 速さと距離とくらべる", () => {
     await expect(circle(page)).toHaveText(/πr² ＝ 12\.57$/)
   })
 
+  test("F4-5：③ の帯を重ねる。横向きの帯の束が回って、右のグラフの長方形に置きかわる", async ({ page }) => {
+    await page.getByRole("button", { name: "▶ ③ の帯を重ねる" }).click()
+    // 長方形の塗りに切りかわり、右のグラフには帯の束（回している途中）が出る
+    await expect(page.getByLabel("細い長方形を積み上げて塗る")).toBeChecked()
+    const overlay = page.getByTestId("strips-overlay")
+    await expect(overlay).toHaveCount(1)
+    expect(await overlay.locator("rect").count()).toBe(8)
+    await expect(page.getByText(/まとめて 90° 回すと、右のグラフの細い長方形にぴったり重なる/)).toBeVisible()
+    // 終わると帯の束は消え、グラフの長方形 8 本になる（面積の表示は変わらない）
+    await expect(overlay).toHaveCount(0, { timeout: 5000 })
+    expect(await polygons(page, 1)).toBe(8)
+    await expect(circle(page)).toHaveText(/πr² ＝ 12\.57$/)
+  })
+
+  test("F4-5：重ねている途中は ⏸ で止められ、▶ 続ける で再開できる（② ③ と同じ）", async ({ page }) => {
+    await page.getByRole("button", { name: "▶ ③ の帯を重ねる" }).click()
+    await page.getByRole("button", { name: "⏸ 止める" }).click()
+    await expect(page.getByRole("button", { name: "▶ 続ける" })).toBeVisible()
+    await page.waitForTimeout(3000) // 止めているので、帯の束は残ったまま
+    await expect(page.getByTestId("strips-overlay")).toHaveCount(1)
+    await page.getByRole("button", { name: "▶ 続ける" }).click()
+    await expect(page.getByTestId("strips-overlay")).toHaveCount(0, { timeout: 5000 })
+    await expect(page.getByRole("button", { name: "▶ もう一度重ねる" })).toBeVisible()
+  })
+
+  test("F4-5：重ねている途中で x を動かすと、帯の束は消える（途中の帯が残らない）", async ({ page }) => {
+    await page.getByRole("button", { name: "▶ ③ の帯を重ねる" }).click()
+    await expect(page.getByTestId("strips-overlay")).toHaveCount(1)
+    await page.locator("#sekibun-x").fill("3")
+    // 動き（2.5 秒）が自然に終わるより十分早く消えていること（消す処理を外しても、待てば消えてしまうため）
+    await expect(page.getByTestId("strips-overlay")).toHaveCount(0, { timeout: 300 })
+    expect(await polygons(page, 1)).toBe(8)
+  })
+
   test("F4-4：説明とまとめ表", async ({ page }) => {
     await expect(page.getByText(/軸の名前がちがうだけで、やっていることは同じ/)).toBeVisible()
     await expect(page.getByRole("cell", { name: "円周 2πr → 面積 πr²" })).toBeVisible()
