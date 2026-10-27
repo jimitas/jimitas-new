@@ -111,3 +111,6 @@ export const NEGATIVE_NOTE =
 
 /** 注記を出すか（時間・距離で表していて、出ている値に負のものがある） */
 export const needsNegativeNote = (motion: boolean, values: number[]) => motion && values.some((v) => v < 0)
+
+/** 姉妹アプリ（円の面積と円周のひみつ）へのリンク（要件 §7 の相互リンク。2026-10-27 公開に合わせて追加） */
+export const TO_SEKIBUN = "円の面積と円周へ（円の面積と円周のひみつ）→"

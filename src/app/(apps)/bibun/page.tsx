@@ -18,11 +18,13 @@
 
 "use client"
 
+import Link from "next/link"
 import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { separate } from "./_lib/average"
 import { PRESETS, formatPoly, parseCoefs } from "./_lib/polynomial"
 import type { CoefText, Poly } from "./_lib/polynomial"
+import { TO_SEKIBUN } from "./_lib/text"
 import type { Level } from "./_lib/text"
 import { CUSTOM_ID, FunctionPicker } from "./_components/FunctionPicker"
 import { BigProvider } from "@/components/parts/graph/Display"
@@ -134,6 +136,13 @@ export default function BibunPage() {
           </div>
         </MotionProvider>
       </BigProvider>
+
+      {/* 姉妹アプリへのリンク（要件 §7。円の面積と円周のひみつ の側からも「微分の意味へ」とつないでいる） */}
+      <p className="mt-8 text-right">
+        <Link href="/sekibun-en" prefetch={false} className="font-bold text-brand-700 dark:text-brand-300 underline underline-offset-4">
+          {TO_SEKIBUN}
+        </Link>
+      </p>
     </div>
   )
 }
