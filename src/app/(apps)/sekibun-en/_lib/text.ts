@@ -232,3 +232,6 @@ export const STRIPS_LABEL: PlayLabels = {
 }
 export const STRIPS_NOTE =
   "③ で積み上げた横向きの帯を、まとめて 90° 回すと、右のグラフの細い長方形にぴったり重なる。帯1本 ＝ 長方形1本。"
+
+/** ロープ表示の切りかえ（F3-10） */
+export const ROPE_TOGGLE = "ロープで表示（授業のロープ実験と同じ見た目）"

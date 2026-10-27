@@ -226,3 +226,18 @@ describe("1本ずつほどく：完成・時間・切れ目（F3-8）", () => {
   })
 })
 
+
+describe("ロープ表示（F3-10）", () => {
+  test("縞の長さとすき間は輪の幅の 0.6 倍（8 本：幅 10px → 6px）", () => {
+    expect(S.ropeTwist(10)).toEqual({ dash: 6, gap: 6 })
+  })
+  test("細い輪（64 本：幅 1.25px）でも縞がつぶれないよう、最小 2px", () => {
+    expect(S.ropeTwist(80 / 64)).toEqual({ dash: S.ROPE_MIN_DASH, gap: S.ROPE_MIN_DASH })
+  })
+  test("切りかえの文言はロープ実験と結びつける", () => expect(T.ROPE_TOGGLE).toContain("ロープ"))
+  test("縞の始まりは輪ごとに半周期ずつ交互にずらす（積み上げたとき縞が縦一列にそろわない）", () => {
+    expect(S.ropeOffset(1, 10)).toBe(6)
+    expect(S.ropeOffset(2, 10)).toBe(0)
+    expect(S.ropeOffset(3, 10)).not.toBe(S.ropeOffset(4, 10))
+  })
+})

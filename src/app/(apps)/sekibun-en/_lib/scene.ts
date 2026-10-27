@@ -130,3 +130,27 @@ export function triangleGuide(s: Scene): [number, number][] {
     [s.x0, base - s.r],
   ]
 }
+
+// ---- ロープ表示（F3-10、P2） ---------------------------------------------------------------
+//
+// 輪を単色の帯ではなく、ロープ（縄）に見えるように描く。授業のロープ実験と結びつけるため。
+// 縄の色の線（太さ＝輪の幅）の上に、濃い色の短い縞を破線で重ねて「ねじれ」に見せる。
+// 縞の長さ・すき間は輪の幅に合わせる（細い輪では細かく、太い輪では大きく）。小さすぎると
+// 縞がつぶれて見えないので、最小 ROPE_MIN_DASH px にする。
+
+/** 縞の長さの最小（px、viewBox の単位） */
+export const ROPE_MIN_DASH = 2
+
+/**
+ * 縞の始まりを輪ごとにずらす量（px）。ずらさないと、三角形に積み上がったとき全部の帯の縞が同じ位置にそろい、
+ * 縦じまに見えて帯の区切りが読みにくくなる（2026-10-27 レビュー指摘）。半周期ずつ交互にずらす
+ */
+export function ropeOffset(i: number, w: number): number {
+  return (i % 2) * ropeTwist(w).dash
+}
+
+/** 縞の長さとすき間（px）。輪の幅 w の 0.6 倍・同じ長さのすき間 */
+export function ropeTwist(w: number): { dash: number; gap: number } {
+  const d = Math.max(ROPE_MIN_DASH, w * 0.6)
+  return { dash: d, gap: d }
+}

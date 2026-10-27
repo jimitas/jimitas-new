@@ -28,7 +28,7 @@ import type { MouseEvent, ReactNode } from "react"
 import { useScale } from "@/components/parts/graph/Display"
 import {
   BASE_Y, CUT_FADE_END, R_PX, SCENE, VIEW_H, VIEW_W,
-  cutOpacity, guideOpacity, isDone, labelLayout, triangleGuide,
+  cutOpacity, guideOpacity, isDone, labelLayout, ropeOffset, ropeTwist, triangleGuide,
 } from "../_lib/scene"
 import { BASE_LABEL, HEIGHT_LABEL } from "../_lib/text"
 import {
@@ -38,6 +38,11 @@ import type { UnrollMode } from "../_lib/unroll"
 
 /** 交互に塗る2色（濃い青・明るい青） */
 const RING_CLASS = ["stroke-accent-600 dark:stroke-accent-500", "stroke-accent-300 dark:stroke-accent-200"]
+
+/** ロープ表示（F3-10）の縄の色（2色を交互に）と、ねじれの縞の色 */
+// 隣りあう輪の区切りが見えるよう、2色の明るさの差を広げた（warm-200 は白地で淡すぎた。2026-10-27 レビュー指摘）
+const ROPE_CLASS = ["stroke-warm-500 dark:stroke-warm-500", "stroke-warm-300 dark:stroke-warm-200"]
+const ROPE_TWIST_CLASS = "stroke-warm-700 dark:stroke-warm-800"
 
 interface Props {
   /** 輪の数 */
@@ -56,14 +61,17 @@ interface Props {
   onPickRing?: (i: number) => void
   /** 図の上に重ねるもの（viewBox の座標で描く） */
   children?: ReactNode
+  /** ロープの質感で描く（F3-10） */
+  rope?: boolean
 }
 
 /** ほかの輪を薄くするときの濃さ（② で選んだ輪を目立たせる） */
 const DIM = 0.25
 
-export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuide = true, onPickRing, children }: Props) {
+export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuide = true, onPickRing, children, rope = false }: Props) {
   const { line, font } = useScale()
   const w = ringWidth(n, R_PX)
+  const twist = ropeTwist(w)
 
   // 輪の折れ線（外側から）。t・n・mode・focus が変わったときだけ作り直す
   // focus があれば、その輪だけ t でほどき、いちばん最後（上）に描く
@@ -118,12 +126,22 @@ export function RingDisk({ n, t, mode = "all", ariaLabel, focus, guide: showGuid
         )}
 
         {/* 輪（外側から描くと内側が上に見える） */}
+        {/* ロープ表示（F3-10）では、縄の色の線の上に濃い縞を破線で重ねて「ねじれ」に見せる */}
         {rings.map(({ i, points }) => (
-          <polyline
-            key={i} points={points} fill="none" className={i === focus ? RING_CLASS[0] : RING_CLASS[i % 2]}
-            strokeWidth={w} strokeLinecap="butt" strokeLinejoin="round"
-            opacity={focus === undefined || i === focus ? 1 : DIM}
-          />
+          <g key={i} opacity={focus === undefined || i === focus ? 1 : DIM}>
+            <polyline
+              points={points} fill="none"
+              className={rope ? ROPE_CLASS[i % 2] : i === focus ? RING_CLASS[0] : RING_CLASS[i % 2]}
+              strokeWidth={w} strokeLinecap="butt" strokeLinejoin="round"
+            />
+            {rope && (
+              <polyline
+                points={points} fill="none" className={`rope-twist ${ROPE_TWIST_CLASS}`}
+                strokeWidth={w} strokeLinecap="butt" strokeLinejoin="round"
+                strokeDasharray={`${twist.dash} ${twist.gap}`} strokeDashoffset={ropeOffset(i, w)} opacity={0.55}
+              />
+            )}
+          </g>
         ))}
 
         {/* 切れ目（真下の半径）。ほどき始めると消える */}

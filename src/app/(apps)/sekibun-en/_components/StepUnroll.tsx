@@ -24,7 +24,7 @@ import { isLinear, playLabel, unrollMs } from "../_lib/playback"
 import { isDone } from "../_lib/scene"
 import {
   INTEGRAL_MEANING, REWIND_LABEL, RING_COUNT_NOTE, STEP3_CONCLUSION, STEP3_GUIDE, STEP3_PREDICT, SYMBOL_INTEGRAL,
-  UNROLL_MODE_LABEL, unrollMessage,
+  ROPE_TOGGLE, UNROLL_MODE_LABEL, unrollMessage,
 } from "../_lib/text"
 import type { Level } from "../_lib/text"
 import { DEFAULT_RINGS, RING_COUNTS, UNROLL_MODES, lastRingProgress } from "../_lib/unroll"
@@ -37,6 +37,8 @@ export function StepUnroll({ level }: { level: Level }) {
   // ▶ ほどく／⏸ 止める／◀ 巻き戻す（全部いっしょは約3秒・1本ずつは6秒。② と同じ仕組み）
   /** ほどき方（F3-8）。初期は全部いっしょ（要件 F3-2） */
   const [mode, setMode] = useState<UnrollMode>("all")
+  /** ロープの質感で描く（F3-10）。初期はオフ */
+  const [rope, setRope] = useState(false)
   const { t, moving, play: onPlay, rewind: onRewind, setTo: onSlider } = useProgressPlayer(unrollMs(mode), isLinear(mode))
   /** ほどき方を切りかえたら、止めて円にもどす（新しいほどき方で最初から。途中で切りかえると図が跳ぶため） */
   const changeMode = (m: UnrollMode) => {
@@ -58,7 +60,7 @@ export function StepUnroll({ level }: { level: Level }) {
       {/* ---- 図 ---- */}
       <section className="flex flex-col gap-2">
         <RingDisk
-          n={n} t={t} mode={mode}
+          n={n} t={t} mode={mode} rope={rope}
           ariaLabel={`半径 r の円を ${n} 本の輪に分けた図。進み具合 ${Math.round(t * 100)}%。ほどき終わると底辺 2πr、高さ r の直角三角形になる`}
         />
         <p className="text-base text-gray-700 dark:text-gray-200 min-h-[3em]" aria-live="polite">
@@ -93,6 +95,10 @@ export function StepUnroll({ level }: { level: Level }) {
         </div>
 
         <div className="flex flex-col gap-1">
+          <label className="flex items-center gap-2 cursor-pointer font-bold text-gray-800 dark:text-gray-100 mb-1">
+            <input type="checkbox" className="w-5 h-5 accent-warm-500" checked={rope} onChange={(e) => setRope(e.target.checked)} />
+            {ROPE_TOGGLE}
+          </label>
           <p className="text-base font-bold text-gray-800 dark:text-gray-100">ほどき方</p>
           <div className="flex flex-wrap gap-2" role="group" aria-label="ほどき方">
             {UNROLL_MODES.map((m) => (

@@ -176,6 +176,25 @@ test.describe("ステップ③ 輪をほどいて積み上げる", () => {
     expect(Date.now() - start).toBeGreaterThan(5000)
   })
 
+  test("F3-10：ロープで表示にすると、どの輪にもねじれの縞が重なる。もどすと消える", async ({ page }) => {
+    await expect(page.locator("polyline.rope-twist")).toHaveCount(0)
+    await page.getByLabel(/ロープで表示/).check()
+    await expect(page.locator("polyline.rope-twist")).toHaveCount(8)
+    // 縞は破線（ねじれに見せる）、下の線は縄の色
+    expect(await page.locator("polyline.rope-twist").first().getAttribute("stroke-dasharray")).toBe("6 6")
+    // ほどいても縞はついてくる（縞の線は、下の縄の線とまったく同じ位置を通る）
+    await slider(page).fill("1")
+    await expect(page.locator("polyline.rope-twist")).toHaveCount(8)
+    const same = await page.locator("svg[role='img'] g:has(> polyline.rope-twist)").evaluateAll((gs) =>
+      gs.map((g) => { const [base, twist] = g.querySelectorAll("polyline"); return base.getAttribute("points") === twist.getAttribute("points") }))
+    expect(same).toEqual(Array(8).fill(true))
+    // 縞の始まりは輪ごとに交互にずれている（縦一列にそろわない）
+    const offsets = await page.locator("polyline.rope-twist").evaluateAll((els) => els.map((el) => el.getAttribute("stroke-dashoffset")))
+    expect(new Set(offsets).size).toBe(2)
+    await page.getByLabel(/ロープで表示/).uncheck()
+    await expect(page.locator("polyline.rope-twist")).toHaveCount(0)
+  })
+
   test("F3-7：動いている途中で輪の数を変えても、アニメは止まらない", async ({ page }) => {
     await playButton(page).click()
     await page.waitForTimeout(800)
@@ -208,7 +227,8 @@ test.describe("ステップ② 輪を切り開く", () => {
           straight: Math.max(...ys) - Math.min(...ys) < 0.01,
           width: Math.max(...xs) - Math.min(...xs),
           closed: Math.hypot(first[0] - last[0], first[1] - last[1]) < 0.5,
-          opacity: el.getAttribute("opacity"),
+          // 薄さは輪ごとの <g> にかけている（ロープ表示で縞の線を重ねるため。2026-10-27）
+          opacity: el.parentElement?.getAttribute("opacity"),
         }
       }))
   }
