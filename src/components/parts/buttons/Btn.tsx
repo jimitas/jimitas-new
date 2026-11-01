@@ -94,6 +94,11 @@ interface BtnProps {
   /** アイコンだけのボタンで読み上げ用のラベルを付けたいとき */
   ariaLabel?: string
   /**
+   * 「選んでいる状態」を読み上げに伝えたいとき（回数の選択など、押したものが選択中として残るボタン）。
+   * 指定しなければ aria-pressed は付かない。
+   */
+  ariaPressed?: boolean
+  /**
    * 鳴らす効果音。既定は "pi"。
    *
    * "none" にすると部品側では鳴らさないので、呼び出し側が自分で
@@ -114,6 +119,7 @@ export function Btn({
   disabled = false,
   className = "",
   ariaLabel,
+  ariaPressed,
   sound = "pi",
 }: BtnProps) {
   return (
@@ -125,6 +131,7 @@ export function Btn({
       }}
       disabled={disabled}
       aria-label={ariaLabel}
+      aria-pressed={ariaPressed}
       className={`${BTN_LAYOUT} ${BTN_SHAPE_CLASS} ${BTN_COLOR_CLASS[color]} ${className}`}
     >
       {icon}
