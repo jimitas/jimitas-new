@@ -24,7 +24,7 @@ describe("年数", () => {
     expect(Math.round(B.timesOfUniverse(y))).toBe(42)
   })
   test("小さい年数", () => {
-    expect(B.formatYears(B.yearsFor(B.minMovesBig(10), 1))).toBe("約17分".replace("約17分", B.formatYears(B.yearsFor(1023n, 1))))
+    expect(B.formatYears(B.yearsFor(1023n, 1))).toMatch(/^約d+(.d+)?秒$/)
     expect(B.formatYears(3.5)).toBe("約3.5年")
   })
   test("1枚ふえるとちょうど2倍（＋1回）", () => {
