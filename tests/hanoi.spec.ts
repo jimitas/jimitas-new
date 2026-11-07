@@ -192,3 +192,116 @@ test.describe("ステップ② 自動で解く", () => {
     await expect(page.locator("[data-n]")).toHaveText("4")
   })
 })
+
+test.describe("ステップ③ 回数のひみつ", () => {
+  test.beforeEach(async ({ page }) => {
+    await open(page)
+    await page.getByRole("button", { name: "③ 回数のひみつ" }).click()
+  })
+
+  test("基準4：表は最初 1〜4 枚。「回数＋1」が 2,4,8,16。5枚を予想すると「？」→ 31・32", async ({ page }) => {
+    await expect(page.locator("[data-table] [data-row]")).toHaveCount(4)
+    const plus1 = async () => page.locator("[data-table] [data-plus1]").allInnerTexts()
+    expect(await plus1()).toEqual(["2", "4", "8", "16"])
+    await page.getByRole("button", { name: "5枚を予想する" }).click()
+    await expect(page.locator('[data-count="5"]')).toHaveText("？")
+    await page.getByRole("button", { name: "答えを確かめる" }).click()
+    await expect(page.locator('[data-count="5"]')).toHaveText("31")
+    expect(await plus1()).toEqual(["2", "4", "8", "16", "32"])
+    await page.getByRole("button", { name: "もっと見る" }).click()
+    await expect(page.locator("[data-table] [data-row]")).toHaveCount(10)
+    await expect(page.locator('[data-count="10"]')).toHaveText("1023")
+  })
+
+  test("基準4：ブロック図 [3][1][3] → おまけ [3][1][3][1] → [4][4]。1枚ふやすと 2 倍", async ({ page }) => {
+    const blocks = page.locator("[data-blocks]")
+    await expect(blocks).toHaveAttribute("data-blocks", "3,1,3")
+    await page.getByRole("button", { name: "おまけの1手をつける" }).click()
+    await expect(blocks).toHaveAttribute("data-blocks", "3,1,3,1")
+    await page.getByRole("button", { name: "同じ長さの2つに組み直す" }).click()
+    await expect(blocks).toHaveAttribute("data-blocks", "4,4")
+    await page.getByRole("button", { name: "1枚ふやす" }).click()
+    await page.getByRole("button", { name: "1枚ふやす" }).click()
+    await expect(page.locator("[data-plus1-line]")).toHaveText("2 → 4 → 8 → 16 → 32")
+    await expect(blocks).toHaveAttribute("data-blocks", "15,1,15")
+  })
+
+  test("2進法：回数は 1 が n 個、＋1 は 1 のあと 0 が n 個", async ({ page }) => {
+    for (const k of [1, 2, 3, 4, 5]) {
+      await expect(page.locator(`[data-bin-count="${k}"]`)).toHaveText("1".repeat(k))
+      await expect(page.locator(`[data-bin-plus="${k}"]`)).toHaveText("1" + "0".repeat(k))
+    }
+    await expect(page.locator("[data-bin-sum]")).toContainText("8＋4＋2＋1＝15＝1111")
+  })
+
+  test("結論パネル：ことばでは 2ⁿ−1 の説明、記号でには式が出る", async ({ page }) => {
+    await expect(page.locator("[data-conclusion]")).toContainText("2 を n 回かけて 1 ひいた数")
+    await page.getByRole("button", { name: "記号で" }).click()
+    await expect(page.locator("[data-conclusion]")).toContainText("2 ×（n−1枚の回数）＋ 1")
+    await expect(page.locator("[data-conclusion]")).toContainText("111…1")
+  })
+
+  test("棒グラフ：20枚に切りかえられ、④へのボタンがある", async ({ page }) => {
+    await expect(page.locator("[data-chart]")).toHaveAttribute("data-chart", "10")
+    await page.getByRole("button", { name: "1〜20枚" }).click()
+    await expect(page.locator("[data-chart]")).toHaveAttribute("data-chart", "20")
+    await page.getByRole("button", { name: /④へ/ }).click()
+    await expect(page.getByRole("button", { name: "④ 64枚だと？" })).toHaveClass(/bg-brand-500/)
+  })
+})
+
+test.describe("ステップ④ 64枚だと？", () => {
+  test.beforeEach(async ({ page }) => {
+    await open(page)
+    await page.getByRole("button", { name: "④ 64枚だと？" }).click()
+  })
+
+  test("基準5：64枚で 18,446,744,073,709,551,615 回・日本語の単位・約5845億年・宇宙の約42倍", async ({ page }) => {
+    await expect(page.locator("[data-big-n]")).toHaveText("64")
+    await expect(page.locator("[data-big-moves]")).toHaveText("18,446,744,073,709,551,615 回")
+    await expect(page.locator("[data-big-units]")).toHaveText("1844京6744兆737億955万1615 回")
+    await expect(page.locator("[data-big-years]")).toHaveText("約5845億年")
+    await expect(page.locator("[data-big-times]")).toContainText("約42倍")
+  })
+
+  test("1回の時間を 0.1秒 に変えると 約584億年", async ({ page }) => {
+    await page.getByRole("button", { name: "0.1秒", exact: true }).click()
+    await expect(page.locator("[data-big-years]")).toHaveText("約584億年")
+  })
+
+  test("枚数を 10 にすると 1,023 回、1枚ふえると2倍の表示", async ({ page }) => {
+    await page.locator("#hanoi-big-n").fill("10")
+    await expect(page.locator("[data-big-moves]")).toHaveText("1,023 回")
+    await expect(page.locator("[data-big-units]")).toHaveText("1023 回")
+    await expect(page.locator("[data-double]")).toContainText("10枚")
+    await expect(page.locator("[data-double]")).toContainText("11枚")
+  })
+
+  test("見積もりパネルがある（2¹⁰ ≒ 1000 → 約5000億年）", async ({ page }) => {
+    await expect(page.locator("[data-estimate]")).toContainText("約5000億年")
+  })
+})
+
+test.describe("ステップ⑤ 歴史と解き方", () => {
+  test("ルール・歴史（1883年・リュカ）・もっと知りたい人へ、② への導線", async ({ page }) => {
+    await open(page)
+    await page.getByRole("button", { name: "⑤ 歴史と解き方" }).click()
+    await expect(page.locator("[data-story]")).toContainText("1883年")
+    await expect(page.locator("[data-story]")).toContainText("エドゥアール・リュカ")
+    await expect(page.locator("[data-story]")).toContainText("リュカの創作だと考えられている")
+    await expect(page.locator("[data-more]")).toContainText("再帰")
+    await page.getByRole("button", { name: /② の 3つの区切り/ }).click()
+    await expect(page.locator("[data-segment-sum]")).toBeVisible()
+  })
+})
+
+test("全ステップで console エラーが出ない", async ({ page }) => {
+  const errs: string[] = []
+  page.on("console", (m) => m.type() === "error" && errs.push(m.text()))
+  page.on("pageerror", (e) => errs.push(String(e)))
+  await open(page)
+  for (const t of ["② 自動で解く", "③ 回数のひみつ", "④ 64枚だと？", "⑤ 歴史と解き方", "① あそぶ"]) {
+    await page.getByRole("button", { name: t }).click()
+  }
+  expect(errs).toEqual([])
+})

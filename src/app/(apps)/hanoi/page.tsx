@@ -16,7 +16,10 @@ import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { BigProvider } from "@/components/parts/graph/Display"
 import { StepAuto } from "./_components/StepAuto"
+import { StepBig } from "./_components/StepBig"
+import { StepHistory } from "./_components/StepHistory"
 import { StepPlay } from "./_components/StepPlay"
+import { StepSecret } from "./_components/StepSecret"
 import { APP_SUBTITLE, APP_TITLE, AUTO_MAX, PLAY_MAX, TABS } from "./_lib/text"
 import type { Level, Tab } from "./_lib/text"
 import { upsertRecord } from "./_lib/play"
@@ -98,7 +101,9 @@ export default function HanoiPage() {
           />
         )}
         {tab === 2 && <StepAuto key={`${n}-${to}`} n={Math.min(n, AUTO_MAX)} to={to} level={level} />}
-        {tab > 2 && <p className="text-gray-600 dark:text-gray-300">このステップは準備中です。</p>}
+        {tab === 3 && <StepSecret level={level} onGoTab={setTab} />}
+        {tab === 4 && <StepBig level={level} />}
+        {tab === 5 && <StepHistory onGoTab={setTab} />}
       </BigProvider>
     </div>
   )
