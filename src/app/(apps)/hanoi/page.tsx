@@ -16,17 +16,23 @@ import { useState } from "react"
 import { BtnMode } from "@/components/parts/buttons/BtnMode"
 import { BigProvider } from "@/components/parts/graph/Display"
 import { StepAuto } from "./_components/StepAuto"
+import { StepPlay } from "./_components/StepPlay"
 import { APP_SUBTITLE, APP_TITLE, AUTO_MAX, PLAY_MAX, TABS } from "./_lib/text"
 import type { Level, Tab } from "./_lib/text"
+import { upsertRecord } from "./_lib/play"
+import type { Records } from "./_lib/play"
 import type { Peg } from "./_lib/solve"
 
 export default function HanoiPage() {
-  const [tab, setTab] = useState<Tab>(2)
+  const [tab, setTab] = useState<Tab>(1)
   const [big, setBig] = useState(false)
   const [level, setLevel] = useState<Level>("words")
   /** 円盤の枚数（タブ間で共有）と移動先（初期は C。要件 Q3） */
   const [n, setN] = useState(3)
   const [to, setTo] = useState<Peg>("C")
+  /** ステップ① の記録表（このセッションの間だけ）と、最少回数の表示（初期はかくす。タブ間で共有） */
+  const [records, setRecords] = useState<Records>({})
+  const [showMin, setShowMin] = useState(false)
 
   return (
     <div className="max-w-5xl mx-auto px-4 py-4">
@@ -79,8 +85,20 @@ export default function HanoiPage() {
 
       {/* 大きく表示は context で配る（図の線・文字と、数値の文字） */}
       <BigProvider value={big}>
+        {tab === 1 && (
+          <StepPlay
+            key={`${n}-${to}`}
+            n={Math.min(n, PLAY_MAX)}
+            to={to}
+            level={level}
+            records={records}
+            onClear={(nn, c) => setRecords((rec) => upsertRecord(rec, nn, c))}
+            showMin={showMin}
+            onToggleMin={() => setShowMin((v) => !v)}
+          />
+        )}
         {tab === 2 && <StepAuto key={`${n}-${to}`} n={Math.min(n, AUTO_MAX)} to={to} level={level} />}
-        {tab !== 2 && <p className="text-gray-600 dark:text-gray-300">このステップは準備中です。</p>}
+        {tab > 2 && <p className="text-gray-600 dark:text-gray-300">このステップは準備中です。</p>}
       </BigProvider>
     </div>
   )
