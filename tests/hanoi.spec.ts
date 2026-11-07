@@ -71,6 +71,17 @@ test.describe("ステップ① あそぶ", () => {
     expect(await boardState(page)).toBe(before)
   })
 
+  test("クリアすると花吹雪が出て、画面の下にあるクリア表示が見える位置までスクロールする（iPad mini 縦横の小さい画面）", async ({ page }) => {
+    await page.setViewportSize({ width: 1024, height: 768 })
+    for (const m of solveTo(3, "C")) {
+      await hit(page, m.from).click()
+      await hit(page, m.to).click()
+    }
+    await expect(page.locator("[data-confetti]")).toBeVisible()
+    await expect(page.locator("[data-clear]")).toBeInViewport()
+    await expect(page.locator("[data-confetti]")).toHaveCount(0, { timeout: 6000 }) // 数秒で消える
+  })
+
   test("同じ棒をもう一度タップで取り消し。1つもどす・最初から", async ({ page }) => {
     await hit(page, "A").click()
     await hit(page, "A").click()

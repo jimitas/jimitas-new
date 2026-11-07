@@ -21,7 +21,9 @@ import { PEGS } from "../_lib/solve"
 import type { Move, Peg } from "../_lib/solve"
 import * as T from "../_lib/textPlay"
 import type { Level } from "../_lib/text"
-import { BASE_Y, BOARD_W, HanoiBoard, PEG_X } from "./HanoiBoard"
+import { BOARD_W, HanoiBoard, PEG_X } from "./HanoiBoard"
+import { Confetti } from "./Confetti"
+import type { ConfettiHandle } from "./Confetti"
 import { useHanoiKeys } from "./useHanoiKeys"
 
 const DRAG_START_PX = 6
@@ -42,6 +44,8 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
   const [message, setMessage] = useState("")
   const [drag, setDrag] = useState<{ disk: number; x: number; y: number } | null>(null)
   const [stamp, setStamp] = useState("")
+  const confetti = useRef<ConfettiHandle>(null)
+  const clearRef = useRef<HTMLDivElement>(null)
   const svgRef = useRef<SVGSVGElement>(null)
   const readout = useText("readout")
 
@@ -68,6 +72,7 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
     if (isSolved(r.pegs, n, to)) {
       setStamp(T.clearStamp(n, next.length, new Date()))
       onClear(n, next.length)
+      confetti.current?.fire()
       se.playSe(se.seikai1)
     }
   }
@@ -101,9 +106,14 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
 
   /** クライアント座標 → 盤の SVG 座標 */
   const toSvg = (cx: number, cy: number) => {
-    const box = svgRef.current?.getBoundingClientRect()
-    if (!box) return { x: 0, y: 0 }
-    return { x: ((cx - box.left) / box.width) * BOARD_W, y: ((cy - box.top) / box.height) * (BASE_Y + 40) }
+    const svg = svgRef.current
+    const m = svg?.getScreenCTM()
+    if (!svg || !m) return { x: 0, y: 0 }
+    const pt = svg.createSVGPoint()
+    pt.x = cx
+    pt.y = cy
+    const q = pt.matrixTransform(m.inverse())
+    return { x: q.x, y: q.y }
   }
   const nearestPeg = (x: number): Peg | null => {
     if (x < 0 || x > BOARD_W) return null
@@ -149,6 +159,13 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
     }
   }
 
+  // クリアしたら、画面の下にあるクリア表示が見えるようにスクロールする
+  useEffect(() => {
+    if (!solved) return
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    clearRef.current?.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "center" })
+  }, [solved])
+
   useHanoiKeys({ "1": () => tap("A"), "2": () => tap("B"), "3": () => tap("C") })
 
   const undo = () => {
@@ -170,6 +187,7 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
 
   return (
     <div className="space-y-4">
+      <Confetti ref={confetti} />
       <p className="text-gray-700 dark:text-gray-200">{T.PLAY_INTRO}</p>
 
       <div className="text-center">
@@ -201,7 +219,7 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
       </p>
 
       {solved && v && (
-        <div className="rounded-xl border-2 border-gray-700 dark:border-gray-200 p-4 text-center space-y-1" data-clear>
+        <div ref={clearRef} className="rounded-xl border-2 border-gray-700 dark:border-gray-200 p-4 text-center space-y-1" data-clear>
           <p className="text-3xl font-bold text-gray-900 dark:text-gray-50">{T.clearText(count)}</p>
           <p className="text-xl font-bold text-gray-800 dark:text-gray-100" data-verdict>
             {v === "best" ? T.VERDICT_BEST : T.VERDICT_MORE}

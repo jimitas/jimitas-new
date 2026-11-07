@@ -122,7 +122,7 @@ export function HanoiBoard({ pegs, n, flying, lifted, highlight, onPegClick, onP
     <svg
       ref={svgRef}
       viewBox={`0 0 ${BOARD_W} ${BASE_Y + 40}`}
-      className="w-full select-none touch-none"
+      className="w-full max-h-[48vh] select-none touch-none"
       role="img"
       aria-label={ariaLabel ?? "3本の棒と円盤"}
       data-board
