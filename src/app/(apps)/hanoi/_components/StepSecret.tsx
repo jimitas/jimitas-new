@@ -246,7 +246,7 @@ function ChartSection({ onGoTab }: { onGoTab: (t: Tab) => void }) {
             </g>
           )
         })}
-        <text x={W - 4} y={14} textAnchor="end" fontSize={13} className="fill-gray-700 dark:fill-gray-200">{max}枚で {top.toLocaleString("ja-JP")} 回</text>
+        <text x={4} y={14} textAnchor="start" fontSize={13} className="fill-gray-700 dark:fill-gray-200">{max}枚で {top.toLocaleString("ja-JP")} 回</text>
       </svg>
       <p className="text-gray-700 dark:text-gray-200">{T.CHART_NOTE}</p>
       <Btn color="warm" onClick={() => onGoTab(4)} className="px-4 py-2 shrink-0">{T.BTN_TO_BIG}</Btn>
