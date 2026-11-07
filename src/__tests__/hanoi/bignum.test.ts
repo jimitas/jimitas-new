@@ -5,15 +5,15 @@ import * as C from "@/app/(apps)/hanoi/_lib/colors"
 
 describe("BigInt", () => {
   test("2⁶⁴−1 を正確に", () => {
-    expect(B.minMovesBig(64)).toBe(18446744073709551615n)
+    expect(B.minMovesBig(64)).toBe(BigInt("18446744073709551615"))
     expect(B.withCommas(B.minMovesBig(64))).toBe("18,446,744,073,709,551,615")
   })
   test("日本語の単位", () => {
     expect(B.toJapaneseUnits(B.minMovesBig(64))).toBe("1844京6744兆737億955万1615")
-    expect(B.toJapaneseUnits(15n)).toBe("15")
-    expect(B.toJapaneseUnits(100000000n)).toBe("1億") // 0 のグループは飛ばす
-    expect(B.toJapaneseUnits(100010000n)).toBe("1億1万")
-    expect(B.toJapaneseUnits(0n)).toBe("0")
+    expect(B.toJapaneseUnits(BigInt(15))).toBe("15")
+    expect(B.toJapaneseUnits(BigInt(100000000))).toBe("1億") // 0 のグループは飛ばす
+    expect(B.toJapaneseUnits(BigInt(100010000))).toBe("1億1万")
+    expect(B.toJapaneseUnits(BigInt(0))).toBe("0")
   })
 })
 
@@ -24,11 +24,11 @@ describe("年数", () => {
     expect(Math.round(B.timesOfUniverse(y))).toBe(42)
   })
   test("小さい年数", () => {
-    expect(B.formatYears(B.yearsFor(1023n, 1))).toMatch(/^約d+(.d+)?秒$/)
+    expect(B.formatYears(B.yearsFor(BigInt(1023), 1))).toBe("約1020秒")
     expect(B.formatYears(3.5)).toBe("約3.5年")
   })
   test("1枚ふえるとちょうど2倍（＋1回）", () => {
-    for (let n = 1; n < 64; n++) expect(B.minMovesBig(n + 1)).toBe(2n * B.minMovesBig(n) + 1n)
+    for (let n = 1; n < 64; n++) expect(B.minMovesBig(n + 1)).toBe(BigInt(2) * B.minMovesBig(n) + BigInt(1))
   })
 })
 

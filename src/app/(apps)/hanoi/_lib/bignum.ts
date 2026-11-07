@@ -4,9 +4,14 @@
 // 2⁶⁴−1 は Number では正確に表せないので BigInt で持つ。年数だけは有効数字3〜4けたで足りるので Number に変換する。
 // ======================================================
 
+// tsconfig の target が ES2020 未満なので、BigInt リテラル（1n）は使わず BigInt() で作る
+const ZERO = BigInt(0)
+const ONE = BigInt(1)
+const MAN = BigInt(10000)
+
 /** 最少回数 2ⁿ − 1（BigInt） */
 export function minMovesBig(n: number): bigint {
-  return (1n << BigInt(n)) - 1n
+  return (ONE << BigInt(n)) - ONE
 }
 
 /** 3けたごとのカンマ */
@@ -18,14 +23,14 @@ const UNITS = ["", "万", "億", "兆", "京", "垓"]
 
 /** 日本語の大きな数（例：18446744073709551615 → 1844京6744兆737億955万1615）。0 のグループは飛ばす */
 export function toJapaneseUnits(x: bigint): string {
-  if (x === 0n) return "0"
+  if (x === ZERO) return "0"
   let rest = x
   const parts: string[] = []
   let i = 0
-  while (rest > 0n) {
-    const g = rest % 10000n
-    rest = rest / 10000n
-    if (g > 0n) parts.unshift(`${g}${UNITS[i] ?? ""}`)
+  while (rest > ZERO) {
+    const g = rest % MAN
+    rest = rest / MAN
+    if (g > ZERO) parts.unshift(`${g}${UNITS[i] ?? ""}`)
     i++
   }
   return parts.join("")
