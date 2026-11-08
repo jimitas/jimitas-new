@@ -62,7 +62,8 @@ interface Props {
 export function HanoiBoard({ pegs, n, flying, lifted, highlight, onPegClick, onPegPointerDown, dragging, svgRef, ariaLabel }: Props) {
   const big = useBig()
   const h = diskH(n)
-  const fs = Math.min(h * 0.72, big ? 20 : 16)
+  // 番号は円盤の高さの範囲でできるだけ大きく（スマホ幅では盤ごと縮むので、小さくしすぎない）
+  const fs = Math.min(h * 0.85, big ? 26 : 22)
 
   const diskShape = (d: number, cx: number, cy: number, key: string, extra?: Record<string, string | number>) => {
     const w = diskW(d, n)

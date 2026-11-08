@@ -128,6 +128,8 @@ export function splitSegments(n: number, offset = 0): [Segment, Segment, Segment
 
 /** k 手目に動く円盤の番号：k を2進法で書いたとき、右から何けた目に初めて 1 があるか */
 export function diskByBinary(k: number): number {
+  // k = 0 だと x % 2 === 0 が永久に真になり止まらない。無言で固まらないよう、範囲外は例外にする
+  if (!Number.isInteger(k) || k < 1) throw new RangeError(`diskByBinary: k は 1 以上の整数（${k}）`)
   let d = 1
   let x = k
   while (x % 2 === 0) {

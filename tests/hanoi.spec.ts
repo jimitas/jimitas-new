@@ -82,6 +82,36 @@ test.describe("ステップ① あそぶ", () => {
     await expect(page.locator("[data-confetti]")).toHaveCount(0, { timeout: 6000 }) // 数秒で消える
   })
 
+  test("遊びかけで枚数・移動先を変えようとすると確認が出る（やめる＝そのまま、変える＝盤面が消える）。クリア後は確認なし", async ({ page }) => {
+    await hit(page, "A").click()
+    await hit(page, "C").click()
+    await page.locator("#hanoi-n").fill("4")
+    await expect(page.locator("[data-confirm]")).toBeVisible()
+    await expect(page.locator("[data-n]")).toHaveText("3") // まだ変わっていない
+    await page.getByRole("button", { name: "やめる" }).click()
+    await expect(page.locator("[data-confirm]")).toHaveCount(0)
+    expect(await playCount(page)).toBe(1)
+    await page.getByRole("button", { name: "B", exact: true }).click()
+    await expect(page.locator("[data-confirm]")).toContainText("移動先")
+    await page.getByRole("button", { name: "やめる" }).click()
+    await page.locator("#hanoi-n").fill("4")
+    await page.getByRole("button", { name: "変える" }).click()
+    await expect(page.locator("[data-n]")).toHaveText("4")
+    expect(await playCount(page)).toBe(0)
+    // 何も動かしていなければ確認なしで変えられる
+    await page.locator("#hanoi-n").fill("2")
+    await expect(page.locator("[data-confirm]")).toHaveCount(0)
+    await expect(page.locator("[data-n]")).toHaveText("2")
+    // クリア後も確認なし
+    for (const m of solveTo(2, "C")) {
+      await hit(page, m.from).click()
+      await hit(page, m.to).click()
+    }
+    await page.locator("#hanoi-n").fill("3")
+    await expect(page.locator("[data-confirm]")).toHaveCount(0)
+    await expect(page.locator("[data-n]")).toHaveText("3")
+  })
+
   test("同じ棒をもう一度タップで取り消し。1つもどす・最初から", async ({ page }) => {
     await hit(page, "A").click()
     await hit(page, "A").click()
@@ -183,10 +213,13 @@ test.describe("ステップ② 自動で解く", () => {
   })
 
   test("スペースで再生・一時停止（ボタンを選んだままでも）", async ({ page }) => {
-    await page.getByRole("button", { name: "最後へ" }).click()
-    await page.getByRole("button", { name: "最初へ" }).click()
+    // 有効なままのボタン「1手すすむ」を選んだ状態で Space。再生になり、そのボタンの「押す」は二重に動かない（0手目のまま）
+    await page.locator("#hanoi-speed").fill("0") // 1手2秒（動き出しても 300ms では1手進まない）
+    await page.getByRole("button", { name: "1手すすむ" }).focus()
     await page.keyboard.press("Space")
     await expect(page.getByRole("button", { name: /^⏸/ })).toBeVisible()
+    await page.waitForTimeout(300)
+    await expect(page.locator("[data-progress]")).toContainText("いま 0 手目")
     await page.keyboard.press("Space")
     await expect(page.getByRole("button", { name: /^▶/ })).toBeVisible()
   })

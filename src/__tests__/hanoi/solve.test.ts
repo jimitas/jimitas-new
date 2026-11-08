@@ -63,6 +63,12 @@ describe("3つの区切り", () => {
     expect(b.disk).toBe(4)
     expect(b.start).toBe(8)
   })
+  test("zoneOf：前半は first、中央は middle、後半は last（取り違えを検知する）", () => {
+    expect([1, 3, 4, 7, 8, 9, 15].map((k) => S.zoneOf(k, 4))).toEqual(["first", "first", "first", "first", "middle", "last", "last"])
+    const [a, b, c] = S.splitSegments(4)
+    expect([a.zone, b.zone, c.zone]).toEqual(["first", "middle", "last"])
+    expect([[a.start, a.end], [b.start, b.end], [c.start, c.end]]).toEqual([[1, 7], [8, 8], [9, 15]])
+  })
   test("zoneOf が区間と一致し、中央の手で動くのは最大の円盤", () => {
     const n = 5
     const moves = S.solveTo(n)
@@ -80,6 +86,11 @@ describe("3つの区切り", () => {
 })
 
 describe("その他", () => {
+  test("diskByBinary は 0 や負・小数で止まらずに例外（無限ループしない）", () => {
+    expect(() => S.diskByBinary(0)).toThrow(RangeError)
+    expect(() => S.diskByBinary(-2)).toThrow(RangeError)
+    expect(() => S.diskByBinary(1.5)).toThrow(RangeError)
+  })
   test("2進数けた", () => expect(S.binaryDigits(5, 4)).toBe("0101"))
   test("①の向き：n=3 は A→C", () => expect(S.smallestDirection(S.solveTo(3))).toEqual({ from: "A", to: "C" }))
 })

@@ -51,6 +51,16 @@ describe("円盤の色", () => {
     const l = C.WOOD_COLORS.map(C.luminance)
     for (let i = 1; i < l.length; i++) expect(l[i]).toBeLessThan(l[i - 1])
   })
+  test("番号の文字色は、全10色で白か黒のうち見やすいほうを選び、コントラスト比 3 以上（紙粘土の色に差しかえたらここで気づく）", () => {
+    for (let d = 1; d <= 10; d++) {
+      const bg = C.diskColor(d)
+      const fg = C.labelColor(bg)
+      const l1 = C.luminance(bg)
+      const l2 = C.luminance(fg)
+      const ratio = (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05)
+      expect({ d, ok: ratio >= 3 }).toEqual({ d, ok: true })
+    }
+  })
   test("10 枚ぶんの色がすべて違う", () => {
     expect(new Set(Array.from({ length: 10 }, (_, i) => C.diskColor(i + 1))).size).toBe(10)
   })

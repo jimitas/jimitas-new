@@ -36,9 +36,11 @@ interface Props {
   onClear: (n: number, count: number) => void
   showMin: boolean
   onToggleMin: () => void
+  /** 遊びかけ（1手以上動かして未クリア）かを親に知らせる。枚数・移動先を変える前の確認に使う */
+  onDirty: (dirty: boolean) => void
 }
 
-export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin }: Props) {
+export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin, onDirty }: Props) {
   const [history, setHistory] = useState<Move[]>([])
   const [selected, setSelected] = useState<Peg | null>(null)
   const [message, setMessage] = useState("")
@@ -69,6 +71,7 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
     se.playSe(se.move1)
     const next = [...history, r.move]
     setHistory(next)
+    onDirty(!isSolved(r.pegs, n, to))
     if (isSolved(r.pegs, n, to)) {
       setStamp(T.clearStamp(n, next.length, new Date()))
       onClear(n, next.length)
@@ -173,12 +176,14 @@ export function StepPlay({ n, to, level, records, onClear, showMin, onToggleMin 
     setMessage("")
     setStamp("")
     setHistory((h) => h.slice(0, -1))
+    onDirty(history.length - 1 > 0)
   }
   const reset = () => {
     setSelected(null)
     setMessage("")
     setStamp("")
     setHistory([])
+    onDirty(false)
   }
 
   const rows = recordRows(records)
