@@ -89,7 +89,7 @@ function BlockSection() {
   const { a, total } = T.blockLengths(n)
   const readout = useText("readout")
   const blocks = stage === 0 ? [a, 1, a] : stage === 1 ? [a, 1, a, 1] : [a + 1, a + 1]
-  const plain = "flex items-center justify-center rounded text-sm md:text-base font-bold h-12 overflow-hidden transition-all duration-700"
+  const plain = "flex items-center justify-center rounded text-sm md:text-base font-bold h-12 overflow-hidden "
   const block = (len: number, kind: "a" | "one" | "extra" | "merged", key: string) => {
     const style: React.CSSProperties = { flexGrow: len, flexBasis: 0, minWidth: kind === "one" || kind === "extra" ? 30 : 0 }
     const label = `${len}`
